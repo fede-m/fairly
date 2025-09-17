@@ -7,7 +7,7 @@ import json
 from dotenv import load_dotenv
 from models import Span, LLMOutput
 from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
-from prompt import PROMPT
+from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
 from groq import Groq
 import instructor
 
@@ -32,7 +32,7 @@ def generate_new_span(text:str,start:int, end:int):
         start_char = int(start),
         end_char = int(end),
         tokens = [],
-        alternatives = {}
+        alternative = ""
     )
     span.tokens.append(text[start:end])
     return span
@@ -95,38 +95,57 @@ def detection(text: str) -> list[Span]:
         span.span_id = f"{span.start_char}_{span.end_char}"
     return spans
 
-def generation(text: str, spans:list[Span]):
+def generation(text: str, spans:list[Span], ref_type: str, inn_symbol:str):
     # Get the span id and the text
     spans_text = [{span.span_id: text[span.start_char:span.end_char]} for span in spans]
-    prompt = PROMPT.format(text=text, spans=spans_text)
-    alternatives = client.chat.completions.create(
-        messages=[
-            {"role":"user", "content": prompt}
-        ],
-        response_model = LLMOutput,
-    )
+    prompt = ""
+    if ref_type in ["IO", "IV"]:
+        if inn_symbol != "" and inn_symbol in INNOVATIVE_SYMBOLS_EXAMPLES:
+            strategy = STRATEGIES[ref_type].format(symbol=inn_symbol, example=INNOVATIVE_SYMBOLS_EXAMPLES[inn_symbol])
+            prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy)
+        # TODO: Deal with the case when the user provides a user-defined strategy
+    else:
+        prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[ref_type])
+    if prompt != "":
     
-    return alternatives
+        response = client.chat.completions.create(
+            messages=[
+                {"role":"user", "content": prompt}
+            ],
+            response_model = LLMOutput,
+        )
 
-def process_data(text: str):
-    detection_result = detection(text)
-    return detection_result
+        id2span = {span.span_id: span for span in spans}
+        reformulated_spans = []
+        for r in response.result:
+            if r.span_id in id2span:
+                span = id2span[r.span_id]
+                span.alternative = r.alternative
+                reformulated_spans.append(span)
 
-def process_data_test(text: str):
-    detection_result = detection(text)
-    id2span = {span.span_id: span for span in detection_result}
-    print(id2span)
-    generation_result = generation(text, detection_result)
-    print(generation_result)
-    result = []
-    for r in generation_result.result:
-        # Get the current span
-        if r.span_id in id2span:
-            span = id2span[r.span_id]
-            span.alternatives = {alt.type.value: alt.alternative for alt in r.alternatives}
-            result.append(span)
+        return reformulated_spans
+    else:
+        return spans
 
-    return result
+# def process_data(text: str):
+#     detection_result = detection(text)
+#     return detection_result
+
+# def process_data_test(text: str):
+#     detection_result = detection(text)
+#     id2span = {span.span_id: span for span in detection_result}
+#     print(id2span)
+#     generation_result = generation(text, detection_result)
+#     print(generation_result)
+#     result = []
+#     for r in generation_result.result:
+#         # Get the current span
+#         if r.span_id in id2span:
+#             span = id2span[r.span_id]
+#             span.alternatives = {alt.type.value: alt.alternative for alt in r.alternatives}
+#             result.append(span)
+
+#     return result
 
 # if __name__ == "__main__":
 #     result = process_data_test("Ciao a tutti. Questi sono i rappresentanti degli studenti. Salutano i professori.")
