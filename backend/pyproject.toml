@@ -1,0 +1,15 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+    "groq==0.26.0",
+    "instructor[groq]>=1.11.3",
+    "nltk>=3.9.1",
+    "python-dotenv>=1.1.1",
+    "torch>=2.8.0",
+    "transformers>=4.55.2",
+]
