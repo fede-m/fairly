@@ -1,10 +1,12 @@
 console.log("Background service worker loaded");
 
-const backgroundUrl = "https://f95bacaa5d56.ngrok-free.app/analyze";
-async function call_backend(data) {
-  const payload = { data: data };
+const backendUrl = "https://cf932dc69e2e.ngrok-free.app/analyse";
+async function call_backend(payload) {
+  if (payload == null) {
+    console.error("Not a valid payload!");
+  }
   try {
-    const response = await fetch(backgroundUrl, {
+    const response = await fetch(backendUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

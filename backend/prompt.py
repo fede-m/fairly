@@ -3,30 +3,32 @@
 # - articles
 # - explicit relative pronous (i quali, le quali etc.)
 STRATEGIES = {
-    "CV": """Conservative Visibility (CV): Provide both masculine and feminine forms of the expression. 
-              - Example: i professori → i professori e le professoresse
-          """,
+    "CV": ["""Conservative Visibility (CV): Provide both masculine and feminine forms of the expression. 
+              - Example: i professori → i professori e le professoresse"""
+            , 
+          """Conservative Visibility (CV): Provide both masculine and feminine forms of the expression. 
+              - Example: i professori → i/le professori/esse"""
+          ],
+
+    "CO": ["""Conservative Obscuration (CO):  Reformulate the span to avoid indicating gender.
+              - Example: "i professori" → "il corpo docente" or "coloro che insegnano" """],
+              
     "IO":"""Innovative Obscuration (IO): Use novel, gender-neutral markers. In this case, use symbol {symbol}.
               - Example: i professori → {example}
          """,
-    "CO": """Conservative Obscuration (CO):  Reformulate the span to avoid indicating gender.
-              - Example: "i professori" → "il corpo docente" or "coloro che insegnano" 
+    
+    "IV": ["""Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol *.
+              - Example: "i professori" → "i professori, le professoresse e l* professor*"
           """,
-    "IV": """Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol {symbol}.
-              - Example: "i professori" → "i professori, le professoresse e {example}"
+
+          """Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol *.
+              - Example: "i professori" → "i/le/l* professori/e/*"
           """
+           ]
 }
 
 
-INNOVATIVE_SYMBOLS_EXAMPLES = {
-    "ə": """lə professorə""",
-    "*": """l* professor*""",
-    "@": """l@ professor@""",
-    "x": """lx professorx""",
-    "u": """lu professoru"""
-}
-
-
+INNOVATIVE_SYMBOLS_EXAMPLES = [("*", "l* professor*"), ("@","l@ professor@"), ("x", "lx professorx"), "lu professoru", "lə professorə"]
 
 PROMPT = """You are an Italian language assistant specializing in rewriting non-inclusive spans.  
 
@@ -43,7 +45,7 @@ For each span, provide a reformulation of the span text using the following refo
 {reformulation_strategy}
 
 NOTES:
-- Return one alternative for each span in the input
+- Return one alternative for each span in the input. You MUST provide an alternative for each span.
 - Make sure that the span_id corresponds precisely with the corresponding input span_id
 """
 

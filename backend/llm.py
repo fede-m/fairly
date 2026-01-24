@@ -10,6 +10,8 @@ from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
 from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
 from groq import Groq
 import instructor
+import requests
+from openai import OpenAI
 
 load_dotenv()
 
@@ -21,9 +23,17 @@ tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TO
 model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
 
 # Set up API for generation models
-client = Groq(api_key= os.getenv("GROQ_API_KEY"))
-# Enable instructor for Groq client
-client = instructor.from_provider(GENERATION_MODEL)
+# client = Groq(api_key= os.getenv("GROQ_API_KEY"))
+
+# # Enable instructor for Groq client
+# client = instructor.from_provider(GENERATION_MODEL)
+
+client = OpenAI(
+    base_url = os.getenv("HPC4AI_URL", ""),
+    api_key = os.getenv("OPENWEB_API", "")
+)
+
+client = instructor.patch(client, mode = instructor.Mode.JSON)
 
 
 def generate_new_span(text:str,start:int, end:int):
@@ -32,11 +42,10 @@ def generate_new_span(text:str,start:int, end:int):
         start_char = int(start),
         end_char = int(end),
         tokens = [],
-        alternative = ""
+        reformulation = ""
     )
     span.tokens.append(text[start:end])
     return span
-
 
 def detection(text: str) -> list[Span]:
 
@@ -95,35 +104,44 @@ def detection(text: str) -> list[Span]:
         span.span_id = f"{span.start_char}_{span.end_char}"
     return spans
 
-def generation(text: str, spans:list[Span], ref_type: str, inn_symbol:str):
+def generation(text: str, spans:list[Span], strategy: str):
     # Get the span id and the text
     spans_text = [{span.span_id: text[span.start_char:span.end_char]} for span in spans]
     prompt = ""
-    if ref_type in ["IO", "IV"]:
-        if inn_symbol != "" and inn_symbol in INNOVATIVE_SYMBOLS_EXAMPLES:
-            strategy = STRATEGIES[ref_type].format(symbol=inn_symbol, example=INNOVATIVE_SYMBOLS_EXAMPLES[inn_symbol])
-            prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy)
+    strat_type, ref_option = strategy.split("-")
+    ref_option = int(ref_option)
+    if strat_type in ["IO"]:
+        if 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES):
+            symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
+            example = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][1]
+            strategy_example = STRATEGIES[strat_type].format(symbol= symbol, example=example)
+            prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
         # TODO: Deal with the case when the user provides a user-defined strategy
     else:
-        prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[ref_type])
-    if prompt != "":
+        prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
     
-        response = client.chat.completions.create(
-            messages=[
-                {"role":"user", "content": prompt}
-            ],
-            response_model = LLMOutput,
-        )
+    if prompt != "":
+        try:
+            response = client.chat.completions.create(
+                model = GENERATION_MODEL,
+                messages=[
+                    {"role":"user", "content": prompt}
+                ],
+                response_model = LLMOutput,
+            )
 
-        id2span = {span.span_id: span for span in spans}
-        reformulated_spans = []
-        for r in response.result:
-            if r.span_id in id2span:
-                span = id2span[r.span_id]
-                span.alternative = r.alternative
-                reformulated_spans.append(span)
+            id2span = {span.span_id: span for span in spans}
+            reformulated_spans = []
+            for r in response.result:
+                if r.span_id in id2span:
+                    span = id2span[r.span_id]
+                    span.reformulation = r.reformulation
+                    reformulated_spans.append(span)
 
-        return reformulated_spans
+            return reformulated_spans
+        except Exception as e:
+            print(f"The following exception occurred: {e}")
+            return spans
     else:
         return spans
 

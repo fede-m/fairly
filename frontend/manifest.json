@@ -20,7 +20,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["fairly_logo.png"],
+      "resources": ["fairly_logo.png","fairly_logo_complete.png"],
       "matches": ["https://mail.google.com/*", "https://docs.google.com/*"]
     }
   ],
