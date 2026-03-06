@@ -15,14 +15,11 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   object-fit: cover;
   object-position: center;
-  /* background-color: rgb(233, 95, 231); */
-  /* background-color: #fff; */
   border: 1.5px solid rgb(32,33,85);
 }
 
 .info-div {
   position: absolute;
-  /* overflow: auto; */
   bottom: 60px;
   right: 0px;
   width: 300px;
@@ -49,7 +46,6 @@
   justify-content : center;
   align-items: center;
   align-content: center;
-  /* cursor: move; */
   background-color: #e4fbfbee;
   padding: 6px 10px;
   border-radius: 6px 6px 0 0;
@@ -83,7 +79,7 @@
 }
 
 .checklist::-webkit-scrollbar-thumb {
-  background: rgb(30, 31, 84); /* matches your hover shadow color */
+  background: rgb(30, 31, 84); 
   border-radius: 8px;
   border: 1px solid #fff;
 }
@@ -144,7 +140,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: left; /* Center text and checkbox horizontally */
+  justify-content: left;
   text-align: left;  
   gap: 8px; 
 }
@@ -157,19 +153,12 @@
 .refresh-btn,
 .arrow-btn {
   background-color: transparent;
-  /* color: rgb(32,33,85); */
-  /* font-size: 7px; */
   border: none;
-  /* padding-left: 0px; */
   padding: 0;
   margin-right: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
-
-  /* width: 10px;
-  height: 10px; */
-   /* border-color: transparent; */
 }
 
 .refresh-btn svg,
@@ -197,7 +186,6 @@
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
   cursor: pointer;
-  /* transition: background 0.2s, box-shadow 0.2s, transform 0.1s; */
   outline: none;
 }
 
@@ -211,14 +199,12 @@
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
   cursor: pointer;
-  /* transition: background 0.2s, box-shadow 0.2s, transform 0.1s; */
   outline: none;
 }
 
 
 .analyze-btn {
   padding: 6px 14px;
-  /* background: linear-gradient(90deg, #5ad1f7 0%, #c2fcfcee 100%); */
   background: #fff;
   border: 1px solid rgb(30, 31, 84);
   color: rgb(30, 31, 84);
@@ -227,7 +213,6 @@
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
   cursor: pointer;
-  /* transition: background 0.2s, box-shadow 0.2s, transform 0.1s; */
   outline: none;
 }
 
@@ -242,16 +227,16 @@
 }
 .highlight {
   position: relative;
-  background-color: rgb(255, 200, 0); /* soft pink */
+  background-color: rgb(255, 200, 0);
   border-radius: 3px;
-  padding: 0 2px; /* a little breathing room */
+  padding: 0 2px; 
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* subtle shadow */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
 
 .highlight:hover {
-  background-color: rgb(255, 126, 0); /* medium pink, deeper */
+  background-color: rgb(255, 126, 0); 
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
@@ -260,10 +245,6 @@
   position: absolute;
   min-height: fit-content;
   width: 250px;
-  /* top: calc(100% + 4px);
-  left: 0; */
-  /* left: 0; */
-  /* border: 1px solid #000; */
   z-index: 999;
   background: #f7fafd;
   box-shadow: 0 1px 3px rgba(32,33,85,0.07);
@@ -441,7 +422,6 @@
 
 .success-popup {
   background: #c0f0d4;
-  /* background: rgba(46, 204, 113, 0.3);  */
   border: 1px solid rgba(46, 204, 113, 0.3);
   color:rgb(30, 31, 84);
 }
@@ -449,14 +429,6 @@
 
 .warning-popup {
   background: #f0e5c0;
-  /* background: rgba(46, 204, 113, 0.3);  */
   border: 1px solid rgba(204, 170, 46, 0.3);
   color:rgb(30, 31, 84);
 }
-
-
-/* .analyze-btn:hover, .analyze-btn:focus {
-  background: linear-gradient(90deg, #e4fbfbee, #5ad1f7 0%, 100%);
-  box-shadow: 0 4px 16px rgba(62, 142, 247, 0.18);
-  transform: translateY(-2px) scale(1.03);
-} */

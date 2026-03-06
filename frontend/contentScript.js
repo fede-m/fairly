@@ -1,7 +1,13 @@
-const STRATEGIES = Object.freeze({ CV: "CV", CO: "CO", IO: "IO", IV: "IV" });
+let SESSION_ID = null;
  /* Create HTML elements for the UI */ 
  
+
  function createWidget() { 
+    /**
+     * Creates the main Fairly widget container element.
+     * This is the draggable floating widget that appears on the page.
+     * @returns {HTMLDivElement} The widget container div element
+     */
     const widget = document.createElement("div"); 
     widget.id = "fairly-widget"; 
     widget.className = "widget-div"; 
@@ -11,6 +17,11 @@ const STRATEGIES = Object.freeze({ CV: "CV", CO: "CO", IO: "IO", IV: "IV" });
 }
 
 function createImgLogo() { 
+    /**
+     * Creates the Fairly logo image element for the widget.
+     * Uses chrome.runtime.getURL to resolve the extension's internal resource path.
+     * @returns {HTMLImageElement} The logo image element
+     */
     const img = document.createElement("img"); 
     // The chrome.runtime.getURL('fairly_logo.png') constructs a full internal URL to the extension's resources 
     img.src = chrome.runtime.getURL("fairly_logo.png"); 
@@ -18,7 +29,24 @@ function createImgLogo() {
     return img; 
 } 
 
+
 function startAnalysis() {
+    // TODO: Store interaction (selected strategy) in MongoDB
+    // TODO: Add loading animation while waiting for the model response
+
+
+    /**
+     * Initiates the inclusive language analysis on the current Gmail page.
+     * First discards any previously highlighted spans, then:
+     * 1. Verifies the page is Gmail (mail.google.com)
+     * 2. Collects all contenteditable elements (open email drafts)
+     * 3. Validates that a strategy is selected from the checklist
+     * 4. Packages email IDs and text content with the selected strategy
+     * 5. Sends data to background.js for backend processing
+     * Displays a warning popup if no editable emails are found.
+     * @returns {void}
+    */
+
     // Perform both detection and generation sequentially 
     const currentLocation = window.location.href; 
     // Delete all spans that were not accepted
@@ -38,9 +66,10 @@ function startAnalysis() {
             const selected = document.querySelector(".checklist-choice:checked");
 
             if (!selected) { console.warn("No strategy selected!"); 
-                
                 return; 
             } 
+
+            // Prepare payload for background
             dataObj["strategy"] = selected.id; 
             dataObj["data"] = [] 
             editableElements.forEach((element) => { 
@@ -49,7 +78,8 @@ function startAnalysis() {
                 data["id"] = key; 
                 data["text"] = element.innerText;
                 dataObj["data"].push(data); 
-            }) 
+            });
+            
             console.log(dataObj); 
             // Send data to background 
             chrome.runtime.sendMessage({ 
@@ -69,7 +99,7 @@ function startAnalysis() {
             warningMsg.textContent = "⚠️ Non ci sono mail da analizzare!";
 
             const closeBtn = document.createElement("button");
-            closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+            closeBtn.innerHTML = ICONS.close;
 
             closeBtn.className = "popup-close-btn";
 
@@ -87,78 +117,21 @@ function startAnalysis() {
     };
 }
 
-function resetButtons() {
-    // Show only the Analyze button
-    const accBtn = document.getElementById("accept-all");
-    const refBtn = document.getElementById("refuse-all");
-    const analyseBtn = document.getElementById("analyze");
-    const btnWrap = document.getElementById("info-btn-wrapper");
-
-    accBtn.style.display = "none";
-    refBtn.style.display = "none";
-    analyseBtn.textContent = "Analizza";
-    btnWrap.style.justifyContent = "flex-end";
-}
-
-
-function discard(span = undefined){
-
-    // If there is no specific span, delete all current spans
-    if (span === undefined) {
-        // Get all span elements
-        const highlightedSpans = document.querySelectorAll("span.highlight"); 
-        // Restore original text
-        highlightedSpans.forEach((span) => { 
-            const original = span.dataset.original; 
-            // Remove associated spanDiv
-            const spanDiv = document.getElementById(`div-${span.id}`);
-            if (spanDiv) spanDiv.remove();
-            span.replaceWith(document.createTextNode(original));
-        });
-
-        resetButtons();
-
-    } else {
-        // Reject only the current span
-        const original = span.dataset.original;
-        // Remove associated spanDiv
-        const spanDiv = document.getElementById(`div-${span.id}`);
-        if (spanDiv) spanDiv.remove();
-        span.replaceWith(document.createTextNode(original));
-
-    }
-} 
-
-
-function accept(span = undefined){
-    if (span === undefined) {
-        // Remove spans and replace them with the reformulated text
-        const highlightedSpans = document.querySelectorAll("span.highlight");
-        highlightedSpans.forEach(span => {
-            const newText = span.dataset.currentUsed;
-            // Remove associated spanDic
-            const spanDiv = document.getElementById(`div-${span.id}`);
-            if (spanDiv) {spanDiv.remove();}
-            span.replaceWith(document.createTextNode(newText));
-        });
-        
-        // Show only the Analyze button
-        resetButtons();
-    } else {
-        const newText = span.dataset.currentUsed;
-        // Remove associated spanDiv
-        const spanDiv = document.getElementById(`div-${span.id}`);
-        if (spanDiv) spanDiv.remove();
-        span.replaceWith(document.createTextNode(newText));
-    }
-} 
-
 function createInfoDiv() { 
+    /**
+     * Creates the main info panel that appears when clicking on the widget.
+     * Contains the strategy selection checklist (with nested options for each strategy)
+     * and action buttons (Analyze, Accept All, Refuse All).
+     * @returns {HTMLDivElement} The info panel div element
+     */
+
+    /* -----------------  infoDiv element ----------------- */ 
     const infoDiv = document.createElement("div"); 
     infoDiv.id = "fairly-info"; 
     infoDiv.className = "info-div"; 
     infoDiv.style.display = "none"; 
-    /* infoDiv content */ 
+
+    /* -----------------  infoDiv content ----------------- */ 
     // Add tab bar at the top of the div with widget title 
     const tabBar = document.createElement("div"); 
     tabBar.className = "top-bar"; 
@@ -168,27 +141,37 @@ function createInfoDiv() {
     tabBar.appendChild(logo); 
     infoDiv.appendChild(tabBar); 
     
-    // Add tabBar to infoDiv 
     // Add text 
     const paragraph = document.createElement("p"); 
     paragraph.innerText = "Scegli una soluzione piú inclusiva!"; 
     paragraph.style.fontSize = "14px"; 
     infoDiv.appendChild(paragraph); 
+
     // Check-list container 
     const checklist = document.createElement("div"); 
     checklist.className = "checklist"; 
 
-
-
-    // Helper to create a checklist item
+    
     function createChecklistItem(labelText, strategyName, hasNested, nestedOption = [], defaultSelected= false) { 
+        /**
+         * Helper function to create a checklist item for each strategy.
+         * Supports both simple checkboxes and expandable nested options with accordion behavior.
+         * Only one option can be selected at a time across all checklist items.
+         * @param {string} labelText - Display label for the checklist item (e.g., "Doppia forma (M/F)")
+         * @param {string} strategyName - Strategy identifier from STRATEGIES constant (CV, CO, IO, IV)
+         * @param {boolean} hasNested - Whether this item has expandable nested options
+         * @param {string[]} [nestedOption=[]] - Array of nested option labels to display
+         * @param {boolean} [defaultSelected=false] - Whether the first nested option should be pre-selected
+         * @returns {HTMLDivElement} The checklist item element
+         */
+
         // Check that the strategy name is correct 
         if (strategyName != null && !Object.values(STRATEGIES).includes(strategyName)) { 
             console.warn("createChecklistItem: invalid strategyName", strategyName) 
             strategyName = "" 
         }; 
-        const item = document.createElement("div"); 
 
+        const item = document.createElement("div"); 
         item.className = "checklist-item"; 
 
         if (hasNested && (nestedOption.length > 0 )) { 
@@ -196,8 +179,8 @@ function createInfoDiv() {
             const container = document.createElement("div"); 
             container.className = "options-container"; 
             // Create arrows to toggle the nested options
-            const arrowDownSVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="#202155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; 
-            const arrowUpSVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 10l4-4 4 4" stroke="#202155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            const arrowDownSVG = ICONS.arrowDown; 
+            const arrowUpSVG =ICONS.arrowUp;
             
             const arrowBtn = document.createElement("button"); 
             arrowBtn.className = "arrow-btn";
@@ -284,11 +267,6 @@ function createInfoDiv() {
                     });
                     nestedDiv.firstChild.firstChild.checked = true;
 
-                    // TODO: Delete this logic (delete the defaultSelected option)
-                    
-                    
-                    // TODO: set the first child as the selected one (deleting all the other checks)
-
                 } else { 
                     nestedDiv.style.display = "none"; 
                     arrowBtn.innerHTML = arrowDownSVG; 
@@ -323,10 +301,11 @@ function createInfoDiv() {
     checklist.appendChild(createChecklistItem("Forme innovative", STRATEGIES.IO, true, ["l* student*", "l@ student@", "lx studentx", "lu studentu", "lə studentə"], false)); 
     checklist.appendChild(createChecklistItem("Tripla forma (M/F/N)", STRATEGIES.IV, true, ["gli studenti, le studenti e l* student*", "gli/le/l* student*"], false)); 
     
-    // -------------- Create buttons ----------------------------- 
+    /* -------------- Create buttons ----------------------------- */
     const buttonWrapper = document.createElement("div"); 
     buttonWrapper.id = "info-btn-wrapper";
     buttonWrapper.className = "btn-wrapper"; 
+
     // ------------------- Accept all button -------------------
     const acceptAllBtn = document.createElement("button"); 
     acceptAllBtn.id = "accept-all"; 
@@ -368,6 +347,18 @@ function createInfoDiv() {
 
 
 function createSpanPopupDiv(spanEl) {
+    /**
+     * Creates a popup div for an individual highlighted span.
+     * Displays the original text (crossed out) and provides controls to:
+     * - Edit: Enter a custom inclusive reformulation
+     * - Save: Save the user's custom reformulation (which is then displayed, still highlighted, inside the email)
+     * - Revert: Restore the AI-suggested reformulation
+     * - Accept: Apply the current reformulation and remove the highlight
+     * - Refuse: Discard the reformulation and restore the original text
+     * @param {HTMLSpanElement} spanEl - The highlighted span element this popup is associated with
+     * @returns {HTMLDivElement} The popup div element
+     */
+
     // Create the div element
     const spanDiv = document.createElement("div");
     spanDiv.id = `div-${spanEl.id}`;
@@ -397,7 +388,7 @@ function createSpanPopupDiv(spanEl) {
 
     const saveBtn = document.createElement("button");
     saveBtn.className = "save-btn";
-    saveBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-save-icon lucide-save"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg>`;
+    saveBtn.innerHTML = ICONS.save;
 
     saveBtn.style.display = "none";
     saveBtn.addEventListener("click", (event) => {
@@ -420,7 +411,7 @@ function createSpanPopupDiv(spanEl) {
 
     const revertChangeBtn = document.createElement("button");
     revertChangeBtn.className = "revert-btn";
-    revertChangeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-undo2-icon lucide-undo-2"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>`
+    revertChangeBtn.innerHTML = ICONS.revert;
 
     revertChangeBtn.style.display = "none";
 
@@ -449,7 +440,7 @@ function createSpanPopupDiv(spanEl) {
     // Edit current option (allow user to input their reformulation)
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
-    editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height= "16" width="15" viewBox="0 0 24 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-line-icon lucide-pencil-line"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>`
+    editBtn.innerHTML = ICONS.edit;
 
     editBtn.addEventListener("click", () => {
         if (inputFormulation.style.display == "none") {
@@ -467,7 +458,7 @@ function createSpanPopupDiv(spanEl) {
     // Accept current reformulation for the span
     const accBtn = document.createElement("button");
     accBtn.className = "small-acc-btn";
-    accBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`
+    accBtn.innerHTML = ICONS.accept;
     
     accBtn.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -477,7 +468,7 @@ function createSpanPopupDiv(spanEl) {
     // Refuse reformulations for the span (keep the original text)
     const refBtn = document.createElement("button");
     refBtn.className = "small-ref-btn";
-    refBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
+    refBtn.innerHTML = ICONS.refuse;
 
     refBtn.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -488,7 +479,6 @@ function createSpanPopupDiv(spanEl) {
     btnWrap.appendChild(accBtn);
     btnWrap.appendChild(refBtn);
     spanDiv.appendChild(p);
-    //spanDiv.appendChild(labelInput);
     spanDiv.appendChild(inputWrap);
     spanDiv.appendChild(btnWrap);
 
@@ -496,208 +486,30 @@ function createSpanPopupDiv(spanEl) {
     event.stopPropagation();
     });
 
-
-    // Show the accept and discard buttons
-
     return spanDiv
 }
 
-
-function highlightSpans(div, spans) { 
-    // Remove already present spans 
-    const highlightedSpans = div.querySelectorAll("span.highlight"); 
-    // Get all span elements 
-    highlightedSpans.forEach((span) => { 
-        // Restore the original text 
-        const original = span.dataset.original ?? span.textContent; 
-        // Replace the span with its text content (removes highlight) 
-        span.replaceWith(document.createTextNode(original)); 
-    }); 
-    // Create a walker to pass through all the text nodes of the current content window 
-    const walker = document.createTreeWalker( div, NodeFilter.SHOW_TEXT, null, false ); 
-    // Collect all the nodes in the walker 
-    const nodes = []; 
-    let node; 
-    while ((node = walker.nextNode())) { 
-        nodes.push(node); 
-    } 
-    // Sort spans by start_char 
-    spans = spans.slice().sort((a, b) => a.start_char - b.start_char); 
-    // Keep track of the index of the text in the node 
-    let charIndex = 0; 
-    let spanId = 0;
-    nodes.forEach((node) => { 
-        // Get text and start and end char of node 
-        const nodeText = node.nodeValue; 
-        const nodeStart = charIndex; 
-        const nodeEnd = charIndex + nodeText.length; 
-
-        // Find all spans that overlap with this node 
-        const nodeSpans = spans.filter( (span) => span.start_char < nodeEnd && span.end_char > nodeStart ); 
-        // If no span is found, simply update the index 
-        if (nodeSpans.length === 0) { 
-            charIndex += nodeText.length; 
-            return;
-        }
-        // Build an array of {text, isHighlight} -> each will be a new node later and the highlight true/false will define if you need to wrap it into a span or not 
-        let parts = []; 
-        let lastIdx = 0;
-        nodeSpans.forEach((span) => {
-            // Calculate start and end index of the part to highlight in the current node text (considering that it goes from 0 to node.length) 
-            const spanStart = Math.max(span.start_char - nodeStart, 0); 
-            const spanEnd = Math.min(span.end_char - nodeStart, nodeText.length); 
-            if (spanStart > lastIdx) { 
-                // Add the "before" text 
-                parts.push({ 
-                    text: nodeText.slice(lastIdx, spanStart), 
-                    isHighlight: false, 
-                    reformulation: null, 
-                }); 
-            } 
-            // Add the text of the span 
-            const part = { 
-                text: nodeText.slice(spanStart, spanEnd),
-                isHighlight: true, 
-                reformulation: span.reformulation 
-            }; 
-            parts.push(part); 
-            lastIdx = spanEnd;
-        }); 
-        // Add the after text (after having processed all the spans in the current node) 
-        if (lastIdx < nodeText.length) { 
-            parts.push({ 
-                text: nodeText.slice(lastIdx), 
-                isHighlight: false, 
-                reformulation: null
-            }); 
-        } 
-        // Create temporary fragment to substitute the node with 
-        const frag = document.createDocumentFragment(); 
-        parts.forEach((part, idx) => { 
-            if (part.isHighlight) { 
-                const spanEl = document.createElement("span");
-                spanEl.id = `span-${++spanId}`;
-                spanEl.className = "highlight"; 
-                spanEl.innerText = part.reformulation; 
-                spanEl.setAttribute("contenteditable", "false"); 
-                // Store original text and reformulation in the object 
-                spanEl.dataset.original = part.text; 
-                spanEl.dataset.reformulation = part.reformulation;
-                spanEl.dataset.currentUsed = part.reformulation;
-
-                const spanDiv = createSpanPopupDiv(spanEl);
-
-                frag.appendChild(spanEl); 
-                // Add click event 
-                spanEl.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    // Hide all other spanDivs
-                    document.querySelectorAll(".span-div").forEach(s => {
-                        if (s.id !== spanDiv.id) {s.style.display = "none";}
-                    });
-                    // Toggle visibility
-                    const isVisible = spanDiv.style.display === "block";
-
-                    if (isVisible) {
-                        spanDiv.style.display = "none";
-                    } else {
-                        // Append to body if not already present
-                        if (!document.body.contains(spanDiv)) {
-                            document.body.appendChild(spanDiv);
-                        }
-
-                        spanDiv.style.visibility = "hidden";
-                        spanDiv.style.display = "block";
-                        
-                        void spanDiv.offsetHeight;
-
-                        // Get spanDiv dimensions (now that it's rendered)
-                        const popupWidth = spanDiv.offsetWidth;
-                        const popupHeight = spanDiv.offsetHeight;
-
-                        // Use Range to get the start position of the span
-                        // const range = document.createRange();
-                        // range.selectNodeContents(spanEl);
-                        // range.collapse(true); // true = start, false = end
-                        // const startRect = range.getBoundingClientRect();
-                        // Get all client rects for the span (handles multi-line spans)
-                        const rects = spanEl.getClientRects();
-
-                        let startRect;
-                        if (rects.length > 0) {
-                            startRect = rects[0];
-                        } else {
-                            startRect = spanEl.getBoundingClientRect();
-                        }
-                        // Get viewport dimensions
-                        const viewportWidth = window.innerWidth;
-                        const viewportHeight = window.innerHeight;
-
-                        
-
-                        // Add a small gap below the span
-                        const GAP = 6;
-
-                         // Calculate initial position (below the span start)
-                        let left = startRect.left + window.scrollX;
-                        let top = startRect.bottom + window.scrollY + GAP;
-
-                        // --- Horizontal overflow prevention ---
-                        // If popup would overflow right edge of viewport
-                        if (left + popupWidth > viewportWidth + window.scrollX) {
-                            // Align popup's right edge with span's right edge
-                            left = startRect.right + window.scrollX - popupWidth;
-                            
-                            // If still overflowing left edge, clamp to left edge
-                            if (left < window.scrollX) {
-                                left = window.scrollX + 8; // 8px padding from edge
-                            }
-                        }
-                        // Ensure it doesn't overflow left edge
-                        if (left < window.scrollX) {
-                            left = window.scrollX + 8;
-                        }
-
-                        // --- Vertical overflow prevention ---
-                        // If popup would overflow bottom of viewport
-                        if (top + popupHeight > viewportHeight + window.scrollY) {
-                            // Try to place it above the span instead
-                            const topAbove = startRect.top + window.scrollY - popupHeight - GAP;
-                            
-                            if (topAbove >= window.scrollY) {
-                                // There's room above
-                                top = topAbove;
-                            } else {
-                                // Not enough room above either, clamp to bottom with padding
-                                top = viewportHeight + window.scrollY - popupHeight - 8;
-                            }
-                        }
-
-                        // Apply final position
-                        spanDiv.style.left = `${left}px`;
-
-                        spanDiv.style.top = `${top}px`;
-                        spanDiv.style.visibility = "visible";
-
-                        
-                    }
-
-                })
-
-                
-            } else if (part.text) { 
-                frag.appendChild(document.createTextNode(part.text)); 
-            } 
-        }); 
-        node.replaceWith(frag); 
-        charIndex += nodeText.length; 
-    }); 
-} 
-
 function initExtension() { 
+
+    /**
+     * Initializes the Fairly Chrome extension on the current page.
+     * Creates a unique session ID, builds the widget UI (logo + info panel),
+     * appends it to the document body, and sets up:
+     * - Drag-and-drop functionality for repositioning the widget
+     * - Click handler to toggle the info panel visibility
+     * - Document click handler to close span popups when clicking outside
+     * Guards against duplicate initialization by checking for existing widget.
+     * @returns {void}
+    */
+
     // Check if a widget already exists 
     if (document.getElementById("fairly-widget")) return; 
-    // Create needed elements 
+
+    // Create Session ID
+    SESSION_ID = crypto.randomUUID()
+    //console.log(`Session id: ${SESSION_ID}`)
+
+    /* --------- Initialize Widget elements --------- */
     const widget = createWidget(); 
     const img = createImgLogo(); 
     const infoDiv = createInfoDiv(); 
@@ -760,12 +572,13 @@ function initExtension() {
 }
     
     
-// Retrieve processed data from background 
+// Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => { 
     if (msg.action === "processedData") { 
         console.log(msg.payload); 
         const response = msg.payload; 
 
+        /* ------------- Create the span elements in the email ------------- */
         let hasSpans = false;
         for (const id in response.results) { 
             // Use ID to get the correct contenteditable window 
@@ -777,9 +590,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 // Highligh the spans that were detected and their alternatives 
                 highlightSpans(div, response.results[id].unfair_spans); 
             }
-            
         } 
         
+        /* ------------- Update buttons content ------------- */
         const refuseBtn = document.getElementById("refuse-all"); 
         const acceptBtn = document.getElementById("accept-all"); 
         const analyzeBtn = document.getElementById("analyze"); 
@@ -787,17 +600,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
         if (hasSpans) {
             // Make Refuse All and Accept All buttons clickable 
-
-            analyzeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-cw-icon lucide-rotate-cw"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`
+            analyzeBtn.innerHTML = ICONS.analyse;
             acceptBtn.style.display = "block"; 
             refuseBtn.style.display = "block"; 
             btnWrapper.style.justifyContent = "space-between"; 
 
             // Remove existing success messages
             const existingMsg = document.getElementById("no-span-message");
-            if(existingMsg) existingMsg.remove()
-        } else {
-            console.log("Nessuno span unfair trovato, ottimo lavoro!");
+            if(existingMsg) existingMsg.remove();
+
+        } else {            
             // Remove existing success messages
             const existingPopup = document.getElementById("no-span-message");
             if(existingPopup) existingPopup.remove()
@@ -813,7 +625,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             // Crete close btn
             const closeBtn = document.createElement("button");
             closeBtn.className = "popup-close-btn";
-            closeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+            closeBtn.innerHTML = ICONS.close;
             closeBtn.addEventListener("click", () => {
                 successPopup.remove();
             });
@@ -827,7 +639,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
             // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
             acceptBtn.style.display = "none";
-
             refuseBtn.style.display = "none";
             btnWrapper.style.justifyContent = "flex-end";
 
@@ -835,7 +646,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     } 
 }); 
             
-
 
 // Create the extension on page load
 window.addEventListener("load", () => { setTimeout(initExtension, 2000); });

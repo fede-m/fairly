@@ -1,6 +1,6 @@
 console.log("Background service worker loaded");
 
-const backendUrl = "https://cf932dc69e2e.ngrok-free.app/analyse";
+const backendUrl = "https://a5db-2001-a61-34ba-7501-94c1-6eca-3d93-91f3.ngrok-free.app/analyse";
 async function call_backend(payload) {
   if (payload == null) {
     console.error("Not a valid payload!");

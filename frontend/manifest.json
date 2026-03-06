@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["https://mail.google.com/*", "https://docs.google.com/*"],
-      "js": ["contentScript.js"],
+      "js": ["content/constants.js", "content/icons.js", "content/actions.js", "content/domUtils.js","contentScript.js"],
       "css": ["contentStyles.css"]
     }
   ],
