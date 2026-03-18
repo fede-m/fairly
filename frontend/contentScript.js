@@ -1,8 +1,7 @@
 let SESSION_ID = null;
 let USER_EMAIL = null;
+let STRATEGY_ORDER = null;
  /* Create HTML elements for the UI */ 
- 
-
  function createWidget() { 
     /**
      * Creates the main Fairly widget container element.
@@ -35,19 +34,30 @@ function emailEndsWithAllowedDomain() {
 }
 
 function initializeSession() {
-    // Get user
+    // Get user email
     const meta = document.getElementsByName("og-profile-acct");
     if (meta) {
         USER_EMAIL = meta[0].content;
     }
     if (!emailEndsWithAllowedDomain()) {
-        console.log("Not a valid domain!")
+        console.warn("Not a valid domain!");
         return false;
     }
 
     // Get session ID
     SESSION_ID = crypto.randomUUID();
     console.log(SESSION_ID);
+
+    // Get strategies order
+    const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
+    if (strategyOrder){
+        STRATEGY_ORDER = JSON.parse(strategyOrder);
+    } else {
+        const strategies = Object.keys(STRATEGIES);
+        const randomizedOrder = strategies.sort(() => Math.random() - 0.5)
+        localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
+        STRATEGY_ORDER =randomizedOrder;
+    }
     return true;
 }
 
@@ -316,10 +326,24 @@ function createInfoDiv() {
         } 
     
     // Create the strategies options 
-    checklist.appendChild(createChecklistItem("Doppia forma (M/F)", STRATEGIES.CV, true, ["gli studenti e le studenti", "i/le studenti"], true)); 
-    checklist.appendChild(createChecklistItem("Nome astratto", STRATEGIES.CO, true, ["la comunità studentesca"], false)); 
-    checklist.appendChild(createChecklistItem("Forme innovative", STRATEGIES.IO, true, ["l* student*", "l@ student@", "lx studentx", "lu studentu", "lə studentə"], false)); 
-    checklist.appendChild(createChecklistItem("Tripla forma (M/F/N)", STRATEGIES.IV, true, ["gli studenti, le studenti e l* student*", "gli/le/l* student*"], false)); 
+    STRATEGY_ORDER.forEach((strategy, idx) => {
+        let strategyObj = STRATEGIES[strategy]; 
+        let hasNested = strategyObj.nestedOptions.length > 0 ? true : false;
+        let defaultSelected = idx === 0;
+        checklist.appendChild(
+            createChecklistItem(
+                strategyObj.name, 
+                strategy, 
+                hasNested, 
+                strategyObj.nestedOptions, 
+                defaultSelected
+            ));
+    })
+    
+    // checklist.appendChild(createChecklistItem("Doppia forma (M/F)", STRATEGIES.CV, true, ["gli studenti e le studenti", "i/le studenti"], true)); 
+    // checklist.appendChild(createChecklistItem("Nome astratto", STRATEGIES.CO, true, ["la comunità studentesca"], false)); 
+    // checklist.appendChild(createChecklistItem("Forme innovative", STRATEGIES.IO, true, ["l* student*", "l@ student@", "lx studentx", "lu studentu", "lə studentə"], false)); 
+    // checklist.appendChild(createChecklistItem("Tripla forma (M/F/N)", STRATEGIES.IV, true, ["gli studenti, le studenti e l* student*", "gli/le/l* student*"], false)); 
     
     /* -------------- Create buttons ----------------------------- */
     const buttonWrapper = document.createElement("div"); 
