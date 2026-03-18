@@ -197,11 +197,12 @@ function createInfoDiv() {
          * @returns {HTMLDivElement} The checklist item element
          */
 
+
         // Check that the strategy name is correct 
-        if (strategyName != null && !Object.values(STRATEGIES).includes(strategyName)) { 
+        if (strategyName === null ||(strategyName != null && !Object.keys(STRATEGIES).includes(strategyName)) ) {
             console.warn("createChecklistItem: invalid strategyName", strategyName) 
             strategyName = "" 
-        }; 
+        }
 
         const item = document.createElement("div"); 
         item.className = "checklist-item"; 
@@ -333,7 +334,7 @@ function createInfoDiv() {
         checklist.appendChild(
             createChecklistItem(
                 strategyObj.name, 
-                strategy, 
+                strategyObj.id, 
                 hasNested, 
                 strategyObj.nestedOptions, 
                 defaultSelected
