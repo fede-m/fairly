@@ -95,6 +95,7 @@ function highlightSpans(div, spans) {
                 spanEl.dataset.original = part.text; 
                 spanEl.dataset.reformulation = part.reformulation;
                 spanEl.dataset.currentUsed = part.reformulation;
+                spanEl.dataset.emailId = div.id; 
 
                 const spanDiv = createSpanPopupDiv(spanEl);
 

@@ -34,18 +34,18 @@ db = client["fairly_db"]
 collection = db["user_events"]
 
 
-def insert_event(event: EventRequest):
-    # Hash the user id
-    email = event.user_id.strip().lower()
-    event.user_id = hmac.new(
-        SECRET_KEY.encode(),
-        email.encode(),
-        hashlib.sha256
-    ).hexdigest()
+def insert_event(events: list[EventRequest]):
+    for event in events:
+        # Hash the user id
+        email = event.user_id.strip().lower()
+        event.user_id = hmac.new(
+            SECRET_KEY.encode(),
+            email.encode(),
+            hashlib.sha256
+        ).hexdigest()
 
-    print(event)
-    inserted_id = collection.insert_one(event.dict()).inserted_id
-    print(inserted_id)
+        inserted_id = collection.insert_one(event.dict()).inserted_id
+
 
 
 

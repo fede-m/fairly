@@ -19,36 +19,53 @@ function discard(span = undefined){
     // No spans to modify
     if (highlightedSpans.length === 0) return;
 
-    // Prepare event to store
-    const refuseEvent = {
-            event: "refuse",
-            spans: [],
-            session_id: SESSION_ID,
-            user_id: USER_EMAIL
-        };
+    const grouped = new Map();
+    highlightedSpans.forEach(s => {
+        let emailId = s.dataset.emailId;
+        if (!grouped.has(emailId)) {
+            grouped.set(emailId, []);
+        }
+        grouped.get(emailId).push(s);
+    }
+    );
 
-    // Restore original text
-    highlightedSpans.forEach((s) => { 
-        const original = s.dataset.original; 
-        // Add span event
-        refuseEvent.spans.push({
-            original: original,
-            reformulation: s.dataset.reformulation,
-            current_used: original
-        });
+    const refuseEvents = [];
+    grouped.forEach((spanList, eId) =>{
+        // Prepare event to store
+            const refuseEvent = {
+                    event: "refuse",
+                    spans: [],
+                    session_id: SESSION_ID,
+                    user_id: USER_EMAIL,
+                    email_id: eId,
+                };
 
-        // Remove associated spanDiv
-        const spanDiv = document.getElementById(`div-${s.id}`);
-        if (spanDiv) spanDiv.remove();
-        s.replaceWith(document.createTextNode(original));
-    });
+            // Restore original text
+            spanList.forEach((s) => { 
+                const original = s.dataset.original; 
+                // Add span event
+                refuseEvent.spans.push({
+                    original: original,
+                    reformulation: s.dataset.reformulation,
+                    current_used: original
+                });
+
+                // Remove associated spanDiv
+                const spanDiv = document.getElementById(`div-${s.id}`);
+                if (spanDiv) spanDiv.remove();
+                s.replaceWith(document.createTextNode(original));
+            });
+            refuseEvents.push(refuseEvent);
+        }
+    );
 
     if (span === undefined) resetButtons();
-    
+
     chrome.runtime.sendMessage({
-            action:"storeEvent",
-            payload: refuseEvent
-        });
+                action:"storeEvent",
+                payload: refuseEvents
+            });
+    
 } 
 
 function accept(span = undefined){

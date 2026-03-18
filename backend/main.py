@@ -38,8 +38,7 @@ async def analyse(request: Request):
     return Response(results = results)
 
 @app.post("/store-event")
-async def store_event(request: EventRequest):
-    print(request)
+async def store_event(request: list[EventRequest]):
     insert_event(request)
     return {
         "status": 200,

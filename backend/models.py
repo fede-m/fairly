@@ -52,6 +52,7 @@ class EventRequest(BaseModel):
     spans: list[SpanEvent]
     session_id: str
     user_id: str
+    email_id: str
     timestamp: datetime = Field(default_factory= lambda: datetime.now(timezone.utc))
     strategy: str | None = None
 
