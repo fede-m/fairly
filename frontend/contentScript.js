@@ -1,4 +1,5 @@
 let SESSION_ID = null;
+let USER_EMAIL = null;
  /* Create HTML elements for the UI */ 
  
 
@@ -29,6 +30,27 @@ function createImgLogo() {
     return img; 
 } 
 
+function emailEndsWithAllowedDomain() {
+    return DOMAINS.some(d => USER_EMAIL.toLowerCase().endsWith(d))
+}
+
+function initializeSession() {
+    // Get user
+    const meta = document.getElementsByName("og-profile-acct");
+    if (meta) {
+        USER_EMAIL = meta[0].content;
+    }
+    if (!emailEndsWithAllowedDomain()) {
+        console.log("Not a valid domain!")
+        return false;
+    }
+
+    // Get session ID
+    SESSION_ID = crypto.randomUUID();
+    console.log(SESSION_ID);
+    return true;
+}
+
 
 function startAnalysis() {
     // TODO: Store interaction (selected strategy) in MongoDB
@@ -50,7 +72,7 @@ function startAnalysis() {
     // Perform both detection and generation sequentially 
     const currentLocation = window.location.href; 
     // Delete all spans that were not accepted
-    discard()
+    discard();
     if (currentLocation.startsWith("https://mail.google.com/")) { 
         // Select all elements on the page which are editable (the open emails) 
         const editableElements = document.querySelectorAll('[contenteditable="true"]'); 
@@ -79,11 +101,11 @@ function startAnalysis() {
                 data["text"] = element.innerText;
                 dataObj["data"].push(data); 
             });
-            
+
             console.log(dataObj); 
             // Send data to background 
             chrome.runtime.sendMessage({ 
-                action: "inputData", 
+                action: "analyseData", 
                 payload: dataObj, }) 
         } else {
             // Remove existing warning popup
@@ -230,8 +252,6 @@ function createInfoDiv() {
                             e.preventDefault()
                             this.checked = true;
                         }
-                        
-                    
                 }) 
                 nestedLabel.appendChild(nestedCheckbox); 
                 nestedLabel.appendChild(document.createTextNode(" " + optText)); 
@@ -452,7 +472,6 @@ function createSpanPopupDiv(spanEl) {
             saveBtn.style.display = "none";
             revertChangeBtn.style.display = "none";
         }
-        
     })
 
     // Accept current reformulation for the span
@@ -502,12 +521,14 @@ function initExtension() {
      * @returns {void}
     */
 
+    // Initialize Session with user information and create Session ID
+    if (!initializeSession()){
+        return;
+    };
+
     // Check if a widget already exists 
     if (document.getElementById("fairly-widget")) return; 
 
-    // Create Session ID
-    SESSION_ID = crypto.randomUUID()
-    //console.log(`Session id: ${SESSION_ID}`)
 
     /* --------- Initialize Widget elements --------- */
     const widget = createWidget(); 
@@ -648,7 +669,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             
 
 // Create the extension on page load
-window.addEventListener("load", () => { setTimeout(initExtension, 2000); });
+window.addEventListener("load", () => { 
+    setTimeout(initExtension, 2000); 
+});
 
 // Just before reloading the page, we clean up any span introduced by our widget
 // window.addEventListener("beforeunload", () => {

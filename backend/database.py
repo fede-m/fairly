@@ -2,39 +2,50 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 import urllib.parse
+import hmac
+import hashlib
+import certifi
+from models import EventRequest
+# import dns.resolver
+# dns.resolver.default_resolver=dns.resolver.Resolver(configure=False)
+# dns.resolver.default_resolver.nameservers=['8.8.8.8']
 load_dotenv()
 
+import ssl
 
-MONGODB_PWD = os.environ.get("MONGODB_PWD")
-password = urllib.parse.quote_plus(MONGODB_PWD)
-MONGODB_CONNECTION_STRING = f"mongodb+srv://federicamanzi_db_user:{password}@fairlycluster.soocjbs.mongodb.net/?appName=FairlyCluster"
+# Get secret key for hashing
+SECRET_KEY = os.environ.get("SECRET_KEY")
+password = urllib.parse.quote_plus(os.environ.get("MONGODB_PWD"))
+user = os.environ.get("MONGODB_USER")
+MONGODB_URI = f"mongodb+srv://{user}:{password}@fairlycluster.khg90i7.mongodb.net/?appName=FairlyCluster"
 
 # Connect to the MongoDB Cluster
-client = MongoClient(MONGODB_CONNECTION_STRING)
+client = MongoClient(MONGODB_URI,
+
+                    tls=True,
+                    tlsCAFile=certifi.where(),
+                    serverSelectionTimeoutMS=30000,
+                     )
 
 dbs = client.list_database_names()
 print(dbs)
 
+db = client["fairly_db"]
+collection = db["user_events"]
 
-fairly_db = client["fairly_db"]
-user_collection = fairly_db["users"]
 
-result = user_collection.insert_one({"hello": "world"})
-#person_collection = production.person_collection
+def insert_event(event: EventRequest):
+    # Hash the user id
+    email = event.user_id.strip().lower()
+    event.user_id = hmac.new(
+        SECRET_KEY.encode(),
+        email.encode(),
+        hashlib.sha256
+    ).hexdigest()
 
-#print(person_collection)
+    print(event)
+    inserted_id = collection.insert_one(event.dict()).inserted_id
+    print(inserted_id)
 
-# def insert_doc():
-#     collection = test_db["test"]
-#     document = {
-# 		"name": "Munster",
-# 		"surname": "Frau",
-# 		"age": 50,
-# 		"married": False
-# 	}
 
-#     inserted_id = collection.insert_one(document).inserted_id
 
-#     print(inserted_id)
-
-# insert_doc()

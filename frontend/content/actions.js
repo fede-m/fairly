@@ -13,31 +13,42 @@ function resetButtons() {
 
 
 function discard(span = undefined){
-    // TODO: store interaction on MongoDB
-    // If there is no specific span, delete all current spans
-    if (span === undefined) {
-        // Get all span elements
-        const highlightedSpans = document.querySelectorAll("span.highlight"); 
-        // Restore original text
-        highlightedSpans.forEach((span) => { 
-            const original = span.dataset.original; 
-            // Remove associated spanDiv
-            const spanDiv = document.getElementById(`div-${span.id}`);
-            if (spanDiv) spanDiv.remove();
-            span.replaceWith(document.createTextNode(original));
+    
+    const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
+    
+    // No spans to modify
+    if (highlightedSpans.length === 0) return;
+
+    // Prepare event to store
+    const refuseEvent = {
+            event: "refuse",
+            spans: [],
+            session_id: SESSION_ID,
+            user_id: USER_EMAIL
+        };
+
+    // Restore original text
+    highlightedSpans.forEach((s) => { 
+        const original = s.dataset.original; 
+        // Add span event
+        refuseEvent.spans.push({
+            original: original,
+            reformulation: s.dataset.reformulation,
+            current_used: original
         });
 
-        resetButtons();
-
-    } else {
-        // Reject only the current span
-        const original = span.dataset.original;
         // Remove associated spanDiv
-        const spanDiv = document.getElementById(`div-${span.id}`);
+        const spanDiv = document.getElementById(`div-${s.id}`);
         if (spanDiv) spanDiv.remove();
-        span.replaceWith(document.createTextNode(original));
+        s.replaceWith(document.createTextNode(original));
+    });
 
-    }
+    if (span === undefined) resetButtons();
+    
+    chrome.runtime.sendMessage({
+            action:"storeEvent",
+            payload: refuseEvent
+        });
 } 
 
 function accept(span = undefined){

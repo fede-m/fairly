@@ -1,14 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models import Request, Response, OutputData
+import os
+from models import Request, EventRequest, Response, OutputData
 from llm import detection, generation
+from database import insert_event
 
+CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     # Specify the id of the Chrome extension to allow it to call the backend
-    allow_origins = ["chrome-extension://anhfkhdhenpoanncpjhiimaificigofo"],
+    allow_origins = [f"chrome-extension://{CHROME_EXTENSION_ID}"],
     allow_methods = ["GET", "POST"],
     allow_headers = ["*"]
 )
@@ -34,28 +37,11 @@ async def analyse(request: Request):
 
     return Response(results = results)
 
-
-# @app.post("/detect")
-# async def detect_spans(request: DetectionRequest):
-#     results = {}
-#     for doc in request.documents:
-#         # Remove "\n" from text
-#         text = "".join([chunk.strip() for chunk in doc.text.split("\n") if chunk.strip()])
-#         detected_spans = detection(text)
-#         results[doc.id] = DetectedSpans(text=text, unfair_spans= detected_spans)
-
-#     return DetectionResponse(results = results)
-
-# @app.post("/generate")
-# async def generate_reformulations(request: GenerationRequest):
-#     results = {}
-#     reformulation_type = request.reformulation_type
-#     innovative_symbol = request.innovative_symbol
-#     for doc_id, doc in request.detected_spans.items():
-#         cleaned_text = "".join([chunk.strip() for chunk in doc.text.split("\n") if chunk.strip()])
-#         if len(doc.unfair_spans) > 0:
-#             # Add the alternative according to the to the Span objects
-#             reformulated_spans = generation(cleaned_text, doc.unfair_spans,reformulation_type, innovative_symbol)
-#             results[doc_id] = DetectedSpans(text= cleaned_text, unfair_spans=reformulated_spans)
-
-#     return GenerationResponse(reformulated_results= results)
+@app.post("/store-event")
+async def store_event(request: EventRequest):
+    print(request)
+    insert_event(request)
+    return {
+        "status": 200,
+        "message": "Everything is fine"
+    }

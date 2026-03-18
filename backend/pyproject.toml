@@ -5,12 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "certifi>=2025.8.3",
+    "dnspython==2.7.0",
     "fastapi[standard]>=0.116.1",
     "groq==0.26.0",
     "instructor[groq]>=1.11.3",
     "nltk>=3.9.1",
     "openai>=1.107.0",
-    "pymongo[srv]>=4.15.5",
+    "pymongo>=4.16.0",
     "python-dotenv>=1.1.1",
     "torch>=2.8.0",
     "transformers>=4.55.2",

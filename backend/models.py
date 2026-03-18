@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, model_validator
 from enum import Enum
-from typing import List,Dict
+from datetime import datetime, timezone
 
 class Span(BaseModel):
     """Represents a span of text identified as unfair."""
@@ -18,7 +18,7 @@ class Reformulation(BaseModel):
 
 class LLMOutput(BaseModel):
     """Result from the LLM containing reformulations for spans."""
-    result: List[Reformulation] = Field(..., description="List of reformulated spans")
+    result: list[Reformulation] = Field(..., description="List of reformulated spans")
 
 class InputData(BaseModel):
     id: str = Field(..., description="Unique id identifying the document")
@@ -34,3 +34,32 @@ class Request(BaseModel):
 
 class Response(BaseModel):
     results: dict[str,OutputData] = Field(..., description="The results of the analysis to send to the frontend")
+
+class EventType(str, Enum):
+    ACCEPT = "accept"
+    REFUSE = "refuse"
+    EDIT = "edit"
+    REVERT = "revert"
+
+class SpanEvent(BaseModel):
+    original: str
+    reformulation: str
+    current_used: str
+    user_form: str | None = None # Only used for edit event
+    
+class EventRequest(BaseModel):
+    event: EventType
+    spans: list[SpanEvent]
+    session_id: str
+    user_id: str
+    timestamp: datetime = Field(default_factory= lambda: datetime.now(timezone.utc))
+    strategy: str | None = None
+
+    @model_validator(mode="after")
+    def validate_user_form(self):
+        for span in self.spans:
+            if self.event == EventType.EDIT and span.user_form is None:
+                raise ValueError("user_form is required for edit events")
+            if self.event != EventType.EDIT and span.user_form is not None:
+                raise ValueError("user_form is only allowed for edit events")
+        return self
