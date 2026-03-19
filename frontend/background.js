@@ -4,15 +4,15 @@ const API = {
   //baseUrl: "https://a3cd-2001-a61-34ba-7501-e85a-563f-72e6-b0da.ngrok-free.app",
   baseUrl: BASE_URL,
 
-  get analyse() {return `${this.baseUrl}/analyse`;},
-  get storeEvent() {return `${this.baseUrl}/store-event`;},
-  get storeFeedback() {return `${this.baseUrl}/store-feedback`;}
+  get analyse() { return `${this.baseUrl}/analyse`; },
+  get storeEvent() { return `${this.baseUrl}/store-event`; },
+  get storeFeedback() { return `${this.baseUrl}/store-feedback`; }
 }
 
 async function analyseData(payload) {
   if (payload == null) {
     console.error("Not a valid payload!");
-    return {error: "Invalid payload!"};
+    return { error: "Invalid payload!" };
   }
   try {
     const response = await fetch(API.analyse, {
@@ -30,7 +30,7 @@ async function analyseData(payload) {
   }
 }
 
-async function storeEvent(payload){
+async function storeEvent(payload) {
   if (payload == null) {
     console.error("Not a valid payload!");
   }
@@ -48,11 +48,11 @@ async function storeEvent(payload){
   }
   catch (error) {
     console.error("Error calling backend:", error);
-    return {error: error.message};
+    return { error: error.message };
   }
 }
 
-async function storeFeedback(){}
+async function storeFeedback() { }
 
 chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.action == "analyseData") {
@@ -71,14 +71,14 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       }
     });
   }
-  else if (msg.action == "storeEvent"){
+  else if (msg.action == "storeEvent") {
     const data = msg.payload;
     console.log(data);
     storeEvent(data)
-    .then(res => console.log(res))
-    .catch(err => console.error("Failed to store event:", err));
+      .then(res => console.log(res))
+      .catch(err => console.error("Failed to store event:", err));
   }
-  else if (msg.action == "storeFeedback"){}
+  else if (msg.action == "storeFeedback") { }
 
 });
 

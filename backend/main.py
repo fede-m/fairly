@@ -29,7 +29,7 @@ async def analyse(request: Request):
         # Detection
         detected_spans = detection(text)
         # Generation
-        reformulated_spans = generation(text, detected_spans,strategy)
+        reformulated_spans = generation(text, detected_spans, strategy)
         print(reformulated_spans)
         results[doc.id] = OutputData(text = text, unfair_spans = reformulated_spans)
         analysis_request =EventRequest(
@@ -57,7 +57,4 @@ async def analyse(request: Request):
 @app.post("/store-event")
 async def store_event(request: list[EventRequest]):
     insert_event(request)
-    return {
-        "status": 200,
-        "message": "Everything is fine"
-    }
+    return {"status": 200, "message": "Everything is fine"}
