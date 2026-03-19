@@ -11,14 +11,15 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # Specify the id of the Chrome extension to allow it to call the backend
-    allow_origins = [f"chrome-extension://{CHROME_EXTENSION_ID}"],
-    allow_methods = ["GET", "POST"],
-    allow_headers = ["*"]
+    allow_origins=[f"chrome-extension://{CHROME_EXTENSION_ID}"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 # @app.get("/")
 # def root():
 #     return {"status": 200}
+
 
 @app.post("/analyse")
 async def analyse(request: Request):
@@ -31,16 +32,14 @@ async def analyse(request: Request):
         # Detection
         detected_spans = detection(text)
         # Generation
-        reformulated_spans = generation(text, detected_spans,strategy)
+        reformulated_spans = generation(text, detected_spans, strategy)
         print(reformulated_spans)
-        results[doc.id] = OutputData(text = text, unfair_spans = reformulated_spans)
+        results[doc.id] = OutputData(text=text, unfair_spans=reformulated_spans)
 
-    return Response(results = results)
+    return Response(results=results)
+
 
 @app.post("/store-event")
 async def store_event(request: list[EventRequest]):
     insert_event(request)
-    return {
-        "status": 200,
-        "message": "Everything is fine"
-    }
+    return {"status": 200, "message": "Everything is fine"}
