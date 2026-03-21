@@ -1,7 +1,7 @@
 console.log("Background service worker loaded");
 
 const API = {
-  baseUrl: "https://a3cd-2001-a61-34ba-7501-e85a-563f-72e6-b0da.ngrok-free.app",
+  baseUrl: "https://johanne-unlyric-kiyoko.ngrok-free.dev",
 
   get analyse() { return `${this.baseUrl}/analyse`; },
   get storeEvent() { return `${this.baseUrl}/store-event`; },
