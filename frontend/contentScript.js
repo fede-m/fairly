@@ -138,9 +138,8 @@ function startAnalysis() {
 
       const closeBtn = document.createElement("button");
       closeBtn.innerHTML = ICONS.close;
-
       closeBtn.className = "popup-close-btn";
-
+      closeBtn.setAttribute("aria-label", "Chiudi avviso");
       closeBtn.addEventListener("click", () => {
         warningPopup.remove();
       })
@@ -294,6 +293,7 @@ function createInfoDiv() {
           arrowBtns.forEach((arrow) => {
             if (arrow !== arrowBtn) {
               arrow.innerHTML = arrowDownSVG;
+              arrow.setAttribute("aria-expanded", "false");
             }
           })
 
@@ -435,6 +435,7 @@ function createSpanPopupDiv(spanEl) {
   inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
   inputLabel.textContent = "La tua soluzione inclusiva";
   inputLabel.className = "sr-only"; // visually hidden but accessible
+  inputLabel.style.display = "none";  // at creation label is hidden
 
   const inputFormulation = document.createElement("input");
   inputFormulation.id = `user-ref-${spanEl.id}`;
@@ -512,10 +513,12 @@ function createSpanPopupDiv(spanEl) {
   editBtn.addEventListener("click", () => {
     if (inputFormulation.style.display == "none") {
       inputFormulation.style.display = "block";
+      inputLabel.style.display = "block";
       saveBtn.style.display = "block";
       revertChangeBtn.style.display = "block";
     } else {
       inputFormulation.style.display = "none";
+      inputLabel.style.display = "none";
       saveBtn.style.display = "none";
       revertChangeBtn.style.display = "none";
     }
@@ -721,6 +724,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const closeBtn = document.createElement("button");
       closeBtn.className = "popup-close-btn";
       closeBtn.innerHTML = ICONS.close;
+      closeBtn.setAttribute("aria-label", "Chiudi messaggio");
       closeBtn.addEventListener("click", () => {
         successPopup.remove();
       });
