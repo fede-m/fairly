@@ -6,3 +6,23 @@
     - in `start_analysis` --> store the option/inclusive strategy that was selected
     - in `content/actions.js` --> the `accept` function should store the single or all accepted text(s) (could be our suggestion or the one written by the user)
     - in `content/actions.js` --> the `discard` function should store the single or all discarded text(s)
+
+
+## accessibility
+
+[freecodecamp](https://www.freecodecamp.org/news/how-to-design-accessible-browser-extensions/#:~:text=the%20same%20extension.-,How%20to%20Perform%20Automated%20Browser%20Extension%20Accessibility%20Tests,violations%20and%20implement%20suggested%20fixes)
+
+[WAVE Web Accessibility Evaluation Tools](https://wave.webaim.org/)
+
+manual testing:
+
+- Keyboard Navigation: Ensure you can navigate through the entire extension using only the Tab and Enter/Space keys. Check for a visible focus indicator so users know which element they are currently on.
+- Screen Reader Testing: Use a screen reader (like NVDA on Windows or VoiceOver on Mac) to verify that all interactive elements have clear, descriptive labels and that dynamic content updates are announced.
+- Zoom and Resizing: Verify that the extension remains functional and readable when the browser or system zoom is set to 200%.
+- Color and Contrast: Ensure text has a contrast ratio of at least 4.5:1 against its background. Use the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) or built-in DevTools features to verify this.
+
+verify accessibility tree:
+
+1. Right-click an element in your extension and select Inspect.
+2. In the Elements panel, look for the Accessibility sub-tab (it may be hidden behind the >> icon).
+3. Here you can view the Accessibility Tree, which shows exactly what name, role, and state (e.g., "expanded" or "checked") is being exposed to assistive technologies.
