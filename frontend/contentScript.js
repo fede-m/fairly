@@ -263,20 +263,11 @@ function createInfoDiv() {
         if (defaultSelected == true && idx == 0) {
           nestedCheckbox.checked = true;
         }
-        // Whenever an option is clicked, we change its staus to "clicked" and unclick all the other options
-        nestedCheckbox.addEventListener("click", function (e) {
-          // Check if the current checkbox is selected 
-          if (this.checked) {
-            // Uncheck all other checkboxes 
-            document.querySelectorAll(".checklist-choice").forEach(cb => {
-              if (cb !== this) { cb.checked = false };
-            });
-
-          } else {
-            e.preventDefault()
-            this.checked = true;
-          }
-        })
+        nestedCheckbox.addEventListener("click", function () {
+          document.querySelectorAll(".checklist-choice").forEach(cb => {
+            cb.checked = cb === this;
+          });
+        });
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
         nestedDiv.appendChild(nestedLabel);
@@ -657,7 +648,7 @@ function initExtension() {
       const isOpen = infoDiv.style.display === "none";
       infoDiv.style.display = isOpen ? "block" : "none";
       img.setAttribute("aria-expanded", String(isOpen));
-      if (isOpen) infoDiv.focus();
+      if (isOpen) infoDiv.focus(); // move focus into dialog on open
     }
   });
 
