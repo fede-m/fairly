@@ -11,6 +11,8 @@ function createWidget() {
   const widget = document.createElement("div");
   widget.id = "fairly-widget";
   widget.className = "widget-div";
+  widget.setAttribute("role", "complementary");
+  widget.setAttribute("aria-label", "Fairly widget");
   const img = document.createElement("img");
   img.id = "fairly-widget-toggle";
   return widget;
@@ -26,6 +28,7 @@ function createImgLogo() {
   // The chrome.runtime.getURL('fairly_logo.png') constructs a full internal URL to the extension's resources 
   img.src = chrome.runtime.getURL("fairly_logo.png");
   img.className = "fairly-logo";
+  img.alt = "Fairly - apri pannello";
   return img;
 }
 
@@ -129,7 +132,8 @@ function startAnalysis() {
       warningPopup.id = "warning-msg";
 
       const warningMsg = document.createElement("span");
-      warningMsg.textContent = "⚠️ Non ci sono mail da analizzare!";
+      warningMsg.textContent = "Non ci sono mail da analizzare!";
+      document.getElementById("fairly-live").textContent = "Non ci sono mail da analizzare.";
 
       const closeBtn = document.createElement("button");
       closeBtn.innerHTML = ICONS.close;
@@ -163,6 +167,10 @@ function createInfoDiv() {
   infoDiv.id = "fairly-info";
   infoDiv.className = "info-div";
   infoDiv.style.display = "none";
+  infoDiv.setAttribute("role", "dialog");
+  infoDiv.setAttribute("aria-modal", "true");
+  infoDiv.setAttribute("aria-label", "Fairly - scegli strategia inclusiva");
+  infoDiv.setAttribute("tabindex", "-1");
 
   /* -----------------  infoDiv content ----------------- */
   // Add tab bar at the top of the div with widget title 
@@ -171,6 +179,7 @@ function createInfoDiv() {
   const logo = document.createElement("img");
   logo.src = chrome.runtime.getURL("fairly_logo_complete.png");
   logo.className = "fairly-logo-complete";
+  logo.alt = "Fairly";
   tabBar.appendChild(logo);
   infoDiv.appendChild(tabBar);
 
@@ -219,6 +228,8 @@ function createInfoDiv() {
       const arrowBtn = document.createElement("button");
       arrowBtn.className = "arrow-btn";
       arrowBtn.innerHTML = arrowDownSVG;
+      arrowBtn.setAttribute("aria-label", `Espandi opzioni: ${labelText}`);
+      arrowBtn.setAttribute("aria-expanded", "false")
       arrowBtn.style.cursor = "pointer";
       arrowBtn.style.marginRight = "8px";
 
@@ -276,6 +287,7 @@ function createInfoDiv() {
         if (nestedDiv.style.display == "none") {
           nestedDiv.style.display = "flex";
           arrowBtn.innerHTML = arrowUpSVG;
+          arrowBtn.setAttribute("aria-expanded", "true");
 
           // Close all other nestedDiv
           const nestedDivs = document.querySelectorAll(".nested-checklist");
@@ -302,6 +314,7 @@ function createInfoDiv() {
         } else {
           nestedDiv.style.display = "none";
           arrowBtn.innerHTML = arrowDownSVG;
+          arrowBtn.setAttribute("aria-expanded", "false");
         }
       });
     } else {
@@ -358,6 +371,7 @@ function createInfoDiv() {
   acceptAllBtn.className = "accept-all-btn";
   acceptAllBtn.textContent = 'Accetta tutto';
   acceptAllBtn.style.display = "none";
+  acceptAllBtn.setAttribute("aria-hidden", "true");
   acceptAllBtn.addEventListener("click", () => {
     accept();
   });
@@ -367,6 +381,7 @@ function createInfoDiv() {
   refuseAllBtn.className = "refuse-all-btn";
   refuseAllBtn.textContent = "Rifiuta tutto";
   refuseAllBtn.style.display = "none";
+  refuseAllBtn.setAttribute("aria-hidden", "true");
   refuseAllBtn.addEventListener("click", () => {
     discard();
   });
@@ -410,6 +425,9 @@ function createSpanPopupDiv(spanEl) {
   spanDiv.id = `div-${spanEl.id}`;
   spanDiv.className = "span-div";
   spanDiv.style.display = "none";
+  spanDiv.setAttribute("role", "dialog");
+  spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.original}`);
+  spanDiv.setAttribute("tabindex", "-1");
 
   // Show the old text
   const p = document.createElement("p");
@@ -421,10 +439,18 @@ function createSpanPopupDiv(spanEl) {
   const inputWrap = document.createElement("div");
   inputWrap.className = "input-wrap";
 
+  const inputLabel = document.createElement("label");
+  inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
+  inputLabel.textContent = "La tua soluzione inclusiva";
+  inputLabel.className = "sr-only"; // visually hidden but accessible
+
   const inputFormulation = document.createElement("input");
   inputFormulation.id = `user-ref-${spanEl.id}`;
   inputFormulation.type = "text";
-  inputFormulation.placeholder = "La tua soluzione inclusiva";
+  inputFormulation.placeholder = "Es. studenti e studentesse";
+
+  inputWrap.appendChild(inputLabel);
+
   inputFormulation.style.display = "none";
 
   inputFormulation.addEventListener("click", (event) => {
@@ -435,6 +461,7 @@ function createSpanPopupDiv(spanEl) {
   const saveBtn = document.createElement("button");
   saveBtn.className = "save-btn";
   saveBtn.innerHTML = ICONS.save;
+  saveBtn.setAttribute("aria-label", "Salva formulazione personalizzata");
 
   saveBtn.style.display = "none";
   saveBtn.addEventListener("click", (event) => {
@@ -458,6 +485,7 @@ function createSpanPopupDiv(spanEl) {
   const revertChangeBtn = document.createElement("button");
   revertChangeBtn.className = "revert-btn";
   revertChangeBtn.innerHTML = ICONS.revert;
+  revertChangeBtn.setAttribute("aria-label", "Ripristina suggerimento AI");
 
   revertChangeBtn.style.display = "none";
 
@@ -487,6 +515,7 @@ function createSpanPopupDiv(spanEl) {
   const editBtn = document.createElement("button");
   editBtn.className = "edit-btn";
   editBtn.innerHTML = ICONS.edit;
+  editBtn.setAttribute("aria-label", "Modifica formulazione");
 
   editBtn.addEventListener("click", () => {
     if (inputFormulation.style.display == "none") {
@@ -504,6 +533,7 @@ function createSpanPopupDiv(spanEl) {
   const accBtn = document.createElement("button");
   accBtn.className = "small-acc-btn";
   accBtn.innerHTML = ICONS.accept;
+  accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
 
   accBtn.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -514,6 +544,7 @@ function createSpanPopupDiv(spanEl) {
   const refBtn = document.createElement("button");
   refBtn.className = "small-ref-btn";
   refBtn.innerHTML = ICONS.refuse;
+  refBtn.setAttribute("aria-label", "Rifiuta questa riformulazione");
 
   refBtn.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -559,11 +590,29 @@ function initExtension() {
   /* --------- Initialize Widget elements --------- */
   const widget = createWidget();
   const img = createImgLogo();
+
+  img.setAttribute("aria-expanded", "false");
+  img.setAttribute("role", "button");
+  img.setAttribute("tabindex", "0");
+  img.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      img.click();
+    }
+  });
+
   const infoDiv = createInfoDiv();
   // Append elements following hierarchy 
   widget.appendChild(img);
   widget.appendChild(infoDiv);
   document.body.appendChild(widget);
+  // live region for dynamic announcements
+  const liveRegion = document.createElement("div");
+  liveRegion.id = "fairly-live";
+  liveRegion.setAttribute("aria-live", "polite");
+  liveRegion.setAttribute("aria-atomic", "true");
+  liveRegion.className = "sr-only";
+  document.body.appendChild(liveRegion);
   // Implement dragging 
   let offsetX = 0, offsetY = 0;
   // store where inside the widget the mouse was clicked 
@@ -604,7 +653,10 @@ function initExtension() {
   img.addEventListener("click", (e) => {
     // Open the infoDiv when clicking on the widget image 
     if (!moved) {
-      infoDiv.style.display = infoDiv.style.display == "none" ? "block" : "none";
+      const isOpen = infoDiv.style.display === "none";
+      infoDiv.style.display = isOpen ? "block" : "none";
+      img.setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) infoDiv.focus();
     }
   });
 
@@ -648,8 +700,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (hasSpans) {
       // Make Refuse All and Accept All buttons clickable 
       analyzeBtn.innerHTML = ICONS.analyse;
+      analyzeBtn.setAttribute("aria-label", "Analizza");
       acceptBtn.style.display = "block";
+      acceptBtn.removeAttribute("aria-hidden");
       refuseBtn.style.display = "block";
+      refuseBtn.removeAttribute("aria-hidden");
       btnWrapper.style.justifyContent = "space-between";
 
       // Remove existing success messages
@@ -668,6 +723,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
       const successMsg = document.createElement("span");
       successMsg.textContent = "Nessuno span unfair trovato, ottimo lavoro!";
+      document.getElementById("fairly-live").textContent = successMsg.textContent;
 
       // Crete close btn
       const closeBtn = document.createElement("button");
@@ -686,7 +742,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
       // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
       acceptBtn.style.display = "none";
+      acceptBtn.setAttribute("aria-hidden", "true");
       refuseBtn.style.display = "none";
+      refuseBtn.setAttribute("aria-hidden", "true");
       btnWrapper.style.justifyContent = "flex-end";
 
     }
