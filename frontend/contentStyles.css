@@ -23,18 +23,19 @@
   bottom: 60px;
   right: 0px;
   width: 300px;
-  height: 300px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   padding: 36px 16px 16px 16px;
   z-index: 10000;
   display: none;
+  min-height: 300px;
+  height: auto;
 }
 
 
 .info-div p {
-  font-size: 12px;
+  font-size: 16px;
   color: rgb(30, 31, 84);
   margin: 25px 0 8px 0;
   font-weight: bold;
@@ -57,7 +58,7 @@
 
 .fairly-logo-complete {
   height: 35px;
-  width: 55px;
+  width: auto;
   margin: auto;
   display: block;
 }
@@ -70,6 +71,8 @@
   margin-top: 16px;
   max-height: 200px;
   overflow: auto;
+  padding-bottom: 6px;
+  /* padding necessario per shadow dell'ultima option*/
 }
 
 /* Custom scrollbar for info-div */
@@ -96,7 +99,7 @@
   box-shadow: 0 1px 3px rgba(32, 33, 85, 0.07);
   transition: box-shadow 0.2s;
   position: relative;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .checklist-item:hover {
@@ -138,7 +141,7 @@
 
 .checklist-item label,
 .nested-checklist label {
-  font-size: 13px;
+  font-size: 16px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -178,44 +181,32 @@
   gap: 10px;
 }
 
-.accept-all-btn {
-  padding: 6px 14px;
-  background: #fff;
-  color: rgb(30, 31, 84);
-  border: 1px solid #2ecc71;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
-  cursor: pointer;
-  outline: none;
-}
-
-.refuse-all-btn {
-  padding: 6px 14px;
-  background: #fff;
-  color: rgb(30, 31, 84);
-  border: 1px solid #cc462e;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
-  cursor: pointer;
-  outline: none;
-}
-
-
+.accept-all-btn,
+.refuse-all-btn,
 .analyze-btn {
   padding: 6px 14px;
   background: #fff;
-  border: 1px solid rgb(30, 31, 84);
   color: rgb(30, 31, 84);
   border-radius: 16px;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
   cursor: pointer;
   outline: none;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.accept-all-btn {
+  border: 1px solid #2ecc71;
+}
+
+.refuse-all-btn {
+  border: 1px solid #cc462e;
+}
+
+.analyze-btn {
+  border: 1px solid rgb(30, 31, 84);
 }
 
 
@@ -255,7 +246,7 @@
   border-radius: 8px;
   padding: 10px 10px;
   transition: box-shadow 0.2s;
-  font-size: 13px;
+  font-size: 16px;
   display: flex;
   flex-direction: column;
   cursor: auto;
@@ -279,7 +270,7 @@
   margin: 8px 0;
   border: 1px solid;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 16px;
   outline: none;
   background: #faf8ff;
   color: rgb(30, 31, 84);
@@ -377,7 +368,7 @@
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.15);
   /* color: #2ecc71; */
 
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
   z-index: 10;
@@ -450,4 +441,11 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.analyze-btn:hover,
+.analyze-btn:focus-visible {
+  background: rgb(30, 31, 84);
+  color: #fff;
+  outline: none;
 }
