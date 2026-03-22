@@ -197,15 +197,15 @@
 }
 
 .accept-all-btn {
-  border: 1px solid #2ecc71;
+  border: 2px solid #2ecc71;
 }
 
 .refuse-all-btn {
-  border: 1px solid #cc462e;
+  border: 2px solid #cc462e;
 }
 
 .analyze-btn {
-  border: 1px solid rgb(30, 31, 84);
+  border: 2px solid rgb(30, 31, 84);
 }
 
 
@@ -320,7 +320,7 @@
   align-items: center;
   justify-content: center;
   border: none;
-  background: #2ecc71;
+  background: #27AA5E;
   display: flex;
   color: #fff;
   padding: 0;
@@ -341,7 +341,7 @@
   align-items: center;
   justify-content: center;
   border: none;
-  background: #cc462e;
+  background: #dc3545;
   color: #fff;
   padding: 0;
   display: flex;
@@ -361,7 +361,8 @@
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 8px;
-  padding: 10px 32px 10px 12px;
+  padding: 10px 52px 10px 12px;
+  /* increased from 32px */
 
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.15);
@@ -397,12 +398,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: rgb(30, 31, 84);
   transition: color 0.2s;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .popup-close-btn:hover {
-  color: rgb(30, 31, 84);
+  color: #000
+}
+
+.popup-close-btn:focus-visible {
+  outline: 2px solid rgb(30, 31, 84);
+  outline-offset: 2px;
+}
+
+.analyze-btn:hover,
+.analyze-btn:focus-visible {
+  background: rgb(30, 31, 84);
+  color: #fff;
+  outline: none;
+}
+
+.accept-all-btn:focus-visible {
+  outline: 2px solid #27AA5E;
+  outline-offset: 2px;
+}
+
+.refuse-all-btn:focus-visible {
+  outline: 2px solid #dc3545;
+  outline-offset: 2px;
 }
 
 @keyframes fadeInUp {
@@ -440,23 +465,6 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-.analyze-btn:hover,
-.analyze-btn:focus-visible {
-  background: rgb(30, 31, 84);
-  color: #fff;
-  outline: none;
-}
-
-.accept-all-btn:focus-visible {
-  outline: 2px solid #2ecc71;
-  outline-offset: 2px;
-}
-
-.refuse-all-btn:focus-visible {
-  outline: 2px solid #cc462e;
-  outline-offset: 2px;
 }
 
 .thickbox:focus-visible {
