@@ -71,7 +71,7 @@
   margin-top: 16px;
   max-height: 200px;
   overflow: auto;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
   /* padding necessario per shadow dell'ultima option*/
 }
 
@@ -192,7 +192,6 @@
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
   cursor: pointer;
-  outline: none;
   min-height: 44px;
   padding: 0 16px;
 }
@@ -448,4 +447,31 @@
   background: rgb(30, 31, 84);
   color: #fff;
   outline: none;
+}
+
+.accept-all-btn:focus-visible {
+  outline: 2px solid #2ecc71;
+  outline-offset: 2px;
+}
+
+.refuse-all-btn:focus-visible {
+  outline: 2px solid #cc462e;
+  outline-offset: 2px;
+}
+
+.thickbox:focus-visible {
+  outline: 2px solid rgb(30, 31, 84);
+  outline-offset: 3px;
+}
+
+/* users that do not want animations */
+@media (prefers-reduced-motion: reduce) {
+  .message-popup {
+    animation: none;
+  }
+
+  .highlight,
+  .checklist-item {
+    transition: none;
+  }
 }
