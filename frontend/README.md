@@ -26,3 +26,12 @@ verify accessibility tree:
 1. Right-click an element in your extension and select Inspect.
 2. In the Elements panel, look for the Accessibility sub-tab (it may be hidden behind the >> icon).
 3. Here you can view the Accessibility Tree, which shows exactly what name, role, and state (e.g., "expanded" or "checked") is being exposed to assistive technologies.
+
+### contrast
+
+text color is rgb(30,31,84) -> #1e1f54
+checked pairs: text on all backgrounds. icons
+need to be checked:
+- list elements with extension background
+- extension background with mail white theme
+- logo on both white and dark theme
