@@ -17,23 +17,6 @@
 manual testing:
 
 - [x] Keyboard Navigation: Ensure you can navigate through the entire extension using only the Tab and Enter/Space keys. Check for a visible focus indicator so users know which element they are currently on.
-- [x] Screen Reader Testing: Use a screen reader (like NVDA on Windows or VoiceOver on Mac) to verify that all interactive elements have clear, descriptive labels and that dynamic content updates are announced.
+- [x] Screen Reader Testing: Used linux mint default screen reader to test it. it works.
 - [x] Zoom and Resizing: Verify that the extension remains functional and readable when the browser or system zoom is set to 200%.
-- [x] Color and Contrast: Ensure text has a contrast ratio of at least 4.5:1 against its background. Use the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) or built-in DevTools features to verify this.
-
-verify accessibility tree:
-
-1. Right-click an element in your extension and select Inspect.
-2. In the Elements panel, look for the Accessibility sub-tab (it may be hidden behind the >> icon).
-3. Here you can view the Accessibility Tree, which shows exactly what name, role, and state (e.g., "expanded" or "checked") is being exposed to assistive technologies.
-
-### contrast
-
-text color is rgb(30,31,84) -> #1e1f54
-checked pairs: text on all backgrounds. icons
-need to be checked:
-- [x] list elements with extension background
-- [x] extension background with mail white theme
-- [x] logo on both white and dark theme
-
-everything checked
+- [x] Color and Contrast: Ensure text has a contrast ratio of at least 4.5:1 against its background.
