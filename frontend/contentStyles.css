@@ -98,19 +98,21 @@
   gap: 12px;
   margin-top: 16px;
   max-height: 200px;
-  overflow: auto;
   padding-bottom: 8px;
-  /* padding necessario per shadow dell'ultima option*/
+  /* padding necessario per shadow dell'ultima option */
+  overflow-x: hidden;
+  overflow-y: scroll;
+  /* prevents container from expanding */
 }
 
 /* Custom scrollbar for info-div */
 .checklist::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
   background: transparent;
 }
 
 .checklist::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
+  background: solid color-mix(in srgb, var(--color-primary) 50%, transparent);
   border-radius: 8px;
   border: 1px solid var(--color-white);
 }
@@ -123,11 +125,14 @@
 .checklist-item {
   background: var(--color-surface);
   border-radius: 8px;
-  padding: 10px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+  padding: 10px;
   box-shadow: 0 1px 3px rgba(32, 33, 85, 0.07);
   transition: box-shadow 0.2s;
   position: relative;
   font-size: 16px;
+  box-sizing: border-box;
+  width: 100%
 }
 
 .checklist-item:hover {
