@@ -185,7 +185,6 @@ function createInfoDiv() {
   // Add text 
   const paragraph = document.createElement("p");
   paragraph.innerText = "Scegli una soluzione piú inclusiva!";
-  paragraph.style.fontSize = "14px";
   infoDiv.appendChild(paragraph);
 
   // Check-list container 
@@ -425,7 +424,6 @@ function createSpanPopupDiv(spanEl) {
   //p.style.padding = "0px";
   p.innerHTML = `<strong><del>${spanEl.dataset.original}</del><strong>`;
   p.style.margin = "0px";
-  p.style.fontSize = "13px";
 
   const inputWrap = document.createElement("div");
   inputWrap.className = "input-wrap";
@@ -434,7 +432,6 @@ function createSpanPopupDiv(spanEl) {
   inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
   inputLabel.textContent = "La tua soluzione inclusiva";
   inputLabel.className = "sr-only"; // visually hidden but accessible
-  inputLabel.style.display = "none";  // at creation label is hidden
 
   const inputFormulation = document.createElement("input");
   inputFormulation.id = `user-ref-${spanEl.id}`;
@@ -512,12 +509,10 @@ function createSpanPopupDiv(spanEl) {
   editBtn.addEventListener("click", () => {
     if (inputFormulation.style.display == "none") {
       inputFormulation.style.display = "block";
-      inputLabel.style.display = "block";
       saveBtn.style.display = "block";
       revertChangeBtn.style.display = "block";
     } else {
       inputFormulation.style.display = "none";
-      inputLabel.style.display = "none";
       saveBtn.style.display = "none";
       revertChangeBtn.style.display = "none";
     }

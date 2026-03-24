@@ -17,7 +17,7 @@
 manual testing:
 
 - [x] Keyboard Navigation: Ensure you can navigate through the entire extension using only the Tab and Enter/Space keys. Check for a visible focus indicator so users know which element they are currently on.
-- [] Screen Reader Testing: Use a screen reader (like NVDA on Windows or VoiceOver on Mac) to verify that all interactive elements have clear, descriptive labels and that dynamic content updates are announced.
+- [x] Screen Reader Testing: Use a screen reader (like NVDA on Windows or VoiceOver on Mac) to verify that all interactive elements have clear, descriptive labels and that dynamic content updates are announced.
 - [x] Zoom and Resizing: Verify that the extension remains functional and readable when the browser or system zoom is set to 200%.
 - [x] Color and Contrast: Ensure text has a contrast ratio of at least 4.5:1 against its background. Use the [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) or built-in DevTools features to verify this.
 
