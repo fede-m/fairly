@@ -24,6 +24,15 @@
 
   /* States */
   --color-disabled: #c4c1c1;
+
+  /* logo */
+  --color-logo-bg: var(--color-primary-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-logo-bg: #fff;
+  }
 }
 
 .widget-div {
@@ -44,6 +53,7 @@
   object-fit: cover;
   object-position: center;
   border: 1.5px solid var(--color-primary);
+  background: var(--color-logo-bg);
 }
 
 .info-div {
