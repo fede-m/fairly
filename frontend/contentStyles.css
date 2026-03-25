@@ -26,13 +26,7 @@
   --color-disabled: #c4c1c1;
 
   /* logo */
-  --color-logo-bg: var(--color-primary-light);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-logo-bg: #fff;
-  }
+  --color-logo-bg: var(--color-white);
 }
 
 .widget-div {
