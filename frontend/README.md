@@ -23,13 +23,12 @@ manual testing:
 
 ##
 
-- [] ricontrolla i buttons
-- [] cambia azzurrino della barra in alto
+- [x] cambia azzurrino della barra in alto
 - [] scrivi in maniera più letterale le opzioni "shua"
 - [] pop-up con info sulle formulazioni: i per ogni opzione o singolo tasto sotto
-- [] keyboard flow non è funzionalissimo perchè il tab si blocca dentro le mail scritte
+- [x] keyboard flow non è funzionalissimo perchè il tab si blocca dentro le mail scritte (insolvibile)
 - [] testa con estensioni se lo screen reader legge solo facendo hovering
-- [] "accetta tutto" e "rifiuta tutto" ora ci sono sempre ma hanno display none. non va bene
+- [x] "accetta tutto" e "rifiuta tutto" ora ci sono sempre ma hanno display none. non va bene
 
 ### privacy policy 
 

@@ -209,6 +209,10 @@ function createInfoDiv() {
 
     const item = document.createElement("div");
     item.className = "checklist-item";
+    item.setAttribute(
+      "aria-label",
+      `Strategia inclusiva: ${labelText}. ${hasNested ? "Contiene opzioni selezionabili" : "Selezionabile direttamente"}`
+    );
 
     if (hasNested && (nestedOption.length > 0)) {
       // Create the item to contain arrow and label on the same line
@@ -221,7 +225,10 @@ function createInfoDiv() {
       const arrowBtn = document.createElement("button");
       arrowBtn.className = "arrow-btn";
       arrowBtn.innerHTML = arrowDownSVG;
-      arrowBtn.setAttribute("aria-label", `Espandi opzioni: ${labelText}`);
+      arrowBtn.setAttribute(
+        "aria-label",
+        `Espandi opzioni per la strategia: ${labelText}`
+      );
       arrowBtn.setAttribute("aria-expanded", "false")
       arrowBtn.style.cursor = "pointer";
       arrowBtn.style.marginRight = "8px";
@@ -241,6 +248,11 @@ function createInfoDiv() {
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = "none";
       nestedDiv.setAttribute("tabindex", "-1"); //to permit move focus on clicked options
+      nestedDiv.setAttribute("role", "group");
+      nestedDiv.setAttribute(
+        "aria-label",
+        `Opzioni per la strategia ${labelText}`
+      );
 
       // Loop through the possible options for the current strategy
       nestedOption.forEach((optText, idx) => {
@@ -252,6 +264,10 @@ function createInfoDiv() {
         nestedCheckbox.type = "checkbox";
         nestedCheckbox.className = "thickbox checklist-choice";
         nestedCheckbox.id = `${strategyName}-${idx}`
+        nestedCheckbox.setAttribute(
+          "aria-label",
+          `Opzione della strategia ${labelText}: ${optText}`
+        );
 
         if (defaultSelected == true && idx == 0) {
           nestedCheckbox.checked = true;
@@ -274,6 +290,10 @@ function createInfoDiv() {
           nestedDiv.focus();
           arrowBtn.innerHTML = arrowUpSVG;
           arrowBtn.setAttribute("aria-expanded", "true");
+          arrowBtn.setAttribute(
+            "aria-label",
+            `Comprimi opzioni per la strategia: ${labelText}`
+          );
 
           // Close all other nestedDiv
           const nestedDivs = document.querySelectorAll(".nested-checklist");
@@ -302,6 +322,10 @@ function createInfoDiv() {
           nestedDiv.style.display = "none";
           arrowBtn.innerHTML = arrowDownSVG;
           arrowBtn.setAttribute("aria-expanded", "false");
+          arrowBtn.setAttribute(
+            "aria-label",
+            `Espandi opzioni per la strategia: ${labelText}`
+          );
         }
       });
     } else {
