@@ -20,3 +20,19 @@ manual testing:
 - [x] Screen Reader Testing: Used linux mint default screen reader to test it. it works.
 - [x] Zoom and Resizing: Verify that the extension remains functional and readable when the browser or system zoom is set to 200%.
 - [x] Color and Contrast: Ensure text has a contrast ratio of at least 4.5:1 against its background.
+
+##
+
+- [] ricontrolla i buttons
+- [] cambia azzurrino della barra in alto
+- [] scrivi in maniera più letterale le opzioni "shua"
+- [] pop-up con info sulle formulazioni: i per ogni opzione o singolo tasto sotto
+- [] keyboard flow non è funzionalissimo perchè il tab si blocca dentro le mail scritte
+- [] testa con estensioni se lo screen reader legge solo facendo hovering
+- [] "accetta tutto" e "rifiuta tutto" ora ci sono sempre ma hanno display none. non va bene
+
+### privacy policy 
+
+- [] verificare ad una ad una le permission date all'estensione e perchè servono
+- [] privacy notice
+- [] encription e decription dei dati
