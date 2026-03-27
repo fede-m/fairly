@@ -32,6 +32,19 @@ manual testing:
 
 ### privacy policy 
 
-- [] verificare ad una ad una le permission date all'estensione e perchè servono
+- [x] verificare ad una ad una le permission date all'estensione e perchè servono
 - [] privacy notice
 - [] encription e decription dei dati
+
+permissions test: removing all permissions caused no error.
+Possibly because 
+```
+"host_permissions": [
+    "https://mail.google.com/*",
+    "https://docs.google.com/*"
+  ],
+```
+already gives the needed permission to read data and run code.
+
+the permission "storage" was kept because it will be needed to store local data
+or id, but at the current stage could be removed.
