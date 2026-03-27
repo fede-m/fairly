@@ -243,6 +243,7 @@ function createInfoDiv() {
       const nestedDiv = document.createElement("div");
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = "none";
+      nestedDiv.setAttribute("tabindex", "-1"); //to permit move focus on clicked options
 
       // Loop through the possible options for the current strategy
       nestedOption.forEach((optText, idx) => {
@@ -273,6 +274,7 @@ function createInfoDiv() {
 
         if (nestedDiv.style.display == "none") {
           nestedDiv.style.display = "flex";
+          nestedDiv.focus();
           arrowBtn.innerHTML = arrowUpSVG;
           arrowBtn.setAttribute("aria-expanded", "true");
 
