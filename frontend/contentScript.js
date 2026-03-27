@@ -173,14 +173,11 @@ function createInfoDiv() {
 
   /* -----------------  infoDiv content ----------------- */
   // Add tab bar at the top of the div with widget title 
-  const tabBar = document.createElement("div");
-  tabBar.className = "top-bar";
   const logo = document.createElement("img");
-  logo.src = chrome.runtime.getURL("fairly_logo_complete.png");
+  logo.src = chrome.runtime.getURL("logo_merge2.png");
   logo.className = "fairly-logo-complete";
   logo.alt = "Fairly";
-  tabBar.appendChild(logo);
-  infoDiv.appendChild(tabBar);
+  infoDiv.appendChild(logo);
 
   // Add text 
   const paragraph = document.createElement("p");
