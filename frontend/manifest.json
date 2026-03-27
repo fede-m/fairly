@@ -4,10 +4,7 @@
   "version": "0.1.0",
   "description": "Check your text and detect non-inclusive language in your Google products",
   "permissions": [
-    "storage",
-    "tabs",
-    "activeTab",
-    "scripting"
+    "storage"
   ],
   "host_permissions": [
     "https://mail.google.com/*",
