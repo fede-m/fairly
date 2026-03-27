@@ -360,6 +360,7 @@ function createInfoDiv() {
   acceptAllBtn.id = "accept-all";
   acceptAllBtn.className = "accept-all-btn";
   acceptAllBtn.textContent = 'Accetta tutto';
+  acceptAllBtn.inert = true; /*prevents accessibility tree*/
   acceptAllBtn.style.display = "none";
   acceptAllBtn.setAttribute("aria-hidden", "true");
   acceptAllBtn.addEventListener("click", () => {
@@ -370,6 +371,7 @@ function createInfoDiv() {
   refuseAllBtn.id = "refuse-all";
   refuseAllBtn.className = "refuse-all-btn";
   refuseAllBtn.textContent = "Rifiuta tutto";
+  refuseAllBtn.inert = true; /*prevents accessibility tree*/
   refuseAllBtn.style.display = "none";
   refuseAllBtn.setAttribute("aria-hidden", "true");
   refuseAllBtn.addEventListener("click", () => {
@@ -694,6 +696,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       acceptBtn.removeAttribute("aria-hidden");
       refuseBtn.style.display = "block";
       refuseBtn.removeAttribute("aria-hidden");
+      /* removing inert inserts into accessibility focus and permits interaction */
+      acceptBtn.inert = false;
+      refuseBtn.inert = false;
       btnWrapper.style.justifyContent = "space-between";
 
       // Remove existing success messages
@@ -735,6 +740,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       acceptBtn.setAttribute("aria-hidden", "true");
       refuseBtn.style.display = "none";
       refuseBtn.setAttribute("aria-hidden", "true");
+      acceptBtn.inert = true;
+      refuseBtn.inert = true;
       btnWrapper.style.justifyContent = "flex-end";
 
     }
