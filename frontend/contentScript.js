@@ -65,6 +65,22 @@ function initializeSession() {
 }
 
 
+function setLoadingState(isLoading) {
+  const analyzeBtn = document.getElementById("analyze");
+
+  if (!analyzeBtn) return;
+
+  if (isLoading) {
+    analyzeBtn.disabled = true;
+    analyzeBtn.dataset.originalText = analyzeBtn.textContent;
+    analyzeBtn.innerHTML = `Analisi in corso <span class="spinner"></span>`;
+    document.getElementById("fairly-live").textContent = "Analisi in corso...";
+  } else {
+    analyzeBtn.disabled = false;
+    analyzeBtn.innerHTML = analyzeBtn.dataset.originalText || "Analizza";
+  }
+}
+
 function startAnalysis() {
   // TODO: Store interaction (selected strategy) in MongoDB
   // TODO: Add loading animation while waiting for the model response
@@ -101,6 +117,7 @@ function startAnalysis() {
       const selected = document.querySelector(".checklist-choice:checked");
 
       if (!selected) {
+        setLoadingState(false);
         console.warn("No strategy selected!");
         return;
       }
@@ -409,8 +426,8 @@ function createInfoDiv() {
 
   // Start analysis when clicking on analyze button
   analyzeButton.addEventListener("click", () => {
+    setLoadingState(true);
     startAnalysis();
-
   });
 
 
@@ -689,6 +706,7 @@ function initExtension() {
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
+    setLoadingState(false);
     console.log(msg.payload);
     const response = msg.payload;
 
@@ -728,7 +746,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Remove existing success messages
       const existingMsg = document.getElementById("no-span-message");
       if (existingMsg) existingMsg.remove();
-
+      document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
     } else {
       // Remove existing success messages
       const existingPopup = document.getElementById("no-span-message");
