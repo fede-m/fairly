@@ -62,7 +62,7 @@
   background: var(--color-white);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  padding: 36px 16px 16px 16px;
+  padding: 12px 16px 16px 16px;
   z-index: 10000;
   display: none;
   min-height: 300px;
@@ -73,34 +73,20 @@
 .info-div p {
   font-size: 16px;
   color: var(--color-primary);
-  margin: 25px 0 8px 0;
+  margin: 8px 0 8px 0;
   font-weight: bold;
   text-align: center;
 }
 
-.top-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  align-content: center;
-  background-color: var(--color-logo-bar);
-  padding: 6px 10px;
-  border-radius: 6px 6px 0 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
 .fairly-logo-complete {
-  height: clamp(20px, 4vw, 32px);
+  display: block;
+  margin: 0 auto 4px auto;
+  height: clamp(24px, 4vw, 42px);
   /* scales with viewport/zoom, capped */
   width: auto;
   /* preserves aspect ratio */
   max-width: 70%;
   /* never overflows the bar horizontally */
-  display: block;
-  filter: drop-shadow(0 0 3px rgba(0, 219, 241, 0.5))
 }
 
 /* Check list options */
