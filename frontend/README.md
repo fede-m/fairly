@@ -30,7 +30,7 @@ manual testing:
 - [x] testa con estensioni se lo screen reader legge solo facendo hovering (non lo fanno)
 - [x] "accetta tutto" e "rifiuta tutto" ora ci sono sempre ma hanno display none. non va bene
 - [x] animazione caricamento dopo aver premuto analizza
-- [] verify pop up messages are all solid. unify their logic. check if there are federica's messages left over
+- [x] verify pop up messages are all solid. unify their logic. check if there are federica's messages left over
 
 ### privacy policy 
 
