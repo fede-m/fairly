@@ -179,10 +179,6 @@ function startAnalysis() {
           payload: dataObj,
         })
     } else {
-      // Remove existing warning popup
-      const existingWarning = document.getElementById("warning-msg");
-      if (existingWarning) existingWarning.remove()
-
       // Create new warning popup
       const btnWrapper = document.getElementById("info-btn-wrapper");
       showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
@@ -815,15 +811,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       refuseBtn.inert = false;
       btnWrapper.style.justifyContent = "space-between";
 
-      // Remove existing success messages
-      const existingMsg = document.getElementById("no-span-message");
-      if (existingMsg) existingMsg.remove();
+      // Remove existing messages
+      clearAllPopups()
       document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
     } else {
-      // Remove existing success messages
-      const existingPopup = document.getElementById("no-span-message");
-      if (existingPopup) existingPopup.remove()
-
       // Create new success message
       showPopup("success", "Nessuno span unfair trovato, ottimo lavoro!", "no-span-message", btnWrapper);
 
