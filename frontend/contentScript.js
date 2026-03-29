@@ -138,15 +138,14 @@ function startAnalysis() {
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
   discard();
+
   if (currentLocation.startsWith("https://mail.google.com/")) {
+    // remove pop-ups
+    clearAllPopups()
     // Select all elements on the page which are editable (the open emails) 
     const editableElements = document.querySelectorAll('[contenteditable="true"]');
     // Check if there are open emails 
     if (editableElements.length > 0) {
-
-      // Remove existing warning popup
-      const existingWarning = document.getElementById("warning-msg");
-      if (existingWarning) existingWarning.remove()
 
       // Store editable elements with their text content 
       const dataObj = {};
@@ -176,10 +175,6 @@ function startAnalysis() {
         payload: dataObj,
       })
     } else {
-      // Remove existing warning popup
-      const existingWarning = document.getElementById("warning-msg");
-      if (existingWarning) existingWarning.remove()
-
       // Create new warning popup
       const btnWrapper = document.getElementById("info-btn-wrapper");
       showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
@@ -744,15 +739,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       refuseBtn.inert = false;
       btnWrapper.style.justifyContent = "space-between";
 
-      // Remove existing success messages
-      const existingMsg = document.getElementById("no-span-message");
-      if (existingMsg) existingMsg.remove();
+      // Remove existing messages
+      clearAllPopups()
       document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
     } else {
-      // Remove existing success messages
-      const existingPopup = document.getElementById("no-span-message");
-      if (existingPopup) existingPopup.remove()
-
       // Create new success message
       showPopup("success", "Nessuno span unfair trovato, ottimo lavoro!", "no-span-message", btnWrapper);
 
