@@ -117,6 +117,24 @@ function showPopup(type, message, id, container) {
   document.getElementById("fairly-live").textContent = message;
 }
 
+function setResultButtons(visible) {
+  const acceptBtn = document.getElementById("accept-all");
+  const refuseBtn = document.getElementById("refuse-all");
+  const display = visible ? "block" : "none";
+  const hidden = !visible;
+
+  [acceptBtn, refuseBtn].forEach(btn => {
+    btn.style.display = display;
+    btn.inert = hidden;
+    hidden
+      ? btn.setAttribute("aria-hidden", "true")
+      : btn.removeAttribute("aria-hidden");
+  });
+
+  document.getElementById("info-btn-wrapper").style.justifyContent =
+    visible ? "space-between" : "flex-end";
+}
+
 function startAnalysis() {
   // TODO: Store interaction (selected strategy) in MongoDB
   // TODO: Add loading animation while waiting for the model response
@@ -435,6 +453,12 @@ function createInfoDiv() {
   return infoDiv;
 }
 
+/* helper for the spanpopupdiv */
+function setSpanText(spanEl, value) {
+  const textNode = Array.from(spanEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+  if (textNode) textNode.nodeValue = value;
+  else spanEl.insertBefore(document.createTextNode(value), spanEl.firstChild);
+}
 
 function createSpanPopupDiv(spanEl) {
   /**
@@ -498,12 +522,8 @@ function createSpanPopupDiv(spanEl) {
     if (input) {
       spanEl.dataset.userContent = input;
       spanEl.dataset.currentUsed = input;
-      const textNode = Array.from(spanEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-      if (textNode) {
-        textNode.nodeValue = input;
-      } else {
-        spanEl.insertBefore(document.createTextNode(input), spanEl.firstChild)
-      }
+
+      setSpanText(spanEl, input);
       // Clean the input formulation
       inputFormulation.value = "";
 
@@ -522,12 +542,7 @@ function createSpanPopupDiv(spanEl) {
     const refValue = spanEl.dataset.reformulation;
     if (refValue) {
       spanEl.dataset.currentUsed = refValue;
-      const textNode = Array.from(spanEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-      if (textNode) {
-        textNode.nodeValue = refValue;
-      } else {
-        spanEl.insertBefore(document.createTextNode(refValue), spanEl.firstChild);
-      }
+      setSpanText(spanEl, spanEl.dataset.reformulation);
     }
   });
 
@@ -721,40 +736,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 
     /* ------------- Update buttons content ------------- */
-    const refuseBtn = document.getElementById("refuse-all");
-    const acceptBtn = document.getElementById("accept-all");
-    const analyzeBtn = document.getElementById("analyze");
     const btnWrapper = document.getElementById("info-btn-wrapper");
 
     if (hasSpans) {
-      // Make Refuse All and Accept All buttons clickable 
-      analyzeBtn.innerHTML = ICONS.analyse;
-      analyzeBtn.setAttribute("aria-label", "Analizza");
-      acceptBtn.style.display = "block";
-      acceptBtn.removeAttribute("aria-hidden");
-      refuseBtn.style.display = "block";
-      refuseBtn.removeAttribute("aria-hidden");
-      /* removing inert inserts into accessibility focus and permits interaction */
-      acceptBtn.inert = false;
-      refuseBtn.inert = false;
-      btnWrapper.style.justifyContent = "space-between";
-
+      setResultButtons(true);
       // Remove existing messages
       clearAllPopups()
       document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
     } else {
       // Create new success message
       showPopup("success", "Nessuno span unfair trovato, ottimo lavoro!", "no-span-message", btnWrapper);
-
       // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
-      acceptBtn.style.display = "none";
-      acceptBtn.setAttribute("aria-hidden", "true");
-      refuseBtn.style.display = "none";
-      refuseBtn.setAttribute("aria-hidden", "true");
-      acceptBtn.inert = true;
-      refuseBtn.inert = true;
-      btnWrapper.style.justifyContent = "flex-end";
-
+      setResultButtons(false);
     }
   }
 });
