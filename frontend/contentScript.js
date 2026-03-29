@@ -39,28 +39,42 @@ function emailEndsWithAllowedDomain() {
 function initializeSession() {
   // Get user email
   const meta = document.getElementsByName("og-profile-acct");
-  if (meta && meta.length) {
-    USER_EMAIL = meta[0].content;
+
+  if (!meta || !meta.length) {
+    console.warn("Could not find user email meta tag.");
+    return false;
   }
+
+  USER_EMAIL = meta[0].content;
   if (!emailEndsWithAllowedDomain()) {
     console.warn("Not a valid domain!");
     return false;
   }
 
-    // Get session ID
-    SESSION_ID = crypto.randomUUID();
-    
-    // Get strategies order
+  // Get session ID with failure guard for older systems
+  SESSION_ID = typeof crypto?.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  console.log(SESSION_ID);
+
+
+  // Get strategies order
+  try {
     const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
-    if (strategyOrder){
-        STRATEGY_ORDER = JSON.parse(strategyOrder);
+    if (strategyOrder) {
+      STRATEGY_ORDER = JSON.parse(strategyOrder);
     } else {
-        const strategies = Object.keys(STRATEGIES);
-        const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
-        localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
-        STRATEGY_ORDER =randomizedOrder;
+      const strategies = Object.keys(STRATEGIES);
+      const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5);
+      localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
+      STRATEGY_ORDER = randomizedOrder;
     }
-    return true;
+  } catch (e) {
+    console.warn("localStorage unavailable, using random strategy order.", e);
+    STRATEGY_ORDER = Object.keys(STRATEGIES).sort(() => Math.random() - 0.5);
+  }
+
+  return true;
 }
 
 
@@ -277,14 +291,13 @@ function createInfoDiv() {
      * @returns {HTMLDivElement} The checklist item element
      */
 
+    const item = document.createElement("div");
 
-    // Check that the strategy name is correct 
-    if (strategyName === null || (strategyName != null && !Object.keys(STRATEGIES).includes(strategyName))) {
-      console.warn("createChecklistItem: invalid strategyName", strategyName)
-      return item
+    if (!strategyName || !Object.keys(STRATEGIES).includes(strategyName)) {
+      console.warn("createChecklistItem: invalid strategyName", strategyName);
+      return item;
     }
 
-    const item = document.createElement("div");
     item.className = "checklist-item";
     item.setAttribute(
       "aria-label",
