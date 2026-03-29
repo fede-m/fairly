@@ -108,7 +108,7 @@ function showPopup(type, message, id, container) {
   const popup = document.createElement("div");
   popup.id = id;
   popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
-  popup.setAttribute("role", type === "success" ? "status" : "alert");
+  // popup.setAttribute("role", type === "success" ? "status" : "alert");
 
   const msg = document.createElement("span");
   msg.textContent = message;
