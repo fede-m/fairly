@@ -337,7 +337,9 @@ function createInfoDiv() {
               btn.setAttribute("aria-expanded", "false");
             }
           });
-          nestedDiv.querySelector('input[type="radio"]')?.focus();
+          const firstRadio = nestedDiv.querySelector('input[type="radio"]');
+          firstRadio?.focus();
+          firstRadio?.click();
         }
       });
     } else {
