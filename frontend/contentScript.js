@@ -201,6 +201,31 @@ function startAnalysis() {
   };
 }
 
+function createRadio(id, ariaLabel, defaultChecked = false) {
+  const input = document.createElement("input");
+  input.type = "radio";
+  input.name = "strategy";
+  input.className = "thickbox checklist-choice";
+  input.id = id;
+  input.setAttribute("aria-label", ariaLabel);
+  input.checked = defaultChecked;
+  return input;
+}
+
+function collapseAllNested(exceptDiv, exceptBtn) {
+  document.querySelectorAll(".nested-checklist").forEach(div => {
+    if (div === exceptDiv) return;
+    div.style.display = "none";
+    div.setAttribute("aria-hidden", "true");
+    div.querySelectorAll('input[type="radio"]').forEach(r => { r.tabIndex = -1; });
+  });
+  document.querySelectorAll(".arrow-btn").forEach(btn => {
+    if (btn === exceptBtn) return;
+    btn.innerHTML = ICONS.arrowDown;
+    btn.setAttribute("aria-expanded", "false");
+  });
+}
+
 function createInfoDiv() {
   /**
    * Creates the main info panel that appears when clicking on the widget.
@@ -311,21 +336,12 @@ function createInfoDiv() {
 
         // Create label and checkbox for option
         const nestedLabel = document.createElement("label");
-        const nestedCheckbox = document.createElement("input");
-
-        nestedCheckbox.type = "radio";
-        nestedCheckbox.name = "strategy";
-        nestedCheckbox.className = "thickbox checklist-choice";
-        nestedCheckbox.id = `${strategyName}-${idx}`
-        nestedCheckbox.setAttribute(
-          "aria-label",
-          `Opzione della strategia ${labelText}: ${optText}`
+        const nestedCheckbox = createRadio(
+          `${strategyName}-${idx}`,
+          `Opzione della strategia ${labelText}: ${optText}`,
+          defaultSelected && idx === 0
         );
-        nestedCheckbox.tabIndex = "-1"; // otherways skipped in keyboard flow
-
-        if (defaultSelected == true && idx == 0) {
-          nestedCheckbox.checked = true;
-        }
+        nestedCheckbox.tabIndex = -1;
 
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
@@ -352,19 +368,7 @@ function createInfoDiv() {
 
         if (isExpanding) {
           // Close other nested divs
-          document.querySelectorAll(".nested-checklist").forEach((div) => {
-            if (div !== nestedDiv) {
-              div.style.display = "none";
-              div.setAttribute("aria-hidden", "true");
-              div.querySelectorAll('input[type="radio"]').forEach(r => r.tabIndex = -1);
-            }
-          });
-          document.querySelectorAll(".arrow-btn").forEach(btn => {
-            if (btn !== arrowBtn) {
-              btn.innerHTML = arrowDownSVG;
-              btn.setAttribute("aria-expanded", "false");
-            }
-          });
+          collapseAllNested(nestedDiv, arrowBtn);
           const firstRadio = nestedDiv.querySelector('input[type="radio"]');
           firstRadio?.focus();
           firstRadio?.click();
@@ -372,16 +376,7 @@ function createInfoDiv() {
       });
     } else {
       const label = document.createElement("label");
-      const checkbox = document.createElement("input");
-
-      checkbox.type = "radio";
-      checkbox.name = "strategy";
-      checkbox.className = "thickbox checklist-choice";
-      checkbox.id = strategyName;
-      checkbox.setAttribute(
-        "aria-label",
-        `Strategia inclusiva: ${labelText}`
-      );
+      const checkbox = createRadio(strategyName, `Strategia inclusiva: ${labelText}`);
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
