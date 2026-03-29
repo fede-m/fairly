@@ -1,15 +1,15 @@
 /**
-     * Highlights detected unfair spans within a contenteditable div and replaces them with inclusive reformulations.
-     * Removes any existing highlights first, then walks through all text nodes to find and wrap
-     * matching text ranges in styled span elements. Each highlighted span:
-     * - Displays the AI-suggested reformulation instead of the original text
-     * - Stores original text and reformulation in data attributes
-     * - Has an attached popup (via createSpanPopupDiv) for user interaction
-     * - Is positioned intelligently to avoid viewport overflow
-     * @param {HTMLDivElement} div - The contenteditable element containing the email text
-     * @param {Array<{start_char: number, end_char: number, reformulation: string}>} spans - Array of span objects with character positions and suggested reformulations
-     * @returns {void}
-     */
+* Highlights detected unfair spans within a contenteditable div and replaces them with inclusive reformulations.
+* Removes any existing highlights first, then walks through all text nodes to find and wrap
+* matching text ranges in styled span elements. Each highlighted span:
+* - Displays the AI-suggested reformulation instead of the original text
+* - Stores original text and reformulation in data attributes
+* - Has an attached popup (via createSpanPopupDiv) for user interaction
+* - Is positioned intelligently to avoid viewport overflow
+* @param {HTMLDivElement} div - The contenteditable element containing the email text
+* @param {Array<{start_char: number, end_char: number, reformulation: string}>} spans - Array of span objects with character positions and suggested reformulations
+* @returns {void}
+*/
 
 function highlightSpans(div, spans) {
 
@@ -112,75 +112,15 @@ function highlightSpans(div, spans) {
 
           if (isVisible) {
             spanDiv.style.display = "none";
+            spanDiv.style.visibility = "hidden";
           } else {
             // Append to body if not already present
             if (!document.body.contains(spanDiv)) {
               document.body.appendChild(spanDiv);
             }
 
-            spanDiv.style.visibility = "hidden";
-            spanDiv.style.display = "block";
+            positionPopup(spanDiv, spanEl)
             spanDiv.focus();
-
-            void spanDiv.offsetHeight;
-
-            // Get spanDiv dimensions (now that it's rendered)
-            const popupWidth = spanDiv.offsetWidth;
-            const popupHeight = spanDiv.offsetHeight;
-            const rects = spanEl.getClientRects();
-
-            let startRect;
-            if (rects.length > 0) {
-              startRect = rects[0];
-            } else {
-              startRect = spanEl.getBoundingClientRect();
-            }
-            // Get viewport dimensions
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            // Add a small gap below the span
-            const GAP = 6;
-
-            // Calculate initial position (below the span start)
-            let left = startRect.left + window.scrollX;
-            let top = startRect.bottom + window.scrollY + GAP;
-
-            // --- Horizontal overflow prevention ---
-            // If popup would overflow right edge of viewport
-            if (left + popupWidth > viewportWidth + window.scrollX) {
-              // Align popup's right edge with span's right edge
-              left = startRect.right + window.scrollX - popupWidth;
-
-              // If still overflowing left edge, clamp to left edge
-              if (left < window.scrollX) {
-                left = window.scrollX + 8; // 8px padding from edge
-              }
-            }
-            // Ensure it doesn't overflow left edge
-            if (left < window.scrollX) {
-              left = window.scrollX + 8;
-            }
-
-            // --------------- Vertical overflow prevention ---------------
-            // If popup would overflow bottom of viewport
-            if (top + popupHeight > viewportHeight + window.scrollY) {
-              // Try to place it above the span instead
-              const topAbove = startRect.top + window.scrollY - popupHeight - GAP;
-
-              if (topAbove >= window.scrollY) {
-                // There's room above
-                top = topAbove;
-              } else {
-                // Not enough room above either, clamp to bottom with padding
-                top = viewportHeight + window.scrollY - popupHeight - 8;
-              }
-            }
-            // Apply final position
-            spanDiv.style.left = `${left}px`;
-
-            spanDiv.style.top = `${top}px`;
-            spanDiv.style.visibility = "visible";
           }
         })
       } else if (part.text) {
@@ -190,4 +130,44 @@ function highlightSpans(div, spans) {
     node.replaceWith(frag);
     charIndex += nodeText.length;
   });
+}
+
+/* helper function to position */
+function positionPopup(spanDiv, spanEl) {
+  spanDiv.style.visibility = "hidden";
+  spanDiv.style.display = "block";
+
+  // Force reflow to get accurate dimensions before positioning
+  void spanDiv.offsetHeight;
+
+  const popupWidth = spanDiv.offsetWidth;
+  const popupHeight = spanDiv.offsetHeight;
+  const rects = spanEl.getClientRects();
+  const startRect = rects.length > 0 ? rects[0] : spanEl.getBoundingClientRect();
+
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const GAP = 6;
+
+  let left = startRect.left + window.scrollX;
+  let top = startRect.bottom + window.scrollY + GAP;
+
+  // Horizontal overflow prevention
+  if (left + popupWidth > viewportWidth + window.scrollX) {
+    left = startRect.right + window.scrollX - popupWidth;
+    if (left < window.scrollX) left = window.scrollX + 8;
+  }
+  if (left < window.scrollX) left = window.scrollX + 8;
+
+  // Vertical overflow prevention
+  if (top + popupHeight > viewportHeight + window.scrollY) {
+    const topAbove = startRect.top + window.scrollY - popupHeight - GAP;
+    top = topAbove >= window.scrollY
+      ? topAbove
+      : viewportHeight + window.scrollY - popupHeight - 8;
+  }
+
+  spanDiv.style.left = `${left}px`;
+  spanDiv.style.top = `${top}px`;
+  spanDiv.style.visibility = "visible";
 }
