@@ -27,7 +27,7 @@ manual testing:
 - [] scrivi in maniera più letterale le opzioni "shua"
 - [] pop-up con info sulle formulazioni: i per ogni opzione o singolo tasto sotto
 - [x] keyboard flow non è funzionalissimo perchè il tab si blocca dentro le mail scritte (insolvibile)
-- [] testa con estensioni se lo screen reader legge solo facendo hovering
+- [x] testa con estensioni se lo screen reader legge solo facendo hovering (non lo fanno)
 - [x] "accetta tutto" e "rifiuta tutto" ora ci sono sempre ma hanno display none. non va bene
 - [x] animazione caricamento dopo aver premuto analizza
 - [] verify pop up messages are all solid. unify their logic. check if there are federica's messages left over

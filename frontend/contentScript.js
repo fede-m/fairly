@@ -80,6 +80,43 @@ function setLoadingState(isLoading) {
   }
 }
 
+function clearAllPopups() {
+  ["warning-msg", "no-span-message"].forEach(id => {
+    document.getElementById(id)?.remove();
+  });
+}
+
+function showPopup(type, message, id, container) {
+  clearAllPopups()
+
+  container.style.position = "relative";
+
+  const popup = document.createElement("div");
+  popup.id = id;
+  popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
+  popup.setAttribute("role", type === "success" ? "status" : "alert");
+
+  const msg = document.createElement("span");
+  msg.textContent = message;
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "popup-close-btn";
+  closeBtn.innerHTML = ICONS.close;
+  closeBtn.setAttribute("aria-label", "Chiudi messaggio");
+  closeBtn.addEventListener("click", () => {
+    popup.remove();
+    document.getElementById("fairly-live").textContent = "";
+  });
+
+  console.log("btnWrapper found:", container);
+
+  popup.appendChild(msg);
+  popup.appendChild(closeBtn);
+  container.appendChild(popup);
+
+  document.getElementById("fairly-live").textContent = message;
+}
+
 function startAnalysis() {
   // TODO: Store interaction (selected strategy) in MongoDB
   // TODO: Add loading animation while waiting for the model response
@@ -147,28 +184,9 @@ function startAnalysis() {
       if (existingWarning) existingWarning.remove()
 
       // Create new warning popup
-      const warningPopup = document.createElement("div");
-      warningPopup.className = "warning-popup message-popup";
-      warningPopup.id = "warning-msg";
-
-      const warningMsg = document.createElement("span");
-      warningMsg.textContent = "Non ci sono mail da analizzare!";
-      document.getElementById("fairly-live").textContent = "Non ci sono mail da analizzare.";
-
-      const closeBtn = document.createElement("button");
-      closeBtn.innerHTML = ICONS.close;
-      closeBtn.className = "popup-close-btn";
-      closeBtn.setAttribute("aria-label", "Chiudi avviso");
-      closeBtn.addEventListener("click", () => {
-        warningPopup.remove();
-      })
-
-      warningPopup.appendChild(warningMsg);
-      warningPopup.appendChild(closeBtn);
-
-      // Get button wrapper
       const btnWrapper = document.getElementById("info-btn-wrapper");
-      btnWrapper.appendChild(warningPopup);
+      showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
+      setLoadingState(false);
     }
   };
 }
@@ -807,29 +825,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (existingPopup) existingPopup.remove()
 
       // Create new success message
-      const successPopup = document.createElement("div");
-      successPopup.id = "no-span-message";
-      successPopup.className = "message-popup success-popup";
-
-      const successMsg = document.createElement("span");
-      successMsg.textContent = "Nessuno span unfair trovato, ottimo lavoro!";
-      document.getElementById("fairly-live").textContent = successMsg.textContent;
-
-      // Crete close btn
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "popup-close-btn";
-      closeBtn.innerHTML = ICONS.close;
-      closeBtn.setAttribute("aria-label", "Chiudi messaggio");
-      closeBtn.addEventListener("click", () => {
-        successPopup.remove();
-      });
-
-      successPopup.appendChild(successMsg);
-      successPopup.appendChild(closeBtn);
-
-      // Position relative to the btnWrapper
-      btnWrapper.style.position = "relative";
-      btnWrapper.appendChild(successPopup);
+      showPopup("success", "Nessuno span unfair trovato, ottimo lavoro!", "no-span-message", btnWrapper);
 
       // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
       acceptBtn.style.display = "none";
