@@ -24,7 +24,7 @@ manual testing:
 ##
 
 - [x] cambia azzurrino della barra in alto
-- [] scrivi in maniera più letterale le opzioni "shua"
+- [x] scrivi in maniera più letterale le opzioni "shua" (meglio non farlo -> se sono non vedente sono abituato all'internet normale, non a forme personalizzate)
 - [] pop-up con info sulle formulazioni: i per ogni opzione o singolo tasto sotto
 - [x] keyboard flow non è funzionalissimo perchè il tab si blocca dentro le mail scritte (insolvibile)
 - [x] testa con estensioni se lo screen reader legge solo facendo hovering (non lo fanno)
