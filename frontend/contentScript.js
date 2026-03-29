@@ -205,6 +205,8 @@ function createInfoDiv() {
   // Check-list container 
   const checklist = document.createElement("div");
   checklist.className = "checklist";
+  checklist.setAttribute("role", "radiogroup");
+  checklist.setAttribute("aria-label", "Seleziona una strategia inclusiva");
 
 
   function createChecklistItem(labelText, strategyName, hasNested, nestedOption = [], defaultSelected = false) {
@@ -267,8 +269,7 @@ function createInfoDiv() {
       const nestedDiv = document.createElement("div");
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = "none";
-      nestedDiv.setAttribute("tabindex", "-1"); //to permit move focus on clicked options
-      nestedDiv.setAttribute("role", "group");
+      nestedDiv.setAttribute("role", "radiogroup");
       nestedDiv.setAttribute(
         "aria-label",
         `Opzioni per la strategia ${labelText}`
@@ -281,7 +282,8 @@ function createInfoDiv() {
         const nestedLabel = document.createElement("label");
         const nestedCheckbox = document.createElement("input");
 
-        nestedCheckbox.type = "checkbox";
+        nestedCheckbox.type = "radio";
+        nestedCheckbox.name = "strategy";
         nestedCheckbox.className = "thickbox checklist-choice";
         nestedCheckbox.id = `${strategyName}-${idx}`
         nestedCheckbox.setAttribute(
@@ -292,11 +294,6 @@ function createInfoDiv() {
         if (defaultSelected == true && idx == 0) {
           nestedCheckbox.checked = true;
         }
-        nestedCheckbox.addEventListener("click", function () {
-          document.querySelectorAll(".checklist-choice").forEach(cb => {
-            cb.checked = cb === this;
-          });
-        });
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
         nestedDiv.appendChild(nestedLabel);
@@ -307,7 +304,6 @@ function createInfoDiv() {
 
         if (nestedDiv.style.display == "none") {
           nestedDiv.style.display = "flex";
-          nestedDiv.focus();
           arrowBtn.innerHTML = arrowUpSVG;
           arrowBtn.setAttribute("aria-expanded", "true");
           arrowBtn.setAttribute(
@@ -332,12 +328,6 @@ function createInfoDiv() {
             }
           })
 
-          // Check the first option of the current nested div
-          document.querySelectorAll(".checklist-choice").forEach(cb => {
-            cb.checked = false;
-          });
-          nestedDiv.firstChild.firstChild.checked = true;
-
         } else {
           nestedDiv.style.display = "none";
           arrowBtn.innerHTML = arrowDownSVG;
@@ -351,22 +341,19 @@ function createInfoDiv() {
     } else {
       const label = document.createElement("label");
       const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
+
+      checkbox.type = "radio";
+      checkbox.name = "strategy";
       checkbox.className = "thickbox checklist-choice";
+      checkbox.id = strategyName;
+      checkbox.setAttribute(
+        "aria-label",
+        `Strategia inclusiva: ${labelText}`
+      );
+
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
       item.appendChild(label);
-      checkbox.addEventListener("change", function () {
-        // Check if the current checkbox is selected 
-        if (this.checked) {
-          // Unselect all other checkboxes 
-          document.querySelectorAll(".checklist-choice").forEach(cb => {
-            if (cb !== this) {
-              cb.checked = false;
-            };
-          });
-        }
-      })
     }
     return item;
   }
@@ -385,11 +372,6 @@ function createInfoDiv() {
         defaultSelected
       ));
   })
-
-  // checklist.appendChild(createChecklistItem("Doppia forma (M/F)", STRATEGIES.CV, true, ["gli studenti e le studenti", "i/le studenti"], true)); 
-  // checklist.appendChild(createChecklistItem("Nome astratto", STRATEGIES.CO, true, ["la comunità studentesca"], false)); 
-  // checklist.appendChild(createChecklistItem("Forme innovative", STRATEGIES.IO, true, ["l* student*", "l@ student@", "lx studentx", "lu studentu", "lə studentə"], false)); 
-  // checklist.appendChild(createChecklistItem("Tripla forma (M/F/N)", STRATEGIES.IV, true, ["gli studenti, le studenti e l* student*", "gli/le/l* student*"], false)); 
 
   /* -------------- Create buttons ----------------------------- */
   const buttonWrapper = document.createElement("div");
