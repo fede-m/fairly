@@ -362,7 +362,10 @@ function createInfoDiv() {
       });
       item.appendChild(nestedDiv);
       // Show/hide nested options on parent 
-      arrowBtn.addEventListener("click", () => {
+      // Remove cursor from arrowBtn, let container handle it
+      arrowBtn.style.pointerEvents = "none";
+      container.style.cursor = "pointer";
+      container.addEventListener("click", () => {
         const isExpanding = nestedDiv.style.display === "none";
         nestedDiv.style.display = isExpanding ? "flex" : "none";
         nestedDiv.setAttribute("aria-hidden", !isExpanding ? "true" : "false");
@@ -373,7 +376,7 @@ function createInfoDiv() {
         });
 
         arrowBtn.innerHTML = isExpanding ? arrowUpSVG : arrowDownSVG;
-        arrowBtn.setAttribute("aria-expanded", String(isExpanding));
+        arrowBtn.setAttribute("aria-expanded", isExpanding ? "true" : "false");
         arrowBtn.setAttribute(
           "aria-label",
           `${isExpanding ? "Comprimi" : "Espandi"} opzioni per la strategia: ${labelText}`
