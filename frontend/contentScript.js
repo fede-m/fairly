@@ -225,7 +225,7 @@ function createInfoDiv() {
     // Check that the strategy name is correct 
     if (strategyName === null || (strategyName != null && !Object.keys(STRATEGIES).includes(strategyName))) {
       console.warn("createChecklistItem: invalid strategyName", strategyName)
-      strategyName = ""
+      return item
     }
 
     const item = document.createElement("div");
@@ -269,6 +269,7 @@ function createInfoDiv() {
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = "none";
       nestedDiv.setAttribute("role", "radiogroup");
+      nestedDiv.setAttribute("aria-hidden", "true");
       nestedDiv.setAttribute(
         "aria-label",
         `Opzioni per la strategia ${labelText}`
@@ -289,52 +290,51 @@ function createInfoDiv() {
           "aria-label",
           `Opzione della strategia ${labelText}: ${optText}`
         );
+        nestedCheckbox.tabIndex = "-1"; // otherways skipped in keyboard flow
 
         if (defaultSelected == true && idx == 0) {
           nestedCheckbox.checked = true;
         }
+
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
         nestedDiv.appendChild(nestedLabel);
       });
       item.appendChild(nestedDiv);
       // Show/hide nested options on parent 
-      container.addEventListener("click", () => {
+      arrowBtn.addEventListener("click", () => {
+        const isExpanding = nestedDiv.style.display === "none";
+        nestedDiv.style.display = isExpanding ? "flex" : "none";
+        nestedDiv.setAttribute("aria-hidden", !isExpanding ? "true" : "false");
 
-        if (nestedDiv.style.display == "none") {
-          nestedDiv.style.display = "flex";
-          arrowBtn.innerHTML = arrowUpSVG;
-          arrowBtn.setAttribute("aria-expanded", "true");
-          arrowBtn.setAttribute(
-            "aria-label",
-            `Comprimi opzioni per la strategia: ${labelText}`
-          );
+        // Toggle keyboard accessibility
+        nestedDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+          radio.tabIndex = isExpanding ? 0 : -1;
+        });
 
-          // Close all other nestedDiv
-          const nestedDivs = document.querySelectorAll(".nested-checklist");
-          nestedDivs.forEach((div) => {
+        arrowBtn.innerHTML = isExpanding ? arrowUpSVG : arrowDownSVG;
+        arrowBtn.setAttribute("aria-expanded", String(isExpanding));
+        arrowBtn.setAttribute(
+          "aria-label",
+          `${isExpanding ? "Comprimi" : "Espandi"} opzioni per la strategia: ${labelText}`
+        );
+
+        if (isExpanding) {
+          // Close other nested divs
+          document.querySelectorAll(".nested-checklist").forEach((div) => {
             if (div !== nestedDiv) {
               div.style.display = "none";
+              div.setAttribute("aria-hidden", "true");
+              div.querySelectorAll('input[type="radio"]').forEach(r => r.tabIndex = -1);
             }
-          })
-
-          // Change the arrow buttons
-          const arrowBtns = document.querySelectorAll(".arrow-btn");
-          arrowBtns.forEach((arrow) => {
-            if (arrow !== arrowBtn) {
-              arrow.innerHTML = arrowDownSVG;
-              arrow.setAttribute("aria-expanded", "false");
+          });
+          document.querySelectorAll(".arrow-btn").forEach(btn => {
+            if (btn !== arrowBtn) {
+              btn.innerHTML = arrowDownSVG;
+              btn.setAttribute("aria-expanded", "false");
             }
-          })
-
-        } else {
-          nestedDiv.style.display = "none";
-          arrowBtn.innerHTML = arrowDownSVG;
-          arrowBtn.setAttribute("aria-expanded", "false");
-          arrowBtn.setAttribute(
-            "aria-label",
-            `Espandi opzioni per la strategia: ${labelText}`
-          );
+          });
+          nestedDiv.querySelector('input[type="radio"]')?.focus();
         }
       });
     } else {
