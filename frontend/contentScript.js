@@ -39,7 +39,7 @@ function emailEndsWithAllowedDomain() {
 function initializeSession() {
   // Get user email
   const meta = document.getElementsByName("og-profile-acct");
-  if (meta) {
+  if (meta && meta.length) {
     USER_EMAIL = meta[0].content;
   }
   if (!emailEndsWithAllowedDomain()) {
