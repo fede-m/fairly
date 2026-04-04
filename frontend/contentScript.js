@@ -173,7 +173,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard();
+  discard(span = undefined, ref_reason = "analysis_refresh");
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -193,16 +193,19 @@ function startAnalysis() {
         return;
       }
 
-      // Prepare payload for background
-      dataObj["strategy"] = selected.id;
-      dataObj["data"] = []
-      editableElements.forEach((element) => {
-        const data = {};
-        const key = element.id;
-        data["id"] = key;
-        data["text"] = element.innerText;
-        dataObj["data"].push(data);
-      });
+            // Prepare payload for background
+            dataObj["strategy"] = selected.id; 
+            dataObj["data"] = [];
+            dataObj["session_id"] = SESSION_ID;
+            dataObj["user_id"] = USER_EMAIL;
+
+            editableElements.forEach((element) => { 
+                const data = {}; 
+                const key = element.id; 
+                data["id"] = key; 
+                data["text"] = element.innerText;
+                dataObj["data"].push(data); 
+            });
 
       console.log(dataObj);
       // Send data to background 
