@@ -81,7 +81,7 @@ function startAnalysis() {
     // Perform both detection and generation sequentially 
     const currentLocation = window.location.href; 
     // Delete all spans that were not accepted
-    discard();
+    discard(span = undefined, ref_reason = "analysis_refresh");
     if (currentLocation.startsWith("https://mail.google.com/")) { 
         // Select all elements on the page which are editable (the open emails) 
         const editableElements = document.querySelectorAll('[contenteditable="true"]'); 
@@ -102,7 +102,10 @@ function startAnalysis() {
 
             // Prepare payload for background
             dataObj["strategy"] = selected.id; 
-            dataObj["data"] = [] 
+            dataObj["data"] = [];
+            dataObj["session_id"] = SESSION_ID;
+            dataObj["user_id"] = USER_EMAIL;
+
             editableElements.forEach((element) => { 
                 const data = {}; 
                 const key = element.id; 
@@ -437,20 +440,7 @@ function createSpanPopupDiv(spanEl) {
     saveBtn.style.display = "none";
     saveBtn.addEventListener("click", (event) => {
         event.stopPropagation();
-        const input = inputFormulation.value.trim();
-        if (input) {
-            spanEl.dataset.userContent = input;
-            spanEl.dataset.currentUsed = input;
-            const textNode = Array.from(spanEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-            if (textNode) {
-                textNode.nodeValue = input;
-            } else {
-                spanEl.insertBefore(document.createTextNode(input), spanEl.firstChild)
-            }
-            // Clean the input formulation
-            inputFormulation.value = "";
-  
-        }
+        storeUserInput(inputFormulation, spanEl)
     });
 
     const revertChangeBtn = document.createElement("button");
@@ -461,16 +451,7 @@ function createSpanPopupDiv(spanEl) {
 
     revertChangeBtn.addEventListener("click", (event) => {
         event.stopPropagation();
-        const refValue = spanEl.dataset.reformulation;
-        if (refValue) {
-            spanEl.dataset.currentUsed = refValue;
-            const textNode = Array.from(spanEl.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-            if (textNode) {
-                textNode.nodeValue = refValue;
-            } else {
-                spanEl.insertBefore(document.createTextNode(refValue), spanEl.firstChild);
-            }
-        }
+        revertUserInput(spanEl);
     });
 
     inputWrap.appendChild(inputFormulation);
