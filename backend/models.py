@@ -31,7 +31,8 @@ class OutputData(BaseModel):
 class Request(BaseModel):
     data: list[InputData] = Field(..., description="List of documents sent from the frontend")
     strategy: str = Field(..., description="String describyng the strategy type (CV, CO, IO, IV) and the specific option as an id (e.g. CV-1)")
-
+    session_id: str = Field(..., description="Current session id")
+    user_id: str = Field(..., description="User identifier")
 class Response(BaseModel):
     results: dict[str,OutputData] = Field(..., description="The results of the analysis to send to the frontend")
 
@@ -40,7 +41,12 @@ class EventType(str, Enum):
     REFUSE = "refuse"
     EDIT = "edit"
     REVERT = "revert"
+    ANALYSIS = "analysis"
 
+class RefuseReason(str, Enum):
+    FAILURE = "request_failure"
+    USER_REFUSE = "user_refuse"
+    REFRESH = "analysis_refresh"
 class SpanEvent(BaseModel):
     original: str
     reformulation: str
@@ -55,12 +61,14 @@ class EventRequest(BaseModel):
     email_id: str
     timestamp: datetime = Field(default_factory= lambda: datetime.now(timezone.utc))
     strategy: str | None = None
+    refuse_reason: RefuseReason | None = None
 
     @model_validator(mode="after")
     def validate_user_form(self):
+        if self.event == EventType.REFUSE and self.refuse_reason is None:
+            raise ValueError("reason is required for refuse events")
         for span in self.spans:
             if self.event == EventType.EDIT and span.user_form is None:
                 raise ValueError("user_form is required for edit events")
-            if self.event != EventType.EDIT and span.user_form is not None:
-                raise ValueError("user_form is only allowed for edit events")
+        
         return self
