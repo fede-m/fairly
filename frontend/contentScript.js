@@ -173,7 +173,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard(span = undefined, ref_reason = "analysis_refresh");
+  discard(span = undefined, ref_reason = "analysis_refresh"span = undefined, ref_reason = "analysis_refresh");
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
