@@ -1,8 +1,9 @@
 console.log("Background service worker loaded");
-const BASE_URL = "https://271c-2001-a61-34ba-7501-ae6e-f789-926a-1f5a.ngrok-free.app"
+const BASE_URL = "http://localhost:8000"
 const API = {
   //baseUrl: "https://a3cd-2001-a61-34ba-7501-e85a-563f-72e6-b0da.ngrok-free.app",
-  baseUrl: "http://localhost:8000",
+  baseUrl: BASE_URL,
+
   get analyse() {return `${this.baseUrl}/analyse`;},
   get storeEvent() {return `${this.baseUrl}/store-event`;},
   get storeFeedback() {return `${this.baseUrl}/store-feedback`;}
