@@ -105,6 +105,8 @@ def detection(text: str) -> list[Span]:
     return spans
 
 def generation(text: str, spans:list[Span], strategy: str):
+    if not spans:
+        return []
     # Get the span id and the text
     spans_text = [{span.span_id: text[span.start_char:span.end_char]} for span in spans]
     prompt = ""
@@ -116,7 +118,6 @@ def generation(text: str, spans:list[Span], strategy: str):
             example = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][1]
             strategy_example = STRATEGIES[strat_type].format(symbol= symbol, example=example)
             prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
-        # TODO: Deal with the case when the user provides a user-defined strategy
     else:
         prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
     
@@ -144,27 +145,3 @@ def generation(text: str, spans:list[Span], strategy: str):
             return spans
     else:
         return spans
-
-# def process_data(text: str):
-#     detection_result = detection(text)
-#     return detection_result
-
-# def process_data_test(text: str):
-#     detection_result = detection(text)
-#     id2span = {span.span_id: span for span in detection_result}
-#     print(id2span)
-#     generation_result = generation(text, detection_result)
-#     print(generation_result)
-#     result = []
-#     for r in generation_result.result:
-#         # Get the current span
-#         if r.span_id in id2span:
-#             span = id2span[r.span_id]
-#             span.alternatives = {alt.type.value: alt.alternative for alt in r.alternatives}
-#             result.append(span)
-
-#     return result
-
-# if __name__ == "__main__":
-#     result = process_data_test("Ciao a tutti. Questi sono i rappresentanti degli studenti. Salutano i professori.")
-#     print(result)
