@@ -86,7 +86,7 @@ function setLoadingState(isLoading) {
   if (isLoading) {
     analyzeBtn.disabled = true;
     analyzeBtn.dataset.originalText = analyzeBtn.textContent;
-    analyzeBtn.innerHTML = `Analisi in corso <span class="spinner"></span>`;
+    analyzeBtn.innerHTML = `<span class="spinner"></span>`;
     document.getElementById("fairly-live").textContent = "Analisi in corso...";
   } else {
     analyzeBtn.disabled = false;
