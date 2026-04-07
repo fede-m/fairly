@@ -36,7 +36,9 @@
       "resources": [
         "fairly_logo.png",
         "fairly_logo_complete.png",
-        "logo_merge2.png"
+        "logo_merge2.png",
+        "logo_merge.png",
+        "logo_merge3.png"
       ],
       "matches": [
         "https://mail.google.com/*",
