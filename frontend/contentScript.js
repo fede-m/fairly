@@ -278,7 +278,7 @@ function createInfoDiv() {
   checklist.setAttribute("aria-label", "Seleziona una strategia inclusiva");
 
 
-  function createChecklistItem(labelText, strategyName, hasNested, nestedOption = [], defaultSelected = false) {
+  function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, nestedOption = [], defaultSelected = false) {
     /**
      * Helper function to create a checklist item for each strategy.
      * Supports both simple checkboxes and expandable nested options with accordion behavior.
@@ -398,6 +398,37 @@ function createInfoDiv() {
       label.appendChild(document.createTextNode(" " + labelText));
       item.appendChild(label);
     }
+
+    if (strategyInfo) {
+      const infoBtn = document.createElement("button");
+      infoBtn.className = "info-btn";
+      infoBtn.textContent = "?";
+      infoBtn.setAttribute("aria-label", `Informazioni su ${labelText}`);
+      infoBtn.setAttribute("aria-expanded", "false");
+
+      const infoPopover = document.createElement("div");
+      infoPopover.className = "info-popover";
+      infoPopover.setAttribute("role", "tooltip");
+      infoPopover.textContent = strategyInfo;
+      infoPopover.style.display = "none";
+
+      infoBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = infoPopover.style.display === "none";
+        // close all other popovers first
+        document.querySelectorAll(".info-popover").forEach(p => {
+          p.style.display = "none";
+          p.previousElementSibling?.setAttribute("aria-expanded", "false");
+        });
+        infoPopover.style.display = isOpen ? "block" : "none";
+        infoBtn.setAttribute("aria-expanded", String(isOpen));
+        if (isOpen) infoPopover.focus();
+      });
+
+      item.appendChild(infoBtn);
+      item.appendChild(infoPopover);
+    }
+
     return item;
   }
 
@@ -411,6 +442,7 @@ function createInfoDiv() {
         strategyObj.name,
         strategyObj.id,
         hasNested,
+        strategyObj.info,
         strategyObj.nestedOptions,
         defaultSelected
       ));
