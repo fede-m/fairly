@@ -13,7 +13,7 @@ const STRATEGIES = Object.freeze(
       id: "CO",
       name: "Nome astratto",
       nestedOptions: ["la comunità studentesca"],
-      info: "nome astratto Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi. Quisque vitae sem vitae augue ultrices lobortis."
+      info: "nome astratto Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     },
     IO: {
       id: "IO",
