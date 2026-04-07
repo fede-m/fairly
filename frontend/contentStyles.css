@@ -451,9 +451,19 @@
   outline: none;
 }
 
+.accept-all-btn:hover {
+  background: var(--color-accept);
+  color: var(--color-white);
+}
+
 .accept-all-btn:focus-visible {
   outline: 2px solid var(--color-accept);
   outline-offset: 2px;
+}
+
+.refuse-all-btn:hover {
+  background: var(--color-refuse);
+  color: var(--color-white);
 }
 
 .refuse-all-btn:focus-visible {
