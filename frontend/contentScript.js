@@ -108,7 +108,7 @@ function showPopup(type, message, id, container) {
   const popup = document.createElement("div");
   popup.id = id;
   popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
-  // popup.setAttribute("role", type === "success" ? "status" : "alert");
+  popup.setAttribute("role", type === "success" ? "status" : "alert");
 
   const msg = document.createElement("span");
   msg.textContent = message;
@@ -240,6 +240,17 @@ function collapseAllNested(exceptDiv, exceptBtn) {
   });
 }
 
+const closeAllInfoPopovers = (returnFocus = false) => {
+  document.querySelectorAll(".info-popover").forEach((p) => {
+    p.hidden = true;
+    p.setAttribute("aria-hidden", "true");
+    const triggerId = p.dataset.triggerId;
+    const trigger = triggerId ? document.getElementById(triggerId) : null;
+    trigger?.setAttribute("aria-expanded", "false");
+    if (returnFocus) trigger?.focus();
+  });
+};
+
 function createInfoDiv() {
   /**
    * Creates the main info panel that appears when clicking on the widget.
@@ -276,7 +287,6 @@ function createInfoDiv() {
   checklist.className = "checklist";
   checklist.setAttribute("role", "radiogroup");
   checklist.setAttribute("aria-label", "Seleziona una strategia inclusiva");
-
 
   function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, nestedOption = [], defaultSelected = false) {
     /**
@@ -403,27 +413,74 @@ function createInfoDiv() {
       const infoBtn = document.createElement("button");
       infoBtn.className = "info-btn";
       infoBtn.textContent = "?";
-      infoBtn.setAttribute("aria-label", `Informazioni su ${labelText}`);
+      infoBtn.type = "button";
+
+      const safeId = String(strategyName).toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      const triggerId = `info-btn-${safeId}`;
+      const popoverId = `info-popover-${safeId}`;
+
+      infoBtn.id = triggerId;
       infoBtn.setAttribute("aria-expanded", "false");
+      infoBtn.setAttribute("aria-controls", popoverId);
+      infoBtn.setAttribute("aria-haspopup", "dialog");
 
       const infoPopover = document.createElement("div");
       infoPopover.className = "info-popover";
-      infoPopover.setAttribute("role", "tooltip");
+      infoPopover.id = popoverId;
+      infoPopover.setAttribute("role", "dialog");
+      infoPopover.setAttribute("aria-label", `Dettagli su ${labelText}`);
+      infoPopover.setAttribute("tabindex", "-1");
+      infoPopover.setAttribute("aria-hidden", "true");
+      infoPopover.dataset.triggerId = triggerId;
       infoPopover.textContent = strategyInfo;
-      infoPopover.style.display = "none";
+      infoPopover.hidden = true;
+
+      const updateButtonLabel = () => {
+        const isOpen = !infoPopover.hidden;
+        infoBtn.setAttribute("aria-label",
+          isOpen ? `Chiudi informazioni su ${labelText}` : `Apri informazioni su ${labelText}`
+        );
+        infoBtn.setAttribute("aria-expanded", String(isOpen));
+      };
+
+      const openPopover = () => {
+        closeAllInfoPopovers();
+        infoPopover.hidden = false;
+        updateButtonLabel();
+        infoPopover.focus();
+      };
+
+      const closePopover = () => {
+        infoPopover.hidden = true;
+        updateButtonLabel();
+        // Keep focus inside the checklist item
+        const label = item.querySelector("label, .options-container");
+        label?.focus();
+      };
 
       infoBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const isOpen = infoPopover.style.display === "none";
-        // close all other popovers first
-        document.querySelectorAll(".info-popover").forEach(p => {
-          p.style.display = "none";
-          p.previousElementSibling?.setAttribute("aria-expanded", "false");
-        });
-        infoPopover.style.display = isOpen ? "block" : "none";
-        infoBtn.setAttribute("aria-expanded", String(isOpen));
-        if (isOpen) infoPopover.focus();
+        infoPopover.hidden ? openPopover() : closePopover();
       });
+
+      infoBtn.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown" && infoPopover.hidden) {
+          e.preventDefault();
+          openPopover();
+        }
+        if (e.key === "Escape" && !infoPopover.hidden) {
+          e.preventDefault();
+          closePopover();
+        }
+      });
+
+      infoPopover.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closePopover();
+        }
+      });
+
+      updateButtonLabel();
 
       item.appendChild(infoBtn);
       item.appendChild(infoPopover);
@@ -493,6 +550,13 @@ function createInfoDiv() {
   buttonWrapper.appendChild(analyzeButton);
   infoDiv.appendChild(checklist);
   infoDiv.appendChild(buttonWrapper);
+  // popover closing if clicking oustide of it
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".info-btn") && !e.target.closest(".info-popover")) {
+      closeAllInfoPopovers();
+    }
+  });
+
   return infoDiv;
 }
 
@@ -698,6 +762,7 @@ function initExtension() {
   liveRegion.setAttribute("aria-live", "polite");
   liveRegion.setAttribute("aria-atomic", "true");
   liveRegion.className = "sr-only";
+  liveRegion.setAttribute("role", "status");
   document.body.appendChild(liveRegion);
   // Implement dragging 
   let offsetX = 0, offsetY = 0;
@@ -742,7 +807,13 @@ function initExtension() {
       const isOpen = infoDiv.style.display === "none";
       infoDiv.style.display = isOpen ? "block" : "none";
       img.setAttribute("aria-expanded", String(isOpen));
-      if (isOpen) infoDiv.focus(); // move focus into dialog on open
+      if (isOpen) {
+        infoDiv.setAttribute("aria-modal", "true");
+        infoDiv.focus();
+      } else {
+        infoDiv.setAttribute("aria-modal", "false");
+        closeAllInfoPopovers();
+      }
     }
   });
 
