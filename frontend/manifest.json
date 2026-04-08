@@ -7,8 +7,7 @@
     "storage"
   ],
   "host_permissions": [
-    "https://mail.google.com/*",
-    "https://docs.google.com/*"
+    "https://mail.google.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -16,8 +15,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://mail.google.com/*",
-        "https://docs.google.com/*"
+        "https://mail.google.com/*"
       ],
       "js": [
         "content/constants.js",
@@ -41,8 +39,7 @@
         "logo_merge3.png"
       ],
       "matches": [
-        "https://mail.google.com/*",
-        "https://docs.google.com/*"
+        "https://mail.google.com/*"
       ]
     }
   ],
