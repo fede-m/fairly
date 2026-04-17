@@ -37,6 +37,12 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```bash
 docker-compose up
 ```
+
+> [!WARNING]
+> If you change something in the backend, you need to re-build the images to have the changes included!
+> This means you need to run the command with the `--build` flag:
+> `docker-compose up --build`
+
 - This should:
   - Create a Docker network 
   - Pull the "mongo" image from Docker Hub

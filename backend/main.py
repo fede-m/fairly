@@ -12,9 +12,9 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # Specify the id of the Chrome extension to allow it to call the backend
-    allow_origins=[f"chrome-extension://{CHROME_EXTENSION_ID}"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_origins = [f"chrome-extension://{CHROME_EXTENSION_ID}",  "http://localhost:3000", "http://localhost:8000"],
+    allow_methods = ["GET", "POST"],
+    allow_headers = ["*"]
 )
 
 # @app.get("/")
