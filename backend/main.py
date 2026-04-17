@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from models import Request, EventRequest, Response, OutputData
 from llm import detection, generation
-from database import insert_event
+
+# from database import insert_event
 
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 app = FastAPI()
@@ -39,7 +40,8 @@ async def analyse(request: Request):
     return Response(results=results)
 
 
+# da rivedere
 @app.post("/store-event")
 async def store_event(request: list[EventRequest]):
-    insert_event(request)
+    # insert_event(request)
     return {"status": 200, "message": "Everything is fine"}
