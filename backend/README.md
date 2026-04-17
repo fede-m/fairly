@@ -30,3 +30,47 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
   ```
   3. This will generate a one-time URL (available in `Forwarding`) that you can provide to your extension to call the backend.
   4. NOTE: everytime you activate the server again, you will be provided with a new URL, so make sure to change it in the front-end
+  
+
+### Test Connection on MongoDB
+- In order to activate and mount the Docker Compose, run:
+```bash
+docker-compose up
+```
+- This should:
+  - Create a Docker network 
+  - Pull the "mongo" image from Docker Hub
+  - Build the application image from `./backend`
+
+- Then, it should:
+  - Start the connection with MongoDB (which refreshes with new logs every 10 s as set in docker-compose)
+  - Run the Uvicon app (with FastAPI)
+
+- FastAPI can be reached for testing using the Swagger UI at `http://127.0.0.1:8000/docs` where you can test the `store-event` endpoint by sending an event
+
+- To check whether the event was successfully saved in the database, you can establish a connection to the MongoDB Shell (mongosh) inside the Docker container using:
+```bash
+docker exec -it fairly-mongo mongosh --username <USERNAME> --password <PASSWORD> --authenticationDatabase admin
+```
+
+- And then check using the following commands:
+
+```shell
+// Switch to the database
+use fairly_db
+
+// List collections
+show collections
+
+// Count documents in user_events
+db.user_events.countDocuments()
+
+// View all events
+db.user_events.find()
+
+// View with pretty formatting
+db.user_events.find().pretty()
+
+// View just the first event
+db.user_events.findOne()
+```
