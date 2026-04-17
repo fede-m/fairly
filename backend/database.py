@@ -15,17 +15,16 @@ import ssl
 
 # Get secret key for hashing
 SECRET_KEY = os.environ.get("SECRET_KEY")
-password = urllib.parse.quote_plus(os.environ.get("MONGODB_PWD"))
-user = os.environ.get("MONGODB_USER")
-MONGODB_URI = f"mongodb+srv://{user}:{password}@fairlycluster.khg90i7.mongodb.net/?appName=FairlyCluster"
+# password = urllib.parse.quote_plus(os.environ.get("MONGODB_PWD"))
+# user = os.environ.get("MONGODB_USER")
+user = os.environ.get("MONGO_INITDB_ROOT_USERNAME")
+password = os.environ.get("MONGO_INITDB_ROOT_PASSWORD")
 
+print(user)
+# MONGODB_URI = f"mongodb+srv://{user}:{password}@fairlycluster.khg90i7.mongodb.net/?appName=FairlyCluster"
+MONGO_URL=f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
 # Connect to the MongoDB Cluster
-client = MongoClient(MONGODB_URI,
-
-                    tls=True,
-                    tlsCAFile=certifi.where(),
-                    serverSelectionTimeoutMS=30000,
-                     )
+client = MongoClient(MONGO_URL)
 
 dbs = client.list_database_names()
 print(dbs)

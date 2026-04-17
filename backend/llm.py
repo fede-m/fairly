@@ -19,15 +19,10 @@ HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
 # Load models for detection
 sentence_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
-model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+model = None
+tokenizer = None
 
-# Set up API for generation models
-# client = Groq(api_key= os.getenv("GROQ_API_KEY"))
-
-# # Enable instructor for Groq client
-# client = instructor.from_provider(GENERATION_MODEL)
-
+# Setup client
 client = OpenAI(
     base_url = os.getenv("HPC4AI_URL", ""),
     api_key = os.getenv("OPENWEB_API", "")
@@ -35,6 +30,20 @@ client = OpenAI(
 
 client = instructor.patch(client, mode = instructor.Mode.JSON)
 
+
+# Lazy load model
+def get_model():
+    global model
+    if model is None:
+        model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+    return model
+
+
+def get_tokenizer():
+    global tokenizer
+    if tokenizer is None:
+        tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
+    return tokenizer
 
 def generate_new_span(text:str,start:int, end:int):
     span = Span(
@@ -49,6 +58,10 @@ def generate_new_span(text:str,start:int, end:int):
 
 def detection(text: str) -> list[Span]:
 
+    # Initialize model and tokenizer
+    get_model()
+    get_tokenizer()
+    
     # Sentence Tokenize text
     sentences_spans = list(sentence_tokenizer.span_tokenize(text))
     sentences = [text[start: end] for (start, end) in sentences_spans]
