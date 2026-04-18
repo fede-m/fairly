@@ -12,10 +12,9 @@ function resetButtons() {
 }
 
 
-function discard(span = undefined){
+function discard(span = undefined, ref_reason = "user_refuse"){
     
     const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
-    
     // No spans to modify
     if (highlightedSpans.length === 0) return;
 
@@ -38,17 +37,26 @@ function discard(span = undefined){
                     session_id: SESSION_ID,
                     user_id: USER_EMAIL,
                     email_id: eId,
+                    refuse_reason: ref_reason
                 };
 
             // Restore original text
             spanList.forEach((s) => { 
                 const original = s.dataset.original; 
-                // Add span event
-                refuseEvent.spans.push({
+                const reformulation = s.dataset.reformulation; 
+                const userForm = s.dataset.userContent;
+                const spanObj = {
                     original: original,
-                    reformulation: s.dataset.reformulation,
-                    current_used: original
-                });
+                    reformulation: reformulation,
+                    current_used: original,
+                    user_form: userForm
+                }
+
+                if (userForm) {
+                    spanObj.user_form = userForm;
+                }
+                // Add span event
+                refuseEvent.spans.push(spanObj);
 
                 // Remove associated spanDiv
                 const spanDiv = document.getElementById(`div-${s.id}`);
@@ -60,34 +68,150 @@ function discard(span = undefined){
     );
 
     if (span === undefined) resetButtons();
-
     chrome.runtime.sendMessage({
                 action:"storeEvent",
                 payload: refuseEvents
             });
-    
 } 
 
 function accept(span = undefined){
-    // TODO: store interaction on MongoDB
-    if (span === undefined) {
-        // Remove spans and replace them with the reformulated text
-        const highlightedSpans = document.querySelectorAll("span.highlight");
-        highlightedSpans.forEach(span => {
-            const newText = span.dataset.currentUsed;
-            // Remove associated spanDic
-            const spanDiv = document.getElementById(`div-${span.id}`);
-            if (spanDiv) {spanDiv.remove();}
-            span.replaceWith(document.createTextNode(newText));
-        });
-        
-        // Show only the Analyze button
-        resetButtons();
-    } else {
-        const newText = span.dataset.currentUsed;
-        // Remove associated spanDiv
-        const spanDiv = document.getElementById(`div-${span.id}`);
-        if (spanDiv) spanDiv.remove();
-        span.replaceWith(document.createTextNode(newText));
+    const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
+    // No spans to modify
+    if (highlightedSpans.length === 0) return;
+
+    const grouped = new Map();
+    highlightedSpans.forEach(s => {
+        let emailId = s.dataset.emailId;
+        if (!grouped.has(emailId)) {
+            grouped.set(emailId, []);
+        }
+        grouped.get(emailId).push(s);
     }
-} 
+    );
+
+    const acceptEvents = [];
+    grouped.forEach((spanList, eId) =>{
+        // Prepare event to store
+        const acceptEvent = {
+                event: "accept",
+                spans: [],
+                session_id: SESSION_ID,
+                user_id: USER_EMAIL,
+                email_id: eId,
+            };
+
+        // Restore original text
+        spanList.forEach((s) => { 
+            const original = s.dataset.original; 
+            const reformulation = s.dataset.reformulation;
+            const currentUsed = s.dataset.currentUsed;
+            const userForm = s.dataset.userContent;
+            
+            const spanObj = {
+                original: original,
+                reformulation: reformulation,
+                current_used: currentUsed,
+            }
+
+            if (userForm) {
+                spanObj.user_form = userForm
+            }
+            // Add span event
+            acceptEvent.spans.push(spanObj);
+            // Remove associated spanDiv
+            const spanDiv = document.getElementById(`div-${s.id}`);
+            if (spanDiv) spanDiv.remove();
+            s.replaceWith(document.createTextNode(currentUsed));
+        });
+        acceptEvents.push(acceptEvent);
+    }
+    );
+    if (span === undefined) resetButtons();
+    chrome.runtime.sendMessage({
+                action:"storeEvent",
+                payload: acceptEvents
+            });
+}
+
+function storeUserInput(inputFormulation, span) {
+    const input = inputFormulation.value.trim();
+    if (input) {
+        span.dataset.userContent = input;
+        span.dataset.currentUsed = input;
+        const textNode = Array.from(span.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+        if (textNode) {
+            textNode.nodeValue = input;
+        } else {
+            span.insertBefore(document.createTextNode(input), span.firstChild)
+        }
+        // Clean the input formulation
+        inputFormulation.value = "";
+    }
+
+    // Send edit event
+    const original = span.dataset.original; 
+    const reformulation = span.dataset.reformulation; 
+
+    let eId = span.dataset.emailId;
+    const editEvent = [
+        {
+            event: "edit",
+            spans: [
+                {
+                    original: original,
+                    reformulation: reformulation,
+                    current_used: input,
+                    user_form: input
+                }
+            ],
+            session_id: SESSION_ID,
+            user_id: USER_EMAIL,
+            email_id: eId,
+        }
+    ]
+
+    chrome.runtime.sendMessage({
+        action: "storeEvent",
+        payload: editEvent
+    })
+}
+
+
+function revertUserInput(span) {
+    const refValue = span.dataset.reformulation;
+    if (refValue) {
+        span.dataset.currentUsed = refValue;
+        const textNode = Array.from(span.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
+        if (textNode) {
+            textNode.nodeValue = refValue;
+        } else {
+            span.insertBefore(document.createTextNode(refValue), span.firstChild);
+        }
+    }
+
+    const original = span.dataset.original;
+    const reformulation = span.dataset.reformulation;
+    const current = span.dataset.currentUsed;
+    let eId = span.dataset.emailId;
+
+    const revertEvent = [
+        {
+            event: "revert",
+            spans: [
+                {
+                    original: original,
+                    reformulation: reformulation,
+                    current_used: current,
+                }
+            ],
+            session_id: SESSION_ID,
+            user_id: USER_EMAIL,
+            email_id: eId,
+        }
+    ]
+
+    chrome.runtime.sendMessage({
+        action: "storeEvent",
+        payload: revertEvent
+    })
+}

@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv
+venv/
+
+*.pt
+*.bin
+*.safetensors
+.cache
+.git/
+.gitgnore
+
+Dockerfile
+docker-compose.yml
+.env
+
