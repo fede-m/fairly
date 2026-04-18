@@ -19,8 +19,8 @@ HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
 # Load models for detection
 sentence_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
-model = None
-tokenizer = None
+model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
 
 # Setup client
 client = OpenAI(
@@ -29,21 +29,6 @@ client = OpenAI(
 )
 
 client = instructor.patch(client, mode = instructor.Mode.JSON)
-
-
-# Lazy load model
-def get_model():
-    global model
-    if model is None:
-        model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
-    return model
-
-
-def get_tokenizer():
-    global tokenizer
-    if tokenizer is None:
-        tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
-    return tokenizer
 
 def generate_new_span(text:str,start:int, end:int):
     span = Span(
@@ -57,11 +42,6 @@ def generate_new_span(text:str,start:int, end:int):
     return span
 
 def detection(text: str) -> list[Span]:
-
-    # Initialize model and tokenizer
-    get_model()
-    get_tokenizer()
-    
     # Sentence Tokenize text
     sentences_spans = list(sentence_tokenizer.span_tokenize(text))
     sentences = [text[start: end] for (start, end) in sentences_spans]
