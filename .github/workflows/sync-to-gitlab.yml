@@ -1,7 +1,7 @@
 name: Sync to GitLab
 
 on:
-  push:
+  push
 
 jobs:
   sync:
