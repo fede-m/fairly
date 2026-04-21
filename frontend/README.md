@@ -34,6 +34,7 @@ manual testing:
 
 ### user flow
 
+- [] firefox compatibility
 - [] se non si seleziona nulla, quale opzione viene usata premendo analizza ? va bloccato il bottone se prima non si seleziona?
 - [] dopo analisi effettuata, prima di aver accettato tutte le proposte, va bloccato il tasto analisi? potremmo farlo sparire
 - [] se riavvio analisi, serve impedire che ri-analizzi cose appena cambiate? andrebbero indicate in qualche modo ed escluse dall'analisi ?
