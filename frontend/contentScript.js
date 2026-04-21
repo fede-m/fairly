@@ -105,7 +105,7 @@ function showPopup(type, message, id, container) {
   const popup = document.createElement("div");
   popup.id = id;
   popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
-  popup.setAttribute("role", type === "success" ? "status" : "alert");
+  // popup.setAttribute("role", type === "success" ? "status" : "alert"); ridondante ?
 
   const msg = document.createElement("span");
   msg.textContent = message;
@@ -655,6 +655,14 @@ function createSpanPopupDiv(spanEl) {
   saveAccBtn.className = "span-action-btn span-save-acc-btn";
   saveAccBtn.textContent = "Salva e accetta";
   saveAccBtn.setAttribute("aria-label", "Salva la tua riformulazione e accetta");
+
+  // Initially disable the button
+  saveAccBtn.disabled = true;
+  // Listen for input changes
+  inputFormulation.addEventListener("input", () => {
+    saveAccBtn.disabled = !inputFormulation.value.trim();
+  });
+
   saveAccBtn.addEventListener("click", e => {
     e.stopPropagation();
     const input = inputFormulation.value.trim();

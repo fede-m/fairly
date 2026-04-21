@@ -387,6 +387,14 @@
   color: var(--color-white);
 }
 
+.span-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
 /*.span-revert-btn:hover {
   background: var(--color-primary);
   color: var(--color-white);
@@ -398,7 +406,8 @@
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 8px;
-  padding: 10px 52px 10px 12px;
+  padding: 10px 42px 10px 10px;
+  text-align: center;
   /* increased from 32px */
 
   border-radius: 8px;
@@ -407,9 +416,11 @@
 
   font-size: 16px;
   font-weight: 500;
-  white-space: nowrap;
   z-index: 10;
   animation: fadeInUp 0.3s ease;
+  max-width: 300px;
+  width: max-content;
+  word-break: break-word
 }
 
 .message-popup::after {
