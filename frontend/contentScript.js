@@ -882,7 +882,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
     } else {
       // Create new success message
-      showPopup("success", "Nessuno span unfair trovato, ottimo lavoro!", "no-span-message", btnWrapper);
+      showPopup("success", "Nessuno span non inclusivo trovato, ottimo lavoro!", "no-span-message", btnWrapper);
       // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
       setResultButtons(false);
     }
