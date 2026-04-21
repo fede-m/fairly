@@ -32,6 +32,17 @@ manual testing:
 - [x] animazione caricamento dopo aver premuto analizza
 - [x] verify pop up messages are all solid. unify their logic. check if there are federica's messages left over
 
+### user flow
+
+- [] se non si seleziona nulla, quale opzione viene usata premendo analizza ? va bloccato il bottone se prima non si seleziona?
+- [] dopo analisi effettuata, prima di aver accettato tutte le proposte, va bloccato il tasto analisi? potremmo farlo sparire
+- [] se riavvio analisi, serve impedire che ri-analizzi cose appena cambiate? andrebbero indicate in qualche modo ed escluse dall'analisi ?
+- [] pop-up che dica "premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione"
+- [] oppure, navigatore sul main widget per manipolare le singole evidenziazioni: sarebbe più chiaro ma complex e renderebbe affollato il widget
+- [] mettere su una seconda linea i tasti "accetta tutto" e "rifiuta tutto" ?
+- [] cambiare user flow della riformulazione: rimuovere tasto edit, cambiare comportamento del tasto back, aggiungere "salva e accetta"
+- [] cambiare graficamente per rendere più armonioso il box del cambio annotazione
+
 ### privacy policy 
 
 - [x] verificare ad una ad una le permission date all'estensione e perchè servono
