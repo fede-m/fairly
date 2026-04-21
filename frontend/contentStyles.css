@@ -58,7 +58,7 @@
   position: absolute;
   bottom: 60px;
   right: 0px;
-  width: 300px;
+  width: 340px;
   background: var(--color-white);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -318,8 +318,8 @@
 .span-div .edit-btn,
 .span-div .save-btn,
 .span-div .revert-btn {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
   min-width: 24px;
   /* Prevent shrinking */
   min-height: 24px;
@@ -344,46 +344,34 @@
   padding: 10px 0px;
 }
 
+.small-ref-btn,
 .small-acc-btn {
-  width: 25px;
-  height: 25px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
   border: none;
-  background: var(--color-accept);
-  display: flex;
   color: var(--color-white);
   padding: 0;
+  display: flex;
   cursor: pointer;
 }
 
+.small-acc-btn {
+  background: var(--color-accept);
+}
+
+.small-ref-btn {
+  background: var(--color-refuse);
+}
+
+.small-ref-btn svg,
 .small-acc-btn svg {
   display: block;
   margin: 0 auto;
   width: 16px;
   height: 16px;
-}
-
-.small-ref-btn {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: var(--color-refuse);
-  color: var(--color-white);
-  padding: 0;
-  display: flex;
-  cursor: pointer;
-}
-
-.small-ref-btn svg {
-  display: block;
-  margin: 0 auto;
-  width: 16px;
-  height: 24px;
 }
 
 .message-popup {
@@ -554,7 +542,7 @@
   border: 1.5px solid var(--color-primary);
   background: var(--color-white);
   color: var(--color-primary);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   display: flex;
@@ -590,7 +578,7 @@
   border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
   border-radius: 8px;
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.12);
   z-index: 10001;
