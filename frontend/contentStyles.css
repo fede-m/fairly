@@ -14,6 +14,7 @@
   --color-refuse: #dc3545;
   --color-warning-bg: #f0e5c0;
   --color-warning-border: rgba(204, 170, 46, 0.3);
+  --save-and-accept: #008CBA;
 
   /* Highlight */
   --color-highlight: rgb(255, 200, 0);
@@ -35,16 +36,16 @@
 
 .widget-div {
   position: fixed;
-  bottom: 30px;
-  width: 50px;
+  bottom: 60px;
+  width: 30px;
   height: 50px;
-  right: 30px;
+  right: 80px;
   z-index: 9999;
 }
 
 .fairly-logo {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -62,7 +63,7 @@
   background: var(--color-white);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  padding: 12px 16px 16px 16px;
+  padding: 16px;
   z-index: 10000;
   display: none;
   min-height: 300px;
@@ -94,7 +95,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 14px;
   max-height: 200px;
   padding-bottom: 8px;
   /* padding necessario per shadow dell'ultima option */
@@ -186,7 +187,6 @@
   align-items: center;
 }
 
-.refresh-btn,
 .arrow-btn {
   background-color: transparent;
   border: none;
@@ -197,7 +197,6 @@
   align-items: center;
 }
 
-.refresh-btn svg,
 .arrow-btn svg {
   display: flex;
   width: 16px;
@@ -206,39 +205,49 @@
 
 .btn-wrapper {
   display: flex;
+  align-items: stretch;
   justify-content: flex-end;
-  align-items: center;
   margin-top: 12px;
+  /*6*/
   gap: 10px;
+  /*4*/
 }
 
 .accept-all-btn,
 .refuse-all-btn,
 .analyze-btn {
+  flex: 1;
+  min-height: 44px;
   padding: 6px 14px;
-  background: var(--color-white);
-  color: var(--color-primary);
-  border-radius: 16px;
+  /* 7px 4px;*/
   font-size: 16px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
+  line-height: 1.2;
+  text-align: center;
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-radius: 12px;
+  /*box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);*/
   cursor: pointer;
-  min-height: 44px;
-  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .accept-all-btn {
   border: 2px solid var(--color-accept);
+  color: var(--color-accept);
 }
 
 .refuse-all-btn {
   border: 2px solid var(--color-refuse);
+  color: var(--color-refuse);
 }
 
 .analyze-btn {
   border: 2px solid var(--color-primary);
+  color: var(--color-primary);
 }
-
 
 .analyze-btn:disabled,
 .accept-all-btn:disabled {
@@ -268,111 +277,120 @@
 
 .span-div {
   position: absolute;
-  min-height: fit-content;
-  width: 250px;
+  width: 260px;
   z-index: 999;
   background: var(--color-surface);
-  box-shadow: 0 1px 3px rgba(32, 33, 85, 0.07);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  box-shadow: 0 2px 8px rgba(32, 33, 85, 0.12);
   border-radius: 8px;
-  padding: 10px 10px;
-  transition: box-shadow 0.2s;
+  padding: 12px;
   font-size: 16px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   cursor: auto;
 }
 
-
+.span-div-input-label {
+  display: block;
+  font-size: 14px;
+  /*font-weight: 600;*/
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
 
 .span-div .input-wrap {
   display: flex;
-  margin-top: auto;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 10px;
-
+  flex-direction: column;
 }
 
 .span-div input[type="text"] {
-  width: 80%;
-  height: 26px;
-  padding: 8px 12px;
+  width: 100%;
+  padding: 8px 10px;
   margin: 8px 0;
-  border: 1px solid;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   outline: none;
   background: var(--color-input-bg);
   color: var(--color-primary);
-  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .span-div input[type="text"]:focus {
   border-color: var(--color-focus);
-  box-shadow: 0 0 0 2px rgba(32, 33, 85, 0.07);
+  box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.2);
   background: var(--color-white);
-  color: #000;
 }
 
-.span-div .edit-btn,
-.span-div .save-btn,
-.span-div .revert-btn {
-  width: 44px;
-  height: 44px;
-  min-width: 24px;
-  /* Prevent shrinking */
-  min-height: 24px;
-  /* Prevent shrinking */
-  box-sizing: border-box;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-primary);
-  background: var(--color-white);
+.span-div-btn-wrapper {
   display: flex;
+  align-items: stretch;
+  /* tutti stessa altezza */
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.span-action-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 7px 4px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-white);
   color: var(--color-primary);
-  padding: 0;
   cursor: pointer;
-
-}
-
-
-.span-div .btn-wrapper {
-  margin-top: auto;
-  justify-content: flex-start;
-  padding: 10px 0px;
-}
-
-.small-ref-btn,
-.small-acc-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  color: var(--color-white);
-  padding: 0;
-  display: flex;
-  cursor: pointer;
 }
 
-.small-acc-btn {
+.span-action-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* per-button overrides */
+.span-acc-btn {
+  border-color: var(--color-accept);
+  color: var(--color-accept);
+}
+
+.span-save-acc-btn {
+  border-color: var(--save-and-accept);
+  color: var(--save-and-accept);
+}
+
+.span-discard-btn {
+  border-color: var(--color-refuse);
+  color: var(--color-refuse);
+}
+
+/* hover states */
+.span-acc-btn:hover {
   background: var(--color-accept);
+  color: var(--color-white);
 }
 
-.small-ref-btn {
+.span-save-acc-btn:hover {
+  background: var(--save-and-accept);
+  color: var(--color-white);
+}
+
+.span-discard-btn:hover {
   background: var(--color-refuse);
+  color: var(--color-white);
 }
 
-.small-ref-btn svg,
-.small-acc-btn svg {
-  display: block;
-  margin: 0 auto;
-  width: 16px;
-  height: 16px;
-}
+/*.span-revert-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}*/
 
 .message-popup {
   position: absolute;

@@ -603,6 +603,9 @@ function createSpanPopupDiv(spanEl) {
    * @returns {HTMLDivElement} The popup div element
    */
 
+  // saves users reformulations history
+  const history = []
+
   // Create the div element
   const spanDiv = document.createElement("div");
   spanDiv.id = `div-${spanEl.id}`;
@@ -616,124 +619,85 @@ function createSpanPopupDiv(spanEl) {
   const p = document.createElement("p");
   //p.style.padding = "0px";
   p.innerHTML = `<strong><del>${spanEl.dataset.original}</del><strong>`;
-  p.style.margin = "0px";
+  p.style.margin = "0 0 8px 0";
 
   const inputWrap = document.createElement("div");
   inputWrap.className = "input-wrap";
 
   const inputLabel = document.createElement("label");
   inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
-  inputLabel.textContent = "La tua soluzione inclusiva";
-  inputLabel.className = "sr-only"; // visually hidden but accessible
+  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.\nSalvandola, Fairly la proporrà nelle future analisi.";
+  inputLabel.className = "span-div-input-label";
 
   const inputFormulation = document.createElement("input");
   inputFormulation.id = `user-ref-${spanEl.id}`;
   inputFormulation.type = "text";
   inputFormulation.placeholder = "Es. studenti e studentesse";
+  /*inputFormulation.value = spanEl.dataset.currentUsed ?? "";*/
+  inputFormulation.addEventListener("click", e => e.stopPropagation());
 
   inputWrap.appendChild(inputLabel);
+  inputWrap.appendChild(inputFormulation);
 
-  inputFormulation.style.display = "none";
+  // Buttons
+  const spanBtnWrap = document.createElement("div");
+  spanBtnWrap.className = "btn-wrapper span-div-btn-wrapper";
 
-  inputFormulation.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
+  // Accept (keep current span text, no input change)
+  const accBtn = document.createElement("button");
+  accBtn.className = "span-action-btn span-acc-btn";
+  accBtn.textContent = "Accetta";
+  accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
+  accBtn.addEventListener("click", e => { e.stopPropagation(); accept(spanEl); });
 
-
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "save-btn";
-  saveBtn.innerHTML = ICONS.save;
-  saveBtn.setAttribute("aria-label", "Salva formulazione personalizzata");
-
-  saveBtn.style.display = "none";
-  saveBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
+  // Save & accept (apply input value then accept)
+  const saveAccBtn = document.createElement("button");
+  saveAccBtn.className = "span-action-btn span-save-acc-btn";
+  saveAccBtn.textContent = "Salva e accetta";
+  saveAccBtn.setAttribute("aria-label", "Salva la tua riformulazione e accetta");
+  saveAccBtn.addEventListener("click", e => {
+    e.stopPropagation();
     const input = inputFormulation.value.trim();
     if (input) {
+      history.push(spanEl.dataset.currentUsed);
       spanEl.dataset.userContent = input;
       spanEl.dataset.currentUsed = input;
-
       setSpanText(spanEl, input);
-      // Clean the input formulation
-      inputFormulation.value = "";
-
     }
-  });
-
-  const revertChangeBtn = document.createElement("button");
-  revertChangeBtn.className = "revert-btn";
-  revertChangeBtn.innerHTML = ICONS.revert;
-  revertChangeBtn.setAttribute("aria-label", "Ripristina suggerimento AI");
-
-  revertChangeBtn.style.display = "none";
-
-  revertChangeBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
-    const refValue = spanEl.dataset.reformulation;
-    if (refValue) {
-      spanEl.dataset.currentUsed = refValue;
-      setSpanText(spanEl, spanEl.dataset.reformulation);
-    }
-  });
-
-  inputWrap.appendChild(inputFormulation);
-  inputWrap.appendChild(saveBtn);
-  inputWrap.appendChild(revertChangeBtn);
-
-  // Display buttons to change/accept/refuse option
-  const btnWrap = document.createElement("div");
-  btnWrap.className = "btn-wrapper";
-
-  // Edit current option (allow user to input their reformulation)
-  const editBtn = document.createElement("button");
-  editBtn.className = "edit-btn";
-  editBtn.innerHTML = ICONS.edit;
-  editBtn.setAttribute("aria-label", "Modifica formulazione");
-
-  editBtn.addEventListener("click", () => {
-    if (inputFormulation.style.display == "none") {
-      inputFormulation.style.display = "block";
-      saveBtn.style.display = "block";
-      revertChangeBtn.style.display = "block";
-    } else {
-      inputFormulation.style.display = "none";
-      saveBtn.style.display = "none";
-      revertChangeBtn.style.display = "none";
-    }
-  })
-
-  // Accept current reformulation for the span
-  const accBtn = document.createElement("button");
-  accBtn.className = "small-acc-btn";
-  accBtn.innerHTML = ICONS.accept;
-  accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
-
-  accBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
     accept(spanEl);
   });
 
-  // Refuse reformulations for the span (keep the original text)
-  const refBtn = document.createElement("button");
-  refBtn.className = "small-ref-btn";
-  refBtn.innerHTML = ICONS.refuse;
-  refBtn.setAttribute("aria-label", "Rifiuta questa riformulazione");
+  // Discard (refuse, restore original)
+  const discardBtn = document.createElement("button");
+  discardBtn.className = "span-action-btn span-discard-btn";
+  discardBtn.textContent = "Rifiuta";
+  discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
+  discardBtn.addEventListener("click", e => { e.stopPropagation(); discard(spanEl); });
 
-  refBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
-    discard(spanEl);
-  })
+  // Revert to previous
+  //const revertBtn = document.createElement("button");
+  //revertBtn.className = "span-action-btn span-revert-btn";
+  //revertBtn.textContent = "Ripristina";
+  //revertBtn.setAttribute("aria-label", "Ripristina la riformulazione precedente");
+  //revertBtn.addEventListener("click", e => {
+  //  e.stopPropagation();
+  //  if (history.length > 0) {
+  //    const prev = history.pop();
+  //    spanEl.dataset.currentUsed = prev;
+  //    setSpanText(spanEl, prev);
+  //    inputFormulation.value = prev;
+  //  }
+  //});
 
-  btnWrap.appendChild(editBtn);
-  btnWrap.appendChild(accBtn);
-  btnWrap.appendChild(refBtn);
+  spanBtnWrap.appendChild(accBtn);
+  spanBtnWrap.appendChild(saveAccBtn);
+  spanBtnWrap.appendChild(discardBtn);
+  //spanBtnWrap.appendChild(revertBtn);
+
   spanDiv.appendChild(p);
   spanDiv.appendChild(inputWrap);
-  spanDiv.appendChild(btnWrap);
-
-  spanDiv.addEventListener("click", (event) => {
-    event.stopPropagation();
-  });
+  spanDiv.appendChild(spanBtnWrap);
+  spanDiv.addEventListener("click", e => e.stopPropagation());
 
   return spanDiv
 }
@@ -880,6 +844,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Remove existing messages
       clearAllPopups()
       document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
+      showPopup("success", "Premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione", "no-span-message", btnWrapper);
     } else {
       // Create new success message
       showPopup("success", "Nessuno span non inclusivo trovato, ottimo lavoro!", "no-span-message", btnWrapper);
