@@ -47,7 +47,7 @@ manual testing:
 - [] effettuare test su individui con problemi visivi per i colori del logo (semanticamente avere due colori separati non ha un vero motivo)
 - [] potenzialmente ingrandire il widget: nessun lato negativo nel farlo
 - [] time limit al loading dell'analisi
-- [x] rimettere i popup in alto, nell'aria live, e dargli dei limiti di espansione orizzontale come il widget direi
+- [x] ~~rimettere i popup in alto, nell'aria live,~~ e dargli dei limiti di espansione orizzontale come il widget direi
 
 ### privacy policy 
 
