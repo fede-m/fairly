@@ -39,15 +39,15 @@ manual testing:
 - [] dopo analisi effettuata, prima di aver accettato tutte le proposte, va bloccato il tasto analisi? potremmo farlo sparire
 - [] se riavvio analisi, serve impedire che ri-analizzi cose appena cambiate? andrebbero indicate in qualche modo ed escluse dall'analisi ?
 - [x] pop-up che dica "premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione"
-- [] oppure, navigatore sul main widget per manipolare le singole evidenziazioni: sarebbe più chiaro ma complex e renderebbe affollato il widget
-- [] mettere su una seconda linea i tasti "accetta tutto" e "rifiuta tutto" ?
+- [] ~~oppure, navigatore sul main widget per manipolare le singole evidenziazioni: sarebbe più chiaro ma complex e renderebbe affollato il widget~~
+- [] ~~mettere su una seconda linea i tasti "accetta tutto" e "rifiuta tutto" ?~~
 - [x] cambiare user flow della riformulazione: rimuovere tasto edit, cambiare comportamento del tasto back, aggiungere "salva e accetta"
 - [x] cambiare graficamente per rendere più armonioso il box del cambio annotazione
 - [x] aumentare dimensione del logo iniziale del widget
 - [] effettuare test su individui con problemi visivi per i colori del logo (semanticamente avere due colori separati non ha un vero motivo)
 - [] potenzialmente ingrandire il widget: nessun lato negativo nel farlo
 - [] time limit al loading dell'analisi
-- [] rimettere i popup in alto, nell'aria live, e dargli dei limiti di espansione orizzontale come il widget direi
+- [x] rimettere i popup in alto, nell'aria live, e dargli dei limiti di espansione orizzontale come il widget direi
 
 ### privacy policy 
 
