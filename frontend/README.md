@@ -42,6 +42,9 @@ manual testing:
 - [] mettere su una seconda linea i tasti "accetta tutto" e "rifiuta tutto" ?
 - [] cambiare user flow della riformulazione: rimuovere tasto edit, cambiare comportamento del tasto back, aggiungere "salva e accetta"
 - [] cambiare graficamente per rendere più armonioso il box del cambio annotazione
+- [] aumentare dimesione del logo iniziale del widget
+- [] effettuare test su individui con problemi visivi per i colori del logo (semanticamente avere due colori separati non ha un vero motivo)
+- [] potenzialmente ingrandire il widget: nessun lato negativo nel farlo
 
 ### privacy policy 
 
