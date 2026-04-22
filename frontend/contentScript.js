@@ -850,9 +850,7 @@ function initExtension() {
         s.style.display = "none";
       });
     }
-    if (!e.target.closest(".message-popup") && !e.target.closest("#info-btn-wrapper")) {
-      clearAllPopups();
-    }
+    clearAllPopups();
   });
 }
 

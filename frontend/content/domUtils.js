@@ -103,6 +103,8 @@ function highlightSpans(div, spans) {
         // Add click event 
         spanEl.addEventListener("click", (e) => {
           e.stopPropagation();
+          // close popups
+          clearAllPopups();
           // Hide all other spanDivs
           document.querySelectorAll(".span-div").forEach(s => {
             if (s.id !== spanDiv.id) { s.style.display = "none"; }
