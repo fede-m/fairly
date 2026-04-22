@@ -449,11 +449,26 @@ function createInfoDiv() {
 
       const openPopover = () => {
         closeAllInfoPopovers();
+
+        // Move to infoDiv if not already there
+        const panel = infoBtn.closest(".info-div");
+        if (panel && !panel.contains(infoPopover)) {
+          panel.appendChild(infoPopover);
+        }
+
         infoPopover.hidden = false;
         infoPopover.setAttribute("aria-hidden", "false");
         infoBtn.setAttribute("aria-describedby", popoverId);
         updateButtonLabel();
-        requestAnimationFrame(() => infoPopover.focus());
+
+        // Position relative to infoDiv
+        requestAnimationFrame(() => {
+          const panelRect = panel.getBoundingClientRect();
+          const btnRect = infoBtn.getBoundingClientRect();
+          infoPopover.style.top = (btnRect.bottom - panelRect.top + 6) + "px";
+          infoPopover.style.right = (panelRect.right - btnRect.right) + "px";
+          infoPopover.focus();
+        });
       };
 
       const closePopover = (returnFocusToTrigger = false) => {
@@ -495,7 +510,6 @@ function createInfoDiv() {
       updateButtonLabel();
 
       item.appendChild(infoBtn);
-      item.appendChild(infoPopover);
     }
 
     return item;

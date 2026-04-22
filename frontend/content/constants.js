@@ -7,7 +7,7 @@ const STRATEGIES = Object.freeze(
         "gli studenti e le studenti",
         "i/le studenti"
       ],
-      info: "doppia forma Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi. Quisque vitae sem vitae augue ultrices lobortis."
+      info: "doppia forma Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi."
     },
     CO: {
       id: "CO",
@@ -25,7 +25,7 @@ const STRATEGIES = Object.freeze(
         "lu studentu",
         "lə studentə"
       ],
-      info: "forme innovative Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi. Quisque vitae sem vitae augue ultrices lobortis."
+      info: "forme innovative Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi."
     },
     IV: {
       id: "IV",
@@ -34,7 +34,7 @@ const STRATEGIES = Object.freeze(
         "gli studenti, le studenti e l* student*",
         "gli/le/l* student*"
       ],
-      info: "tripla forma Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi. Quisque vitae sem vitae augue ultrices lobortis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec at pretium ligula. "
+      info: "tripla forma Lorem ipsum dolor sit amet, consectetur adipiscing elit."
     }
   });
 const DOMAINS = ["unito.it"]
