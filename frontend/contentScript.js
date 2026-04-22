@@ -416,7 +416,7 @@ function createInfoDiv() {
     if (strategyInfo) {
       const infoBtn = document.createElement("button");
       infoBtn.className = "info-btn";
-      infoBtn.textContent = "?";
+      infoBtn.innerHTML = ICONS.info;
       infoBtn.type = "button";
 
       const safeId = String(strategyName).toLowerCase().replace(/[^a-z0-9_-]/g, "");
@@ -434,6 +434,7 @@ function createInfoDiv() {
       infoPopover.setAttribute("role", "tooltip");
       infoPopover.setAttribute("aria-label", `Dettagli su ${labelText}`);
       infoPopover.setAttribute("aria-hidden", "true");
+      infoPopover.setAttribute("tabindex", "-1");
       infoPopover.dataset.triggerId = triggerId;
       infoPopover.textContent = strategyInfo;
       infoPopover.hidden = true;
@@ -452,6 +453,7 @@ function createInfoDiv() {
         infoPopover.setAttribute("aria-hidden", "false");
         infoBtn.setAttribute("aria-describedby", popoverId);
         updateButtonLabel();
+        requestAnimationFrame(() => infoPopover.focus());
       };
 
       const closePopover = (returnFocusToTrigger = false) => {
