@@ -664,7 +664,16 @@ function createSpanPopupDiv(spanEl) {
   accBtn.className = "span-action-btn span-acc-btn";
   accBtn.textContent = "Accetta";
   accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
-  accBtn.addEventListener("click", e => { e.stopPropagation(); accept(spanEl); });
+  accBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    const input = inputFormulation.value.trim();
+    if (input) {
+      spanEl.dataset.userContent = input;
+      spanEl.dataset.currentUsed = input;
+      setSpanText(spanEl, input);
+    }
+    accept(spanEl);
+  });
 
   // Save & accept (apply input value then accept)
   const saveAccBtn = document.createElement("button");
