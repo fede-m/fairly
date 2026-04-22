@@ -1,8 +1,6 @@
 name: Sync to GitLab
 
-on:
-  push:
-    branches: [main, security-data-privacy, dockerize-backend, accessibility, store-events-db]
+on: push
 
 jobs:
   sync:
