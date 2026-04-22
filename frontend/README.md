@@ -36,7 +36,7 @@ manual testing:
 
 - [] firefox compatibility
 - [] se non si seleziona nulla, quale opzione viene usata premendo analizza ? sembrerebbe la prima. va bene o va bloccato il bottone se prima non si seleziona?
-- [] dopo analisi effettuata, prima di aver accettato tutte le proposte, va bloccato il tasto analisi? potremmo farlo sparire
+- [] ~~dopo analisi effettuata, prima di aver accettato tutte le proposte, va bloccato il tasto analisi? potremmo farlo sparire~~ no perchè è intenzionale che rifiuti tutto
 - [] se riavvio analisi, serve impedire che ri-analizzi cose appena cambiate? andrebbero indicate in qualche modo ed escluse dall'analisi ?
 - [x] pop-up che dica "premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione"
 - [] ~~oppure, navigatore sul main widget per manipolare le singole evidenziazioni: sarebbe più chiaro ma complex e renderebbe affollato il widget~~
