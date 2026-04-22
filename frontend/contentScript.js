@@ -642,7 +642,7 @@ function createSpanPopupDiv(spanEl) {
 
   const inputLabel = document.createElement("label");
   inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
-  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.\nSalvandola, Fairly la proporrà nelle future analisi.";
+  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.";//\nSalvandola, Fairly la proporrà nelle future analisi.";
   inputLabel.className = "span-div-input-label";
 
   const inputFormulation = document.createElement("input");
@@ -673,39 +673,45 @@ function createSpanPopupDiv(spanEl) {
       setSpanText(spanEl, input);
     }
     accept(spanEl);
+    spanDiv.style.display = "none";
   });
 
   // Save & accept (apply input value then accept)
-  const saveAccBtn = document.createElement("button");
-  saveAccBtn.className = "span-action-btn span-save-acc-btn";
-  saveAccBtn.textContent = "Salva e accetta";
-  saveAccBtn.setAttribute("aria-label", "Salva la tua riformulazione e accetta");
-
-  // Initially disable the button
-  saveAccBtn.disabled = true;
-  // Listen for input changes
-  inputFormulation.addEventListener("input", () => {
-    saveAccBtn.disabled = !inputFormulation.value.trim();
-  });
-
-  saveAccBtn.addEventListener("click", e => {
-    e.stopPropagation();
-    const input = inputFormulation.value.trim();
-    if (input) {
-      history.push(spanEl.dataset.currentUsed);
-      spanEl.dataset.userContent = input;
-      spanEl.dataset.currentUsed = input;
-      setSpanText(spanEl, input);
-    }
-    accept(spanEl);
-  });
+  //const saveAccBtn = document.createElement("button");
+  //saveAccBtn.className = "span-action-btn span-save-acc-btn";
+  //saveAccBtn.textContent = "Salva e accetta";
+  //saveAccBtn.setAttribute("aria-label", "Salva la tua riformulazione e accetta");
+  //
+  //// Initially disable the button
+  //saveAccBtn.disabled = true;
+  //// Listen for input changes
+  //inputFormulation.addEventListener("input", () => {
+  //  saveAccBtn.disabled = !inputFormulation.value.trim();
+  //});
+  //
+  //saveAccBtn.addEventListener("click", e => {
+  //  e.stopPropagation();
+  //  const input = inputFormulation.value.trim();
+  //  if (input) {
+  //    history.push(spanEl.dataset.currentUsed);
+  //    spanEl.dataset.userContent = input;
+  //    spanEl.dataset.currentUsed = input;
+  //    setSpanText(spanEl, input);
+  //  }
+  //  accept(spanEl);
+  //  spanDiv.style.display = "none";
+  //});
 
   // Discard (refuse, restore original)
   const discardBtn = document.createElement("button");
   discardBtn.className = "span-action-btn span-discard-btn";
   discardBtn.textContent = "Rifiuta";
   discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
-  discardBtn.addEventListener("click", e => { e.stopPropagation(); discard(spanEl); });
+  discardBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    discard(spanEl);
+    spanDiv.style.display = "none";
+  });
 
   // Revert to previous
   //const revertBtn = document.createElement("button");
@@ -723,7 +729,7 @@ function createSpanPopupDiv(spanEl) {
   //});
 
   spanBtnWrap.appendChild(accBtn);
-  spanBtnWrap.appendChild(saveAccBtn);
+  //spanBtnWrap.appendChild(saveAccBtn);
   spanBtnWrap.appendChild(discardBtn);
   //spanBtnWrap.appendChild(revertBtn);
 
