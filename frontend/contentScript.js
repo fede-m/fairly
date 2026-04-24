@@ -150,10 +150,6 @@ function setResultButtons(visible) {
 }
 
 function startAnalysis() {
-  // TODO: Store interaction (selected strategy) in MongoDB
-  // TODO: Add loading animation while waiting for the model response
-
-
   /**
    * Initiates the inclusive language analysis on the current Gmail page.
    * First discards any previously highlighted spans, then:

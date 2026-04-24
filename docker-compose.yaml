@@ -1,0 +1,35 @@
+name: fairlyapp
+services:
+    mongodb:
+        image: mongo:7
+        container_name: fairly-mongo
+        restart: unless-stopped
+        env_file:
+            - ./backend/.env
+        healthcheck:
+            test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+        volumes:
+            - fairly-data:/data/db/
+
+    backend:
+        build: 
+            context: ./backend
+        container_name: fairly-backend
+        restart: unless-stopped
+        ports:
+            - 8000:8000
+        env_file:
+            - ./backend/.env
+        
+        depends_on:
+            mongodb:
+                condition: service_healthy
+
+volumes:
+  fairly-data:
+    driver: local
+
+
