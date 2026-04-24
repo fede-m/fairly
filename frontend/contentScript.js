@@ -51,23 +51,15 @@ function initializeSession() {
     return false;
   }
 
-<<<<<<< accessibility
   // Get session ID
   SESSION_ID = crypto.randomUUID();
-  console.log(SESSION_ID);
 
   try {
-=======
-    // Get session ID
-    SESSION_ID = crypto.randomUUID();
-    
->>>>>>> main
     // Get strategies order
     const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
     if (strategyOrder) {
       STRATEGY_ORDER = JSON.parse(strategyOrder);
     } else {
-<<<<<<< accessibility
       const strategies = Object.keys(STRATEGIES);
       const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
       localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
@@ -132,12 +124,6 @@ function showPopup(type, message, id, container, focusTarget = null) {
         : focusTarget;
 
       target?.focus();
-=======
-        const strategies = Object.keys(STRATEGIES);
-        const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
-        localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
-        STRATEGY_ORDER =randomizedOrder;
->>>>>>> main
     }
 
   });
@@ -966,21 +952,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 
 // Create the extension on page load
-<<<<<<< accessibility
 window.addEventListener("load", () => {
   // Prevent multiple injection of the script in Gmail 
   if (window.__fairlyInitialized) return;
 
   window.__fairlyInitialized = true;
   setTimeout(initExtension, 2000);
-=======
-window.addEventListener("load", () => { 
-    // Prevent multiple injection of the script in Gmail 
-    if (window.__fairlyInitialized) return;
-
-    window.__fairlyInitialized = true;
-    setTimeout(initExtension, 2000); 
->>>>>>> main
 });
 
 // Just before reloading the page, we clean up any span introduced by our widget
