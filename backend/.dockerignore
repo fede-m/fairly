@@ -3,18 +3,27 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environments
-.venv
+.venv/
 venv/
 
 *.pt
 *.bin
 *.safetensors
-.cache
+
+.cache/
+**/__pycache__/
+
 .git/
-.gitgnore
+.gitignore
+
+.env
 
 Dockerfile
 docker-compose.yml
-.env
 
+build/
+dist/
+
+*.log
+
+.DS_Store

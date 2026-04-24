@@ -84,3 +84,7 @@ db.user_events.find().pretty()
 // View just the first event
 db.user_events.findOne()
 ```
+
+## TODO:
+
+- [] image size is 11gb, way too big: why? how to reduce?
