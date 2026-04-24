@@ -590,15 +590,24 @@ function createInfoDiv() {
   infoDiv.appendChild(buttonWrapper);
 
   // ESC closes open popover and keeps focus inside widget
+  // focus trap
   infoDiv.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-
-    const openPopover = infoDiv.querySelector('.info-popover:not([hidden])');
-    if (!openPopover) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    closeAllInfoPopovers(openPopover.dataset.triggerId || null);
+    if (e.key === "Escape") {
+      const openPopover = infoDiv.querySelector('.info-popover:not([hidden])');
+      if (!openPopover) return;
+      e.preventDefault();
+      e.stopPropagation();
+      closeAllInfoPopovers(openPopover.dataset.triggerId || null);
+    }
+    if (e.key === "Tab") {
+      const focusable = [...infoDiv.querySelectorAll(
+        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
+      )].filter(el => !el.closest('[aria-hidden="true"]'));
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
   });
 
   // popover closing if clicking oustide of it
@@ -646,6 +655,15 @@ function createSpanPopupDiv(spanEl) {
   // close on esc
   spanDiv.addEventListener("keydown", (e) => {
     if (e.key === "Escape") { spanDiv.style.display = "none"; spanEl.focus(); }
+    if (e.key === "Tab") {
+      const focusable = [...spanDiv.querySelectorAll(
+        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
+      )];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
   });
 
   // Show the old text
