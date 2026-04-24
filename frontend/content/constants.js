@@ -7,13 +7,13 @@ const STRATEGIES = Object.freeze(
         "gli studenti e le studenti",
         "i/le studenti"
       ],
-      info: "doppia forma Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi."
+      info: "La doppia forma utilizza sia il maschile che il femminile, riconoscendo le principali identità di genere."
     },
     CO: {
       id: "CO",
       name: "Nome astratto",
       nestedOptions: ["la comunità studentesca"],
-      info: "nome astratto Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      info: "Il nome astratto evita l'uso del genere, riferendosi al gruppo in modo neutro"
     },
     IO: {
       id: "IO",
@@ -25,7 +25,7 @@ const STRATEGIES = Object.freeze(
         "lu studentu",
         "lə studentə"
       ],
-      info: "forme innovative Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet tincidunt lorem. Etiam ac faucibus mi."
+      info: "Le forme innovative sperimentano nuovi modi per includere le identità di genere. Sono soluzioni creative, spesso adottate in contesti informali o progressisti."
     },
     IV: {
       id: "IV",
@@ -34,7 +34,7 @@ const STRATEGIES = Object.freeze(
         "gli studenti, le studenti e l* student*",
         "gli/le/l* student*"
       ],
-      info: "tripla forma Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      info: "La tripla forma include maschile, femminile e neutro per coprire tutte le identità di genere. È una scelta completa, ma può risultare complessa."
     }
   });
 const DOMAINS = ["unito.it"]
