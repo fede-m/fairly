@@ -87,4 +87,4 @@ db.user_events.findOne()
 
 ## TODO:
 
-- [] image size is 11gb, way too big: why? how to reduce?
+- [] image size is 11gb, way too big: this increase happens at the UV step of the docker file, probably related to the torch dependency which pulls a lot of other stuff. do we need the full dependency? how to reduce?
