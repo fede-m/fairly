@@ -150,10 +150,6 @@ function setResultButtons(visible) {
 }
 
 function startAnalysis() {
-  // TODO: Store interaction (selected strategy) in MongoDB
-  // TODO: Add loading animation while waiting for the model response
-
-
   /**
    * Initiates the inclusive language analysis on the current Gmail page.
    * First discards any previously highlighted spans, then:
@@ -166,50 +162,46 @@ function startAnalysis() {
    * @returns {void}
   */
 
-    // Perform both detection and generation sequentially 
-    const currentLocation = window.location.href; 
-    // Delete all spans that were not accepted
-    discard(span = undefined, ref_reason = "analysis_refresh");
-    if (currentLocation.startsWith("https://mail.google.com/")) { 
-        // Select all elements on the page which are editable (the open emails) 
-        const editableElements = document.querySelectorAll('[contenteditable="true"]'); 
-        // Check if there are open emails 
-        if (editableElements.length > 0) {
-            
-            // Remove existing warning popup
-            const existingWarning = document.getElementById("warning-msg");
-            if (existingWarning) existingWarning.remove()
-            
-            // Store editable elements with their text content 
-            const dataObj = {}; 
-            const selected = document.querySelector(".checklist-choice:checked");
+  // Perform both detection and generation sequentially 
+  const currentLocation = window.location.href;
+  // Delete all spans that were not accepted
+  discard();
 
-            if (!selected) {
-                setLoadingState(false);
-                console.warn("No strategy selected!");
-                return;
-            }
+  if (currentLocation.startsWith("https://mail.google.com/")) {
+    // remove pop-ups
+    clearAllPopups()
+    // Select all elements on the page which are editable (the open emails) 
+    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+    // Check if there are open emails 
+    if (editableElements.length > 0) {
 
-            // Prepare payload for background
-            dataObj["strategy"] = selected.id; 
-            dataObj["data"] = [];
-            dataObj["session_id"] = SESSION_ID;
-            dataObj["user_id"] = USER_EMAIL;
+      // Store editable elements with their text content 
+      const dataObj = {};
+      const selected = document.querySelector(".checklist-choice:checked");
 
-            editableElements.forEach((element) => {
-              const data = {};
-              const key = element.id;
-              data["id"] = key;
-              data["text"] = element.innerText;
-              dataObj["data"].push(data);
-          });
+      if (!selected) {
+          setLoadingState(false);
+          console.warn("No strategy selected!");
+          return;
+      }
 
-        console.log(dataObj);
-        // Send data to background 
-        chrome.runtime.sendMessage({
-          action: "analyseData",
-          payload: dataObj,
-        })
+      // Prepare payload for background
+      dataObj["strategy"] = selected.id;
+      dataObj["data"] = []
+      editableElements.forEach((element) => {
+        const data = {};
+        const key = element.id;
+        data["id"] = key;
+        data["text"] = element.innerText;
+        dataObj["data"].push(data);
+      });
+
+      console.log(dataObj);
+      // Send data to background 
+      chrome.runtime.sendMessage({
+        action: "analyseData",
+        payload: dataObj,
+      })
     } else {
       // Create new warning popup
       const btnWrapper = document.getElementById("info-btn-wrapper");
@@ -654,74 +646,6 @@ function createSpanPopupDiv(spanEl) {
 
   saveBtn.style.display = "none";
   saveBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      storeUserInput(inputFormulation, spanEl)
-  });
-
-  const revertChangeBtn = document.createElement("button");
-  revertChangeBtn.className = "revert-btn";
-  revertChangeBtn.innerHTML = ICONS.revert;
-
-  revertChangeBtn.style.display = "none";
-
-  revertChangeBtn.addEventListener("click", (event) => {
-      event.stopPropagation();
-      revertUserInput(spanEl);
-  });
-
-  inputWrap.appendChild(inputFormulation);
-  inputWrap.appendChild(saveBtn);
-  inputWrap.appendChild(revertChangeBtn);
-
-  // Display buttons to change/accept/refuse option
-  const btnWrap = document.createElement("div");
-  btnWrap.className = "btn-wrapper";
-
-  // Edit current option (allow user to input their reformulation)
-  const editBtn = document.createElement("button");
-  editBtn.className = "edit-btn";
-  editBtn.innerHTML = ICONS.edit;
-
-  editBtn.addEventListener("click", () => {
-      if (inputFormulation.style.display == "none") {
-          inputFormulation.style.display = "block";
-          saveBtn.style.display = "block";
-          revertChangeBtn.style.display = "block";
-      } else {
-          inputFormulation.style.display = "none";
-          saveBtn.style.display = "none";
-          revertChangeBtn.style.display = "none";
-      }
-    })
-
-    // Accept current reformulation for the span
-    const accBtn = document.createElement("button");
-    accBtn.className = "small-acc-btn";
-    accBtn.innerHTML = ICONS.accept;
-    
-    accBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        accept(spanEl);
-    });
-
-    // Refuse reformulations for the span (keep the original text)
-    const refBtn = document.createElement("button");
-    refBtn.className = "small-ref-btn";
-    refBtn.innerHTML = ICONS.refuse;
-
-    refBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        discard(spanEl);
-    })
-
-    btnWrap.appendChild(editBtn);
-    btnWrap.appendChild(accBtn);
-    btnWrap.appendChild(refBtn);
-    spanDiv.appendChild(p);
-    spanDiv.appendChild(inputWrap);
-    spanDiv.appendChild(btnWrap);
-
-    spanDiv.addEventListener("click", (event) => {
     event.stopPropagation();
     const input = inputFormulation.value.trim();
     if (input) {

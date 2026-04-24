@@ -4,7 +4,7 @@ import os
 from models import Request, EventRequest, Response, OutputData, EventType, SpanEvent
 from llm import detection, generation
 
-# from database import insert_event
+from database import insert_event
 
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 app = FastAPI()
@@ -12,10 +12,15 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # Specify the id of the Chrome extension to allow it to call the backend
-    allow_origins = [f"chrome-extension://{CHROME_EXTENSION_ID}",  "http://localhost:3000", "http://localhost:8000"],
-    allow_methods = ["GET", "POST"],
-    allow_headers = ["*"]
+    allow_origins=[f"chrome-extension://{CHROME_EXTENSION_ID}"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
+
+# @app.get("/")
+# def root():
+#     return {"status": 200}
+
 
 @app.post("/analyse")
 async def analyse(request: Request):
