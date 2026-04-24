@@ -3,25 +3,44 @@
   "name": "Fairly",
   "version": "0.1.0",
   "description": "Check your text and detect non-inclusive language in your Google products",
-  "permissions": ["storage", "tabs", "activeTab", "scripting"],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
-    "https://mail.google.com/*",
-    "https://docs.google.com/*"
+    "https://mail.google.com/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://mail.google.com/*", "https://docs.google.com/*"],
-      "js": ["content/constants.js", "content/icons.js", "content/actions.js", "content/domUtils.js","contentScript.js"],
-      "css": ["contentStyles.css"]
+      "matches": [
+        "https://mail.google.com/*"
+      ],
+      "js": [
+        "content/constants.js",
+        "content/icons.js",
+        "content/actions.js",
+        "content/domUtils.js",
+        "contentScript.js"
+      ],
+      "css": [
+        "contentStyles.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["fairly_logo.png","fairly_logo_complete.png"],
-      "matches": ["https://mail.google.com/*", "https://docs.google.com/*"]
+      "resources": [
+        "fairly_logo.png",
+        "fairly_logo_complete.png",
+        "logo_merge2.png",
+        "logo_merge.png",
+        "logo_merge3.png"
+      ],
+      "matches": [
+        "https://mail.google.com/*"
+      ]
     }
   ],
   "action": {

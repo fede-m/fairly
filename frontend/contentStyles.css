@@ -1,65 +1,93 @@
+:root {
+  /* Brand */
+  --color-primary: rgb(30, 31, 84);
+  --color-primary-light: #e4fbfbee;
+
+  /* Surfaces */
+  --color-white: #fff;
+  --color-surface: #f7fafd;
+  --color-input-bg: #faf8ff;
+
+  /* Semantic actions */
+  --color-accept: #27AA5E;
+  --color-accept-bg: #c0f0d4;
+  --color-refuse: #dc3545;
+  --color-warning-bg: #f0e5c0;
+  --color-warning-border: rgba(204, 170, 46, 0.3);
+  --save-and-accept: #008CBA;
+
+  /* Highlight */
+  --color-highlight: rgb(255, 200, 0);
+  --color-highlight-hover: rgb(255, 126, 0);
+
+  /* Focus */
+  --color-focus: rgb(0, 204, 255);
+
+  /* States */
+  --color-disabled: #c4c1c1;
+
+  /* logo */
+  --color-logo-bg: var(--color-white);
+
+  /* top logo bar */
+  --color-logo-bar: color-mix(in srgb, #4C956C 50%, transparent);
+  ;
+}
+
 .widget-div {
   position: fixed;
-  bottom: 30px;
-  width: 50px;
+  bottom: 60px;
+  width: 30px;
   height: 50px;
-  right: 30px;
+  right: 80px;
   z-index: 9999;
 }
 
 .fairly-logo {
-  width: 50px;
-  height: 50px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   object-fit: cover;
   object-position: center;
-  border: 1.5px solid rgb(32,33,85);
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-logo-bg);
 }
 
 .info-div {
   position: absolute;
   bottom: 60px;
   right: 0px;
-  width: 300px;
-  height: 300px; 
-  background: #fff;
+  width: 340px;
+  background: var(--color-white);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  padding: 36px 16px 16px 16px;
+  padding: 16px;
   z-index: 10000;
   display: none;
+  min-height: 320px;
+  height: auto;
 }
 
 
-.info-div p{
-  font-size: 12px;
-  color: rgb(30, 31, 84);
-  margin: 25px 0 8px 0;
+.info-div p {
+  font-size: 16px;
+  color: var(--color-primary);
+  margin: 8px 0 8px 0;
   font-weight: bold;
   text-align: center;
 }
 
-.top-bar {
-  display: flex;
-  justify-content : center;
-  align-items: center;
-  align-content: center;
-  background-color: #e4fbfbee;
-  padding: 6px 10px;
-  border-radius: 6px 6px 0 0;
-  position: absolute;
-  top:0;
-  left: 0;
-  right: 0;
-}
-
 .fairly-logo-complete {
-  height: 35px;
-  width: 55px;
-  margin: auto;
   display: block;
+  margin: 0 auto 4px auto;
+  height: clamp(24px, 4vw, 42px);
+  /* scales with viewport/zoom, capped */
+  width: auto;
+  /* preserves aspect ratio */
+  max-width: 70%;
+  /* never overflows the bar horizontally */
 }
 
 /* Check list options */
@@ -67,21 +95,25 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 14px;
   max-height: 200px;
-  overflow: auto;
+  padding-bottom: 8px;
+  /* padding necessario per shadow dell'ultima option */
+  overflow-x: hidden;
+  overflow-y: scroll;
+  /* prevents container from expanding */
 }
 
 /* Custom scrollbar for info-div */
 .checklist::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
   background: transparent;
 }
 
 .checklist::-webkit-scrollbar-thumb {
-  background: rgb(30, 31, 84); 
+  background: solid color-mix(in srgb, var(--color-primary) 50%, transparent);
   border-radius: 8px;
-  border: 1px solid #fff;
+  border: 1px solid var(--color-white);
 }
 
 .checklist::-webkit-scrollbar-track {
@@ -90,36 +122,41 @@
 }
 
 .checklist-item {
-  background: #f7fafd;
+  background: var(--color-surface);
   border-radius: 8px;
-  padding: 10px 10px;
-  box-shadow: 0 1px 3px rgba(32,33,85,0.07);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(32, 33, 85, 0.07);
   transition: box-shadow 0.2s;
   position: relative;
-  font-size: 13px;
+  font-size: 16px;
+  box-sizing: border-box;
+  width: 100%
 }
 
 .checklist-item:hover {
-  box-shadow: 0 4px 12px rgba(160,32,240,0.18);
+  box-shadow: 0 4px 12px rgba(160, 32, 240, 0.18);
 }
 
 .thickbox {
   width: 8px;
   height: 8px;
-  accent-color: rgb(30, 31, 84);
+  accent-color: var(--color-primary);
   margin-right: 10px;
   border-radius: 50%;
   vertical-align: middle;
   appearance: none;
-  border: 1.5px solid rgb(30, 31, 84);
-  background: #fff;
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-white);
   cursor: pointer;
-  flex-shrink: 0;   /* Prevent shrinking */
-  flex-grow: 0;     /* Prevent growing */
+  flex-shrink: 0;
+  /* Prevent shrinking */
+  flex-grow: 0;
+  /* Prevent growing */
 }
 
 .thickbox:checked {
-  background: rgb(30, 31, 84);
+  background: var(--color-primary);
 }
 
 .nested-checklist {
@@ -136,13 +173,13 @@
 
 .checklist-item label,
 .nested-checklist label {
-  font-size: 13px;
+  font-size: 16px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: left;
-  text-align: left;  
-  gap: 8px; 
+  text-align: left;
+  gap: 8px;
 }
 
 .options-container {
@@ -150,7 +187,6 @@
   align-items: center;
 }
 
-.refresh-btn,
 .arrow-btn {
   background-color: transparent;
   border: none;
@@ -161,7 +197,6 @@
   align-items: center;
 }
 
-.refresh-btn svg,
 .arrow-btn svg {
   display: flex;
   width: 16px;
@@ -170,52 +205,49 @@
 
 .btn-wrapper {
   display: flex;
+  align-items: stretch;
   justify-content: flex-end;
-  align-items: center;
-  margin-top: 16px;
+  margin-top: 12px;
+  /*6*/
   gap: 10px;
+  /*4*/
+}
+
+.accept-all-btn,
+.refuse-all-btn,
+.analyze-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 6px 14px;
+  /* 7px 4px;*/
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-radius: 12px;
+  /*box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);*/
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .accept-all-btn {
-  padding: 6px 14px;
-  background: #fff;
-  color: rgb(30, 31, 84);
-  border: 1px solid #2ecc71;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
-  cursor: pointer;
-  outline: none;
+  border: 2px solid var(--color-accept);
+  color: var(--color-accept);
 }
 
 .refuse-all-btn {
-  padding: 6px 14px;
-  background: #fff ;
-  color: rgb(30, 31, 84);
-  border: 1px solid #cc462e;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
-  cursor: pointer;
-  outline: none;
+  border: 2px solid var(--color-refuse);
+  color: var(--color-refuse);
 }
-
 
 .analyze-btn {
-  padding: 6px 14px;
-  background: #fff;
-  border: 1px solid rgb(30, 31, 84);
-  color: rgb(30, 31, 84);
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(62, 142, 247, 0.12);
-  cursor: pointer;
-  outline: none;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
 }
-
 
 .analyze-btn:disabled,
 .accept-all-btn:disabled {
@@ -225,139 +257,146 @@
   /* filter: grayscale(30%); */
   background-color: #c4c1c1;
 }
+
 .highlight {
   position: relative;
-  background-color: rgb(255, 200, 0);
+  background-color: var(--color-highlight);
   border-radius: 3px;
-  padding: 0 2px; 
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* subtle shadow */
+  padding: 0 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  /* subtle shadow */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
 
 .highlight:hover {
-  background-color: rgb(255, 126, 0); 
+  background-color: var(--color-highlight-hover);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   cursor: pointer;
 }
 
-.span-div{
+.span-div {
   position: absolute;
-  min-height: fit-content;
-  width: 250px;
+  width: 280px;
   z-index: 999;
-  background: #f7fafd;
-  box-shadow: 0 1px 3px rgba(32,33,85,0.07);
+  background: var(--color-surface);
+  border: 1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+  box-shadow: 0 2px 8px rgba(32, 33, 85, 0.12);
   border-radius: 8px;
-  padding: 10px 10px;
-  transition: box-shadow 0.2s;
-  font-size: 13px;
+  padding: 12px;
+  font-size: 16px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
   cursor: auto;
 }
 
-
+.span-div-input-label {
+  display: block;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
 
 .span-div .input-wrap {
   display: flex;
-  margin-top: auto;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 10px;
-
+  flex-direction: column;
 }
 
 .span-div input[type="text"] {
-  width: 80%;
-  height: 26px;
-  padding: 8px 12px;
+  width: 100%;
+  padding: 8px 10px;
   margin: 8px 0;
-  border: 1px solid ;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 15px;
   outline: none;
-  background: #faf8ff;
-  color: rgb(30, 31, 84);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: var(--color-input-bg);
+  color: var(--color-primary);
   box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .span-div input[type="text"]:focus {
-  border-color: rgb(0, 204, 255);
-  box-shadow: 0 0 0 2px rgba(32,33,85,0.07);
-  background: #fff;
-  color: #000;
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px rgba(0, 204, 255, 0.2);
+  background: var(--color-white);
 }
 
-.span-div .edit-btn,
-.span-div .save-btn,
-.span-div .revert-btn {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;           /* Prevent shrinking */
-  min-height: 24px;          /* Prevent shrinking */
-  box-sizing: border-box; 
-  border-radius: 50%;
+.span-div-btn-wrapper {
+  display: flex;
+  align-items: stretch;
+  /* tutti stessa altezza */
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.span-action-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 7px 4px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-white);
+  color: var(--color-primary);
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgb(30, 31, 84);
-  background: #fff;
-  display: flex;
-  color: rgb(30, 31, 84);
-  padding: 0;
-  cursor: pointer;
-
 }
 
-
-.span-div .btn-wrapper {
-  margin-top: auto;
-  justify-content: flex-start;
-  padding: 10px 0px;
+.span-action-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
-.small-acc-btn {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: #2ecc71;
-  display: flex;
-  color: #fff;
-  padding: 0;
-  cursor: pointer;
+/* per-button overrides */
+.span-acc-btn {
+  border-color: var(--color-accept);
+  color: var(--color-accept);
 }
 
-.small-acc-btn svg {
-  display: block;
-  margin: 0 auto;
-  width: 16px;
-  height: 16px;
+.span-save-acc-btn {
+  border-color: var(--save-and-accept);
+  color: var(--save-and-accept);
 }
 
-.small-ref-btn {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: #cc462e;
-  color: #fff;
-  padding: 0;
-  display: flex;
-  cursor: pointer;
+.span-discard-btn {
+  border-color: var(--color-refuse);
+  color: var(--color-refuse);
 }
 
-.small-ref-btn svg {
-  display: block;
-  margin: 0 auto;
-  width: 16px;
-  height: 24px;
+/* hover states */
+.span-acc-btn:hover {
+  background: var(--color-accept);
+  color: var(--color-white);
 }
+
+.span-save-acc-btn:hover {
+  background: var(--save-and-accept);
+  color: var(--color-white);
+}
+
+.span-discard-btn:hover {
+  background: var(--color-refuse);
+  color: var(--color-white);
+}
+
+.span-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--color-white);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/*.span-revert-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+}*/
 
 .message-popup {
   position: absolute;
@@ -365,17 +404,21 @@
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 8px;
-  padding: 10px 32px 10px 12px;
-  
+  padding: 10px 42px 10px 10px;
+  text-align: center;
+  /* increased from 32px */
+
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.15);
-  /* color: #2ecc71; */
-  
-  font-size: 13px;
+  /* color: var(--color-accept); */
+
+  font-size: 16px;
   font-weight: 500;
-  white-space: nowrap;
   z-index: 10;
   animation: fadeInUp 0.3s ease;
+  max-width: 300px;
+  width: max-content;
+  word-break: break-word
 }
 
 .message-popup::after {
@@ -385,7 +428,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  /* border-top-color: #fff; */
+  /* border-top-color: var(--color-white); */
   border-top-color: rgba(46, 204, 113, 0.1);
 }
 
@@ -401,12 +444,46 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--color-primary);
   transition: color 0.2s;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .popup-close-btn:hover {
-  color: rgb(30, 31, 84);
+  color: #000
+}
+
+.popup-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.analyze-btn:hover,
+.analyze-btn:focus-visible {
+  background: var(--color-primary);
+  color: var(--color-white);
+  outline: none;
+}
+
+.accept-all-btn:hover {
+  background: var(--color-accept);
+  color: var(--color-white);
+}
+
+.accept-all-btn:focus-visible {
+  outline: 2px solid var(--color-accept);
+  outline-offset: 2px;
+}
+
+.refuse-all-btn:hover {
+  background: var(--color-refuse);
+  color: var(--color-white);
+}
+
+.refuse-all-btn:focus-visible {
+  outline: 2px solid var(--color-refuse);
+  outline-offset: 2px;
 }
 
 @keyframes fadeInUp {
@@ -414,6 +491,7 @@
     opacity: 0;
     transform: translateX(-50%) translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
@@ -421,14 +499,122 @@
 }
 
 .success-popup {
-  background: #c0f0d4;
+  background: var(--color-accept-bg);
   border: 1px solid rgba(46, 204, 113, 0.3);
-  color:rgb(30, 31, 84);
+  color: var(--color-primary);
 }
-  
+
 
 .warning-popup {
-  background: #f0e5c0;
+  background: var(--color-warning-bg);
   border: 1px solid rgba(204, 170, 46, 0.3);
-  color:rgb(30, 31, 84);
+  color: var(--color-primary);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.thickbox:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+/* users that do not want animations */
+@media (prefers-reduced-motion: reduce) {
+  .message-popup {
+    animation: none;
+  }
+
+  .highlight,
+  .checklist-item {
+    transition: none;
+  }
+}
+
+/* basic spinner animation for the analyzza loading */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.info-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-primary);
+  background: var(--color-white);
+  color: var(--color-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.info-btn::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  right: -10%;
+  bottom: -10%;
+  width: 120%;
+  height: 120%;
+}
+
+.info-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.info-popover {
+  position: absolute;
+  width: 220px;
+  background: var(--color-white);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(32, 33, 85, 0.12);
+  z-index: 10001;
+}
+
+.info-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* hide on narrow widget */
+@media (max-width: 260px) {
+  .info-btn {
+    display: none;
+  }
 }
