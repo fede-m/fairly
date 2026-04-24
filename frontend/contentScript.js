@@ -97,7 +97,7 @@ function clearAllPopups() {
   });
 }
 
-function showPopup(type, message, id, container) {
+function showPopup(type, message, id, container, focusTarget = null) {
   clearAllPopups()
 
   container.style.position = "relative";
@@ -117,9 +117,17 @@ function showPopup(type, message, id, container) {
   closeBtn.addEventListener("click", () => {
     popup.remove();
     document.getElementById("fairly-live").textContent = "";
-  });
 
-  console.log("btnWrapper found:", container);
+    // Usato per fine analisi spostare focus sugli span
+    if (focusTarget) {
+      const target = typeof focusTarget === "string"
+        ? document.querySelector(focusTarget)
+        : focusTarget;
+
+      target?.focus();
+    }
+
+  });
 
   popup.appendChild(msg);
   popup.appendChild(closeBtn);
@@ -631,6 +639,11 @@ function createSpanPopupDiv(spanEl) {
   spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.original}`);
   spanDiv.setAttribute("tabindex", "-1");
 
+  // close on esc
+  spanDiv.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { spanDiv.style.display = "none"; spanEl.focus(); }
+  });
+
   // Show the old text
   const p = document.createElement("p");
   //p.style.padding = "0px";
@@ -672,6 +685,12 @@ function createSpanPopupDiv(spanEl) {
       spanEl.dataset.currentUsed = input;
       setSpanText(spanEl, input);
     }
+
+    // move focus to the next span
+    const all = [...document.querySelectorAll("span.highlight")];
+    const next = all[all.indexOf(spanEl) + 1];
+    (next ?? document.getElementById("analyze")).focus();
+
     accept(spanEl);
     spanDiv.style.display = "none";
   });
@@ -709,6 +728,12 @@ function createSpanPopupDiv(spanEl) {
   discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
   discardBtn.addEventListener("click", e => {
     e.stopPropagation();
+
+    // move focus to the next span
+    const all = [...document.querySelectorAll("span.highlight")];
+    const next = all[all.indexOf(spanEl) + 1];
+    (next ?? document.getElementById("analyze")).focus();
+
     discard(spanEl);
     spanDiv.style.display = "none";
   });
@@ -883,11 +908,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       setResultButtons(true);
       // Remove existing messages
       clearAllPopups()
-      document.getElementById("fairly-live").textContent = "Analisi completata. Sono state trovate delle modifiche.";
-      showPopup("success", "Premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione", "no-span-message", btnWrapper);
+      showPopup("success", "Analisi completata. Premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione.", "no-span-message", btnWrapper, "span.highlight");
     } else {
       // Create new success message
-      showPopup("success", "Nessuno span non inclusivo trovato, ottimo lavoro!", "no-span-message", btnWrapper);
+      showPopup("success", "Analisi completata. Nessuno span non inclusivo trovato, ottimo lavoro!", "no-span-message", btnWrapper);
       // Keep analyze button as is, hide "Accept all" and "Refuse all", as there are no spans to accept
       setResultButtons(false);
     }

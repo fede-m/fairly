@@ -91,11 +91,27 @@ function highlightSpans(div, spans) {
         spanEl.className = "highlight";
         spanEl.innerText = part.reformulation;
         spanEl.setAttribute("contenteditable", "false");
+        // button-like behaviour
+        spanEl.setAttribute("role", "button");
+        // reachable by tab key
+        spanEl.tabIndex = 0
+        // aria label optimist
+        spanEl.setAttribute("aria-label",
+          `Suggerimento: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
+        );
         // Store original text and reformulation in the object 
         spanEl.dataset.original = part.text;
         spanEl.dataset.reformulation = part.reformulation;
         spanEl.dataset.currentUsed = part.reformulation;
         spanEl.dataset.emailId = div.id;
+
+        // space and enter open the spandiv
+        spanEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            spanEl.click();
+          }
+        });
 
         const spanDiv = createSpanPopupDiv(spanEl);
 
