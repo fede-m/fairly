@@ -189,19 +189,19 @@ function startAnalysis() {
         return;
       }
 
-            // Prepare payload for background
-            dataObj["strategy"] = selected.id; 
-            dataObj["data"] = [];
-            dataObj["session_id"] = SESSION_ID;
-            dataObj["user_id"] = USER_EMAIL;
+      // Prepare payload for background
+      dataObj["strategy"] = selected.id; 
+      dataObj["data"] = [];
+      dataObj["session_id"] = SESSION_ID;
+      dataObj["user_id"] = USER_EMAIL;
 
-            editableElements.forEach((element) => { 
-                const data = {}; 
-                const key = element.id; 
-                data["id"] = key; 
-                data["text"] = element.innerText;
-                dataObj["data"].push(data); 
-            });
+      editableElements.forEach((element) => { 
+          const data = {}; 
+          const key = element.id; 
+          data["id"] = key; 
+          data["text"] = element.innerText;
+          dataObj["data"].push(data); 
+      });
 
       console.log(dataObj);
       // Send data to background 
