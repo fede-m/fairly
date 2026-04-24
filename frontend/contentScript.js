@@ -154,10 +154,6 @@ function setResultButtons(visible) {
 }
 
 function startAnalysis() {
-  // TODO: Store interaction (selected strategy) in MongoDB
-  // TODO: Add loading animation while waiting for the model response
-
-
   /**
    * Initiates the inclusive language analysis on the current Gmail page.
    * First discards any previously highlighted spans, then:
@@ -173,7 +169,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard(span = undefined, ref_reason = "analysis_refresh"span = undefined, ref_reason = "analysis_refresh");
+  discard(span = undefined, ref_reason = "analysis_refresh");
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -715,35 +711,9 @@ function createSpanPopupDiv(spanEl) {
     const next = all[all.indexOf(spanEl) + 1];
     (next ?? document.getElementById("analyze")).focus();
 
-    accept(spanEl);
+    accept(spanEl, input ? true : false);
     spanDiv.style.display = "none";
   });
-
-  // Save & accept (apply input value then accept)
-  //const saveAccBtn = document.createElement("button");
-  //saveAccBtn.className = "span-action-btn span-save-acc-btn";
-  //saveAccBtn.textContent = "Salva e accetta";
-  //saveAccBtn.setAttribute("aria-label", "Salva la tua riformulazione e accetta");
-  //
-  //// Initially disable the button
-  //saveAccBtn.disabled = true;
-  //// Listen for input changes
-  //inputFormulation.addEventListener("input", () => {
-  //  saveAccBtn.disabled = !inputFormulation.value.trim();
-  //});
-  //
-  //saveAccBtn.addEventListener("click", e => {
-  //  e.stopPropagation();
-  //  const input = inputFormulation.value.trim();
-  //  if (input) {
-  //    history.push(spanEl.dataset.currentUsed);
-  //    spanEl.dataset.userContent = input;
-  //    spanEl.dataset.currentUsed = input;
-  //    setSpanText(spanEl, input);
-  //  }
-  //  accept(spanEl);
-  //  spanDiv.style.display = "none";
-  //});
 
   // Discard (refuse, restore original)
   const discardBtn = document.createElement("button");
@@ -761,21 +731,6 @@ function createSpanPopupDiv(spanEl) {
     discard(spanEl);
     spanDiv.style.display = "none";
   });
-
-  // Revert to previous
-  //const revertBtn = document.createElement("button");
-  //revertBtn.className = "span-action-btn span-revert-btn";
-  //revertBtn.textContent = "Ripristina";
-  //revertBtn.setAttribute("aria-label", "Ripristina la riformulazione precedente");
-  //revertBtn.addEventListener("click", e => {
-  //  e.stopPropagation();
-  //  if (history.length > 0) {
-  //    const prev = history.pop();
-  //    spanEl.dataset.currentUsed = prev;
-  //    setSpanText(spanEl, prev);
-  //    inputFormulation.value = prev;
-  //  }
-  //});
 
   spanBtnWrap.appendChild(accBtn);
   //spanBtnWrap.appendChild(saveAccBtn);

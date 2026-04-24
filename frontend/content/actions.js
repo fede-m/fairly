@@ -74,7 +74,7 @@ function discard(span = undefined, ref_reason = "user_refuse"){
             });
 } 
 
-function accept(span = undefined){
+function accept(span = undefined, input = false){
     const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
     // No spans to modify
     if (highlightedSpans.length === 0) return;
@@ -93,7 +93,7 @@ function accept(span = undefined){
     grouped.forEach((spanList, eId) =>{
         // Prepare event to store
         const acceptEvent = {
-                event: "accept",
+                event: input ? "edit" : "accept",
                 spans: [],
                 session_id: SESSION_ID,
                 user_id: USER_EMAIL,
@@ -131,87 +131,4 @@ function accept(span = undefined){
                 action:"storeEvent",
                 payload: acceptEvents
             });
-}
-
-function storeUserInput(inputFormulation, span) {
-    const input = inputFormulation.value.trim();
-    if (input) {
-        span.dataset.userContent = input;
-        span.dataset.currentUsed = input;
-        const textNode = Array.from(span.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-        if (textNode) {
-            textNode.nodeValue = input;
-        } else {
-            span.insertBefore(document.createTextNode(input), span.firstChild)
-        }
-        // Clean the input formulation
-        inputFormulation.value = "";
-    }
-
-    // Send edit event
-    const original = span.dataset.original; 
-    const reformulation = span.dataset.reformulation; 
-
-    let eId = span.dataset.emailId;
-    const editEvent = [
-        {
-            event: "edit",
-            spans: [
-                {
-                    original: original,
-                    reformulation: reformulation,
-                    current_used: input,
-                    user_form: input
-                }
-            ],
-            session_id: SESSION_ID,
-            user_id: USER_EMAIL,
-            email_id: eId,
-        }
-    ]
-
-    chrome.runtime.sendMessage({
-        action: "storeEvent",
-        payload: editEvent
-    })
-}
-
-
-function revertUserInput(span) {
-    const refValue = span.dataset.reformulation;
-    if (refValue) {
-        span.dataset.currentUsed = refValue;
-        const textNode = Array.from(span.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-        if (textNode) {
-            textNode.nodeValue = refValue;
-        } else {
-            span.insertBefore(document.createTextNode(refValue), span.firstChild);
-        }
-    }
-
-    const original = span.dataset.original;
-    const reformulation = span.dataset.reformulation;
-    const current = span.dataset.currentUsed;
-    let eId = span.dataset.emailId;
-
-    const revertEvent = [
-        {
-            event: "revert",
-            spans: [
-                {
-                    original: original,
-                    reformulation: reformulation,
-                    current_used: current,
-                }
-            ],
-            session_id: SESSION_ID,
-            user_id: USER_EMAIL,
-            email_id: eId,
-        }
-    ]
-
-    chrome.runtime.sendMessage({
-        action: "storeEvent",
-        payload: revertEvent
-    })
 }

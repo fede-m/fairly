@@ -59,5 +59,5 @@ async def analyse(request: Request):
 # da rivedere
 @app.post("/store-event")
 async def store_event(request: list[EventRequest]):
-    # insert_event(request)
+    insert_event(request)
     return {"status": 200, "message": "Everything is fine"}

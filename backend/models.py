@@ -40,7 +40,6 @@ class EventType(str, Enum):
     ACCEPT = "accept"
     REFUSE = "refuse"
     EDIT = "edit"
-    REVERT = "revert"
     ANALYSIS = "analysis"
 
 class RefuseReason(str, Enum):
