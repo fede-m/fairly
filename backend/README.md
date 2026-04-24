@@ -35,13 +35,17 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ### Test Connection on MongoDB
 - In order to activate and mount the Docker Compose, run:
 ```bash
-docker-compose up
+docker compose up
 ```
 
 > [!WARNING]
 > If you change something in the backend, you need to re-build the images to have the changes included!
 > This means you need to run the command with the `--build` flag:
-> `docker-compose up --build`
+> `docker compose up --build`
+
+> [!WARNING]
+> A miriad of issues can appear using docker
+> `sudo systemctl start docker` to start the docker daemon could help
 
 - This should:
   - Create a Docker network 
