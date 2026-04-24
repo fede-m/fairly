@@ -174,8 +174,15 @@ function startAnalysis() {
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
     clearAllPopups()
+
     // Select all elements on the page which are editable (the open emails) 
-    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+    const editableElements = Array.from(document.querySelectorAll('div[role="textbox"][contenteditable="true"]'))
+      .filter(el => {
+        // Check if element has a parent with data-compose-id and is visible
+        const hasComposeParent = el.closest('[data-compose-id]') !== null;
+        const isVisible = el.offsetParent !== null;
+        return hasComposeParent && isVisible;
+      });
     // Check if there are open emails 
     if (editableElements.length > 0) {
 
@@ -881,7 +888,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     let hasSpans = false;
     for (const id in response.results) {
       // Use ID to get the correct contenteditable window 
-      const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
+      const div = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
       );
       const spans = response.results[id].unfair_spans;
       if (spans && spans.length > 0) {
