@@ -439,8 +439,6 @@ function createInfoDiv() {
       const infoPopover = document.createElement("div");
       infoPopover.className = "info-popover";
       infoPopover.id = popoverId;
-      infoPopover.setAttribute("role", "tooltip");
-      infoPopover.setAttribute("aria-label", `Dettagli su ${labelText}`);
       infoPopover.setAttribute("aria-hidden", "true");
       infoPopover.setAttribute("tabindex", "-1");
       infoPopover.dataset.triggerId = triggerId;
@@ -477,6 +475,12 @@ function createInfoDiv() {
           infoPopover.style.right = (panelRect.right - btnRect.right) + "px";
           infoPopover.focus();
         });
+
+        // screenreader reads this
+        const srHint = document.createElement("span");
+        srHint.className = "sr-only";
+        srHint.textContent = "Premi Escape per chiudere.";
+        infoPopover.appendChild(srHint);
       };
 
       const closePopover = (returnFocusToTrigger = false) => {
@@ -876,6 +880,17 @@ function initExtension() {
       });
     }
     clearAllPopups();
+  });
+
+  // close the widget if esc is pressed and nothing else is open
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (infoDiv.style.display === "none") return;
+    if (infoDiv.querySelector(".info-popover:not([hidden])")) return;
+    if (document.querySelector(".span-div[style*='display: block']")) return;
+    infoDiv.style.display = "none";
+    img.setAttribute("aria-expanded", "false");
+    img.focus();
   });
 }
 
