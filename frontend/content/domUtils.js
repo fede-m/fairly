@@ -89,7 +89,8 @@ function highlightSpans(div, spans) {
         const spanEl = document.createElement("span");
         spanEl.id = `span-${++spanId}`;
         spanEl.className = "highlight";
-        spanEl.innerText = part.reformulation;
+        // Keep original text
+        spanEl.innerText = part.text;
         spanEl.setAttribute("contenteditable", "false");
         // button-like behaviour
         spanEl.setAttribute("role", "button");
@@ -97,12 +98,12 @@ function highlightSpans(div, spans) {
         spanEl.tabIndex = 0
         // aria label optimist
         spanEl.setAttribute("aria-label",
-          `Suggerimento: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
+          `Suggerimento Fairly: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
         );
         // Store original text and reformulation in the object 
         spanEl.dataset.original = part.text;
         spanEl.dataset.reformulation = part.reformulation;
-        spanEl.dataset.currentUsed = part.reformulation;
+        spanEl.dataset.currentUsed = part.text;
         spanEl.dataset.emailId = div.id;
 
         // space and enter open the spandiv

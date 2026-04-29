@@ -98,13 +98,11 @@ function clearAllPopups() {
 
 function showPopup(type, message, id, container, focusTarget = null) {
   clearAllPopups()
-
   container.style.position = "relative";
-
   const popup = document.createElement("div");
   popup.id = id;
   popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
-  // popup.setAttribute("role", type === "success" ? "status" : "alert"); ridondante ?
+  popup.style.visibility = "visible";
 
   const msg = document.createElement("span");
   msg.textContent = message;
@@ -165,6 +163,12 @@ function startAnalysis() {
    * Displays a warning popup if no editable emails are found.
    * @returns {void}
   */
+
+  // Check whether the Failry widget still exists
+  if (!isWidgetValid) {
+    console.warn("Fairly widget not found. Extension might have been reloaded");
+    return; // Early exit if widget is gone
+  }
 
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
@@ -674,7 +678,7 @@ function createSpanPopupDiv(spanEl) {
   // Show the old text
   const p = document.createElement("p");
   //p.style.padding = "0px";
-  p.innerHTML = `<strong><del>${spanEl.dataset.original}</del><strong>`;
+  p.innerHTML = `<strong><del>${spanEl.dataset.original}</del> ${ICONS.arrowRight} ${spanEl.dataset.reformulation}<strong>`;
   p.style.margin = "0 0 8px 0";
 
   const inputWrap = document.createElement("div");
@@ -750,6 +754,22 @@ function createSpanPopupDiv(spanEl) {
   spanDiv.addEventListener("click", e => e.stopPropagation());
 
   return spanDiv
+}
+
+function isWidgetValid() {
+  /**
+   * Checks that the Fairly widget is still in the DOM
+   * Since Gmail is a SOA (Single-Page App) if the user reloads the extension or the page is modified, 
+   * the widget might be removed
+   * @returns bool
+  */
+  return document.getElementById("fairly-widget") !== null;
+}
+
+function cleanStaleDraftSpans(span) {
+  // If they still have the class "highlight" it means they are still 
+    if (span.classList.contains("highlight")) return;
+    span.replaceWith(document.createTextNode(span.textContent));
 }
 
 function initExtension() {
@@ -874,22 +894,58 @@ function initExtension() {
     img.setAttribute("aria-expanded", "false");
     img.focus();
   });
+
+  // Observer to cleanup the spans after the user has closed the email (with Fairly spans still opened)
+  const draftCleanupObserver = new MutationObserver((mutations) => {
+    /**
+     * The MutationObserver is a browser feature that watches for changes in the DOM
+     * It records every time elements are added/removed from the page, attributes change, text content changes
+     * Here, we need it to observe whether there is a new compose window added (the user clicked on "Write email" or is responding to an email)
+     * and, if it is, we want to check whether it contains stale spens (that is, spans that were neither accepted not refused by the user 
+     * and are therefore never converted into a text node) and clean it up
+     */
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        // Get only elements nodes
+        if (node.nodeType != Node.ELEMENT_NODE) continue;  
+        // Check if current node contains span elements
+        const fairlySpans = node.querySelectorAll('span[aria-label^="Suggerimento Fairly"]');
+        // Delete if they are stale spans
+        fairlySpans.forEach( (span) => {
+          cleanStaleDraftSpans(span);
+        }
+        )}};
+  });
+  draftCleanupObserver.observe(document.body, {childList: true, subtree: true})
 }
 
 
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
+
+    // Check if widget exists
+    if (!isWidgetValid) {
+      console.warn("Fairly widget not found. Discarding analysis results.");
+      setLoadingState(false);
+      return;  
+    }
+
     setLoadingState(false);
-    console.log(msg.payload);
     const response = msg.payload;
 
     /* ------------- Create the span elements in the email ------------- */
     let hasSpans = false;
     for (const id in response.results) {
       // Use ID to get the correct contenteditable window 
-      const div = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
-      );
+      const div = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(id)}`); // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
+
+      // Check if compose div still exists
+      if (!div) {
+        console.warn(`Compose window ${id} no longer exists`);
+        continue;
+      }
+
       const spans = response.results[id].unfair_spans;
       if (spans && spans.length > 0) {
         hasSpans = true;
@@ -920,12 +976,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 window.addEventListener("load", () => {
   // Prevent multiple injection of the script in Gmail 
   if (window.__fairlyInitialized) return;
-
   window.__fairlyInitialized = true;
   setTimeout(initExtension, 2000);
 });
-
-// Just before reloading the page, we clean up any span introduced by our widget
-// window.addEventListener("beforeunload", () => {
-//     discard();
-// });
