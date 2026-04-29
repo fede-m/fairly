@@ -39,6 +39,21 @@ const STRATEGIES = Object.freeze(
   });
 const DOMAINS = ["unito.it"]
 
+const ERROR_MESSAGES = Object.freeze(
+ { "INVALID_PAYLOAD": "Si è verificato un errore interno. Riprova!",
+   "ANALYSIS_FAILED": "Si è verificato un errore durante l'analisi. Riprova!",
+   "NETWORK_ERROR": "Si è verificato un errore di connessione. Riprova più tardi!"
+ }
+
+)
+const POPUP_MESSAGES = Object.freeze(
+  {
+    "success": "success-popup",
+    "warning": "warning-popup",
+    "error": "error-popup",
+  }
+)
+
 
 
     

@@ -101,7 +101,8 @@ function showPopup(type, message, id, container, focusTarget = null) {
   container.style.position = "relative";
   const popup = document.createElement("div");
   popup.id = id;
-  popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
+  //popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
+  popup.className = `message-popup ${POPUP_MESSAGES[type]}`
   popup.style.visibility = "visible";
 
   const msg = document.createElement("span");
@@ -120,10 +121,8 @@ function showPopup(type, message, id, container, focusTarget = null) {
       const target = typeof focusTarget === "string"
         ? document.querySelector(focusTarget)
         : focusTarget;
-
       target?.focus();
     }
-
   });
 
   popup.appendChild(msg);
@@ -197,6 +196,8 @@ function startAnalysis() {
       if (!selected) {
         setLoadingState(false);
         console.warn("No strategy selected!");
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        showPopup("warning", "Seleziona una strategia prima di analizzare", "warning-msg", btnWrapper);
         return;
       }
 
@@ -222,9 +223,16 @@ function startAnalysis() {
       })
     } else {
       // Create new warning popup
-      const btnWrapper = document.getElementById("info-btn-wrapper");
-      showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
-      setLoadingState(false);
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        if (!btnWrapper) {
+          console.error("CRITICAL: info-btn-wrapper not found in DOM!");
+          setLoadingState(false);
+          return;
+        }
+
+        // Create new warning popup
+        showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
+        setLoadingState(false);
     }
   };
 }
@@ -591,7 +599,6 @@ function createInfoDiv() {
     startAnalysis();
   });
 
-
   buttonWrapper.appendChild(acceptAllBtn);
   buttonWrapper.appendChild(refuseAllBtn);
   buttonWrapper.appendChild(analyzeButton);
@@ -636,126 +643,6 @@ function setSpanText(spanEl, value) {
   else spanEl.insertBefore(document.createTextNode(value), spanEl.firstChild);
 }
 
-function createSpanPopupDiv(spanEl) {
-  /**
-   * Creates a popup div for an individual highlighted span.
-   * Displays the original text (crossed out) and provides controls to:
-   * - Edit: Enter a custom inclusive reformulation
-   * - Save: Save the user's custom reformulation (which is then displayed, still highlighted, inside the email)
-   * - Revert: Restore the AI-suggested reformulation
-   * - Accept: Apply the current reformulation and remove the highlight
-   * - Refuse: Discard the reformulation and restore the original text
-   * @param {HTMLSpanElement} spanEl - The highlighted span element this popup is associated with
-   * @returns {HTMLDivElement} The popup div element
-   */
-
-  // saves users reformulations history
-  const history = []
-
-  // Create the div element
-  const spanDiv = document.createElement("div");
-  spanDiv.id = `div-${spanEl.id}`;
-  spanDiv.className = "span-div";
-  spanDiv.style.display = "none";
-  spanDiv.setAttribute("role", "dialog");
-  spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.original}`);
-  spanDiv.setAttribute("tabindex", "-1");
-
-  // close on esc
-  spanDiv.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { spanDiv.style.display = "none"; spanEl.focus(); }
-    if (e.key === "Tab") {
-      const focusable = [...spanDiv.querySelectorAll(
-        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
-      )];
-      const first = focusable[0];
-      const last = focusable.at(-1);
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    }
-  });
-
-  // Show the old text
-  const p = document.createElement("p");
-  //p.style.padding = "0px";
-  p.innerHTML = `<strong><del>${spanEl.dataset.original}</del> ${ICONS.arrowRight} ${spanEl.dataset.reformulation}<strong>`;
-  p.style.margin = "0 0 8px 0";
-
-  const inputWrap = document.createElement("div");
-  inputWrap.className = "input-wrap";
-
-  const inputLabel = document.createElement("label");
-  inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
-  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.";//\nSalvandola, Fairly la proporrà nelle future analisi.";
-  inputLabel.className = "span-div-input-label";
-
-  const inputFormulation = document.createElement("input");
-  inputFormulation.id = `user-ref-${spanEl.id}`;
-  inputFormulation.type = "text";
-  inputFormulation.placeholder = "Es. studenti e studentesse";
-  /*inputFormulation.value = spanEl.dataset.currentUsed ?? "";*/
-  inputFormulation.addEventListener("click", e => e.stopPropagation());
-
-  inputWrap.appendChild(inputLabel);
-  inputWrap.appendChild(inputFormulation);
-
-  // Buttons
-  const spanBtnWrap = document.createElement("div");
-  spanBtnWrap.className = "btn-wrapper span-div-btn-wrapper";
-
-  // Accept (keep current span text, no input change)
-  const accBtn = document.createElement("button");
-  accBtn.className = "span-action-btn span-acc-btn";
-  accBtn.textContent = "Accetta";
-  accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
-  accBtn.addEventListener("click", e => {
-    e.stopPropagation();
-    const input = inputFormulation.value.trim();
-    if (input) {
-      spanEl.dataset.userContent = input;
-      spanEl.dataset.currentUsed = input;
-      setSpanText(spanEl, input);
-    }
-
-    // move focus to the next span
-    const all = [...document.querySelectorAll("span.highlight")];
-    const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze")).focus();
-
-    accept(spanEl, input ? true : false);
-    spanDiv.style.display = "none";
-  });
-
-  // Discard (refuse, restore original)
-  const discardBtn = document.createElement("button");
-  discardBtn.className = "span-action-btn span-discard-btn";
-  discardBtn.textContent = "Rifiuta";
-  discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
-  discardBtn.addEventListener("click", e => {
-    e.stopPropagation();
-
-    // move focus to the next span
-    const all = [...document.querySelectorAll("span.highlight")];
-    const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze")).focus();
-
-    discard(spanEl);
-    spanDiv.style.display = "none";
-  });
-
-  spanBtnWrap.appendChild(accBtn);
-  //spanBtnWrap.appendChild(saveAccBtn);
-  spanBtnWrap.appendChild(discardBtn);
-  //spanBtnWrap.appendChild(revertBtn);
-
-  spanDiv.appendChild(p);
-  spanDiv.appendChild(inputWrap);
-  spanDiv.appendChild(spanBtnWrap);
-  spanDiv.addEventListener("click", e => e.stopPropagation());
-
-  return spanDiv
-}
-
 function isWidgetValid() {
   /**
    * Checks that the Fairly widget is still in the DOM
@@ -787,6 +674,7 @@ function initExtension() {
 
   // Initialize Session with user information and create Session ID
   if (!initializeSession()) {
+    console.error("Inizializzazione di Fairly fallita! Failry non supporta domini diversi da 'unito.it'");
     return;
   };
 
@@ -881,7 +769,10 @@ function initExtension() {
         s.style.display = "none";
       });
     }
-    clearAllPopups();
+    if (!e.target.closest(".message-popup") && !e.target.closest("#analyze")) {
+      clearAllPopups();
+    }
+    
   });
 
   // close the widget if esc is pressed and nothing else is open
@@ -934,8 +825,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     setLoadingState(false);
     const response = msg.payload;
 
+    // Check if error contains response
+    if (response.error) {
+      const btnWrapper = document.getElementById("info-btn-wrapper");
+      showPopup("error", ERROR_MESSAGES[response.code], 'error-msg', btnWrapper);
+      console.error(`Analysis failed with ${response.code}: `, response.details);
+      return;
+    }
+
     /* ------------- Create the span elements in the email ------------- */
     let hasSpans = false;
+    let highlightError = false;
     for (const id in response.results) {
       // Use ID to get the correct contenteditable window 
       const div = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(id)}`); // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
@@ -948,15 +848,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
       const spans = response.results[id].unfair_spans;
       if (spans && spans.length > 0) {
-        hasSpans = true;
+        
         // Highligh the spans that were detected and their alternatives 
-        highlightSpans(div, response.results[id].unfair_spans);
+        const highlightSuccess = highlightSpans(div, response.results[id].unfair_spans);
+        if (!highlightSuccess) {
+          console.error(`Failed to highlight spans in email ${id}`);
+          highlightError = true;
+          continue;
+        }
+        hasSpans = true;
       }
     }
 
     /* ------------- Update buttons content ------------- */
     const btnWrapper = document.getElementById("info-btn-wrapper");
-
+    if (highlightError) {
+      showPopup("error", "Si è verificato un errore durante l'evidenziazione dei suggerimenti.", "error-msg", btnWrapper);
+      setResultButtons(false);
+      return;
+    }
     if (hasSpans) {
       setResultButtons(true);
       // Remove existing messages

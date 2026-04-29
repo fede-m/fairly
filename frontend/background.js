@@ -10,9 +10,13 @@ const API = {
 }
 
 async function analyseData(payload) {
+  // Check payload is valid
   if (payload == null) {
     console.error("Not a valid payload!");
-    return { error: "Invalid payload!" };
+    return { error: true,
+      message: "Invalid payload!",
+      code: "INVALID_PAYLOAD"
+    };
   }
   try {
     const response = await fetch(API.analyse, {
@@ -21,34 +25,69 @@ async function analyseData(payload) {
       body: JSON.stringify(payload),
     });
 
+    // Check HTTP status
+    if (!response.ok) {
+      console.error(`Backend error: ${response.status}`);
+      return {
+        error: true,
+        message: `Error during the analysis with status code ${response.status}`,
+        code: "ANALYSIS_FAILED",
+        status: response.status
+      };
+    }
+
     // Convert response to json
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Error calling backend:", error);
-    return { error: error.message };
+    console.error("Network error:", error);
+    return { 
+      error: true,
+      message: "Network error. Check if server available.",
+      code: "NETWORK_ERROR",
+      details: error.message 
+    };
   }
 }
 
 async function storeEvent(payload) {
+  // Check payload is valid
   if (payload == null) {
     console.error("Not a valid payload!");
+    return { error: true,
+      message: "Invalid payload!",
+      code: "INVALID_PAYLOAD"
+    };
   }
   try {
-    console.log(payload);
-    console.log(JSON.stringify(payload));
     const response = await fetch(API.storeEvent, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
+    // Check HTTP status
+    if (!response.ok) {
+      console.error(`Backend error: ${response.status}`);
+      return {
+        error: true,
+        message: `Error during storing with status code ${response.status}`,
+        code: "STORE_FAILED",
+        status: response.status
+      };
+    }
+
     const result = await response.json();
     return result;
   }
   catch (error) {
-    console.error("Error calling backend:", error);
-    return { error: error.message };
+    console.error("Network error:", error);
+    return { 
+      error: true,
+      message: "Network error. Check if server available.",
+      code: "NETWORK_ERROR",
+      details: error.message 
+    };
   }
 }
 
@@ -67,6 +106,8 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
         chrome.tabs.sendMessage(sender.tab.id, {
           action: "processedData",
           payload: result,
+        }).catch((err) => {
+          console.error("Failed to communicate with contentScript: ", err)
         });
       }
     });
@@ -79,6 +120,5 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       .catch(err => console.error("Failed to store event:", err));
   }
   else if (msg.action == "storeFeedback") { }
-
 });
 

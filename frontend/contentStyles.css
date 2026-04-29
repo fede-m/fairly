@@ -12,6 +12,7 @@
   --color-accept: #27AA5E;
   --color-accept-bg: #c0f0d4;
   --color-refuse: #dc3545;
+  --color-error-bg: #f0cec0;
   --color-warning-bg: #f0e5c0;
   --color-warning-border: rgba(204, 170, 46, 0.3);
   --save-and-accept: #008CBA;
@@ -508,6 +509,12 @@
 .warning-popup {
   background: var(--color-warning-bg);
   border: 1px solid rgba(204, 170, 46, 0.3);
+  color: var(--color-primary);
+}
+
+.error-popup {
+  background: var(--color-error-bg);
+  border: 1px solid rgba(204, 85, 46, 0.3);
   color: var(--color-primary);
 }
 
