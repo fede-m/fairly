@@ -608,9 +608,39 @@
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 16px;
+  font-weight: normal;
+  line-height: 1.5;
   color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.12);
   z-index: 10001;
+}
+
+.info-popover-text {
+  font-weight: normal !important;
+  color: var(--color-primary);
+  text-align: left !important;
+}
+
+.info-popover-text a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.info-popover-text a:hover {
+  opacity: 0.8;
+}
+
+.privacy-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .info-btn svg {

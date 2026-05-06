@@ -1,3 +1,7 @@
+const LINK = Object.freeze({
+  PRIVACY: "https://fairly.di.unito.it/il-progetto/",
+  INFO: "https://fairly.di.unito.it/approfondisci-qui-2/"
+});
 const STRATEGIES = Object.freeze(
   {
     CV: {
@@ -7,7 +11,7 @@ const STRATEGIES = Object.freeze(
         "gli studenti e le studenti",
         "i/le studenti"
       ],
-      info: "La doppia forma utilizza sia il maschile che il femminile, riconoscendo le principali identità di genere."
+      info: "La doppia forma utilizza sia il maschile che il femminile, riconoscendo solamente le principali identità di genere."
     },
     CO: {
       id: "CO",

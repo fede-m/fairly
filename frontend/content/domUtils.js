@@ -43,10 +43,23 @@ function createSpanPopupDiv(spanEl) {
     }
   });
 
-  // Show the old text
   const p = document.createElement("p");
-  //p.style.padding = "0px";
-  p.innerHTML = `<strong><del>${spanEl.dataset.original}</del> ${ICONS.arrowRight} ${spanEl.dataset.reformulation}<strong>`;
+  // Show the old text crossed out and the new suggested solution
+  const strong = document.createElement("strong")
+  const del = document.createElement("del");
+  del.textContent = spanEl.dataset.original;
+  strong.appendChild(del);
+  const arrowSpan = document.createElement("span");
+  arrowSpan.innerHTML = ICONS.arrowRight; // Constant, cannot be injected
+
+  const reformulation = document.createElement("strong");
+  reformulation.textContent = " " + spanEl.dataset.reformulation;
+
+  p.appendChild(strong);
+  p.appendChild(document.createTextNode(" "));
+  p.appendChild(arrowSpan);
+  p.appendChild(document.createTextNode(" "));
+  p.appendChild(reformulation);
   p.style.margin = "0 0 8px 0";
 
   const inputWrap = document.createElement("div");

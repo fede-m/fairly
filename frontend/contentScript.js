@@ -36,7 +36,7 @@ function emailEndsWithAllowedDomain() {
   return DOMAINS.some(d => USER_EMAIL.toLowerCase().endsWith(d))
 }
 
-function initializeSession() {
+async function initializeSession() {
   // Get user email
   const meta = document.getElementsByName("og-profile-acct");
 
@@ -56,13 +56,15 @@ function initializeSession() {
 
   try {
     // Get strategies order
-    const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
-    if (strategyOrder) {
-      STRATEGY_ORDER = JSON.parse(strategyOrder);
+    const result = await chrome.storage.local.get("fairlyStrategyOrder");
+    if (result.fairlyStrategyOrder) {
+      console.log(result);
+      STRATEGY_ORDER = result.fairlyStrategyOrder;
     } else {
       const strategies = Object.keys(STRATEGIES);
-      const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
-      localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
+      const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5);
+      console.log(randomizedOrder);
+      await chrome.storage.local.set({"fairlyStrategyOrder": randomizedOrder});
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
@@ -164,7 +166,7 @@ function startAnalysis() {
   */
 
   // Check whether the Failry widget still exists
-  if (!isWidgetValid) {
+  if (!isWidgetValid()) {
     console.warn("Fairly widget not found. Extension might have been reloaded");
     return; // Early exit if widget is gone
   }
@@ -459,7 +461,20 @@ function createInfoDiv() {
       infoPopover.setAttribute("aria-hidden", "true");
       infoPopover.setAttribute("tabindex", "-1");
       infoPopover.dataset.triggerId = triggerId;
-      infoPopover.textContent = strategyInfo;
+      const p = document.createElement("p");
+      p.className = "info-popover-text";
+      const a = document.createElement("a");
+      a.textContent = "qui";
+      a.href = LINK.INFO;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.marginLeft = "4px";
+      p.appendChild(document.createTextNode(strategyInfo + " " + "Puoi saperne di più "));
+      p.appendChild(a);
+      p.appendChild(document.createTextNode("."))
+
+      //infoPopover.textContent = strategyInfo;
+      infoPopover.appendChild(p);
       infoPopover.hidden = true;
 
       const updateButtonLabel = () => {
@@ -599,11 +614,21 @@ function createInfoDiv() {
     startAnalysis();
   });
 
+  // Privacy policy link
+  const privacyLink = document.createElement("a");
+  privacyLink.href = LINK.PRIVACY;
+  privacyLink.textContent = "Privacy Policy";
+  privacyLink.target = "_blank"; // Browser opens the link in a new tab
+  privacyLink.rel = "noopener noreferrer"; // Prevents tab nabbing
+  privacyLink.className = "privacy-link";
+  privacyLink.setAttribute("aria-label", "Apri la Privacy Policy in una nuova scheda");
+  
   buttonWrapper.appendChild(acceptAllBtn);
   buttonWrapper.appendChild(refuseAllBtn);
   buttonWrapper.appendChild(analyzeButton);
   infoDiv.appendChild(checklist);
   infoDiv.appendChild(buttonWrapper);
+  infoDiv.appendChild(privacyLink);
 
   // ESC closes open popover and keeps focus inside widget
   // focus trap
@@ -617,7 +642,7 @@ function createInfoDiv() {
     }
     if (e.key === "Tab") {
       const focusable = [...infoDiv.querySelectorAll(
-        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
+        'button:not([disabled]), input:not([disabled]), a, [tabindex="0"]'
       )].filter(el => !el.closest('[aria-hidden="true"]'));
       const first = focusable[0];
       const last = focusable.at(-1);
@@ -659,7 +684,7 @@ function cleanStaleDraftSpans(span) {
     span.replaceWith(document.createTextNode(span.textContent));
 }
 
-function initExtension() {
+async function initExtension() {
 
   /**
    * Initializes the Fairly Chrome extension on the current page.
@@ -673,7 +698,7 @@ function initExtension() {
   */
 
   // Initialize Session with user information and create Session ID
-  if (!initializeSession()) {
+  if (!await initializeSession()) {
     console.error("Inizializzazione di Fairly fallita! Failry non supporta domini diversi da 'unito.it'");
     return;
   };
@@ -816,7 +841,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
 
     // Check if widget exists
-    if (!isWidgetValid) {
+    if (!isWidgetValid()) {
       console.warn("Fairly widget not found. Discarding analysis results.");
       setLoadingState(false);
       return;  
@@ -885,7 +910,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // Create the extension on page load
 window.addEventListener("load", () => {
   // Prevent multiple injection of the script in Gmail 
-  if (window.__fairlyInitialized) return;
-  window.__fairlyInitialized = true;
+  if (document.getElementById("fairly-widget")) return;
   setTimeout(initExtension, 2000);
 });
