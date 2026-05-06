@@ -32,11 +32,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "fairly_logo.png",
-        "fairly_logo_complete.png",
-        "logo_merge2.png",
-        "logo_merge.png",
-        "logo_merge3.png"
+        "fairly_logo_fata.png",
+        "fairly_logo_fata_scritta.png"
       ],
       "matches": [
         "https://mail.google.com/*"
@@ -45,9 +42,11 @@
   ],
   "action": {
     "default_icon": {
-      "16": "fairly_logo.png",
-      "24": "fairly_logo.png",
-      "32": "fairly_logo.png"
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+
     },
     "default_title": "Fairly"
   }
