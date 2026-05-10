@@ -8,37 +8,37 @@ const STRATEGIES = Object.freeze(
       id: "CV",
       name: "Doppia forma (M/F)",
       nestedOptions: [
-        "gli studenti e le studenti",
-        "i/le studenti"
+        "es. gli studenti e le studenti",
+        "es. i/le studenti"
       ],
-      info: "La doppia forma utilizza sia il maschile che il femminile, riconoscendo solamente le principali identità di genere."
+      info: "Utilizzo della doppia forma maschile e femminile per riferirsi alle persone coinvolte; non comprende le persone non binarie."
     },
     CO: {
       id: "CO",
       name: "Nome astratto",
-      nestedOptions: ["la comunità studentesca"],
-      info: "Il nome astratto evita l'uso del genere, riferendosi al gruppo in modo neutro"
+      nestedOptions: ["es. la comunità studentesca"],
+      info: "Parola che indica un insieme di entità o individui, senza indicare il genere in modo esplicito."
     },
     IO: {
       id: "IO",
       name: "Forme innovative",
       nestedOptions: [
-        "l* student*",
-        "l@ student@",
-        "lx studentx",
-        "lu studentu",
-        "lə studentə"
+        "es. l* student*",
+        "es. l@ student@",
+        "es. lx studentx",
+        "es. lu studentu",
+        "es. lə studentə"
       ],
-      info: "Le forme innovative sperimentano nuovi modi per includere le identità di genere. Sono soluzioni creative, spesso adottate in contesti informali o progressisti."
+      info: "Utilizzo di neomorfemi, ossia simboli utilizzati per evitare la marcatura di genere maschile e femminile, includendo le persone non binarie."
     },
     IV: {
       id: "IV",
       name: "Tripla forma (M/F/N)",
       nestedOptions: [
-        "gli studenti, le studenti e l* student*",
-        "gli/le/l* student*"
+        "es. gli studenti, le studenti e l* student*",
+        "es. gli/le/l* student*"
       ],
-      info: "La tripla forma include maschile, femminile e neutro per coprire tutte le identità di genere. È una scelta completa, ma può risultare complessa."
+      info: "Include le tre forme maschile, femminile e neutra per rappresentare tutte le identità di genere."
     }
   });
 const DOMAINS = ["unito.it"]
