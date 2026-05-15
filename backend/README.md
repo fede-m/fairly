@@ -4,7 +4,7 @@
 - Run the app for developement:
 
 ```bash
-  fastapi dev main.py`
+  fastapi dev main.py
 ```
 
 - Run the app for deployment:
@@ -15,6 +15,43 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 - Then, go to: `http://127.0.0.1:8000/docs` --> to get the FastAPI Swagger UI to test the endpoint
 - If you only go to `http://127.0.0.1:8000`, uvicorn tries to call the root "GET" endpoint of your app (the one with path "/"). If you do not have it, you get a message `{"detail":"Not Found"}`
+
+
+### Test Docker
+
+start daemon
+
+```bash
+sudo systemctl start docker
+```
+
+docker compose
+
+```bash
+sudo docker-compose up --build
+```
+
+if something goes wrong, use to check for memory and remove unused images
+
+```bash
+docker system df
+docker image prune -a
+```
+
+this removes all unused conteainers, images, volumes
+
+```bash
+docker system prune -a --volumes
+```
+
+to remove an image used by a container
+
+```bash
+docker ps        # Find the container ID (e.g., 4f8dd1c65754)
+docker stop 4f8dd1c65754
+docker rm 4f8dd1c65754
+```
+
 
 ### Test the deployment
 

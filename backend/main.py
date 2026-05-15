@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from models import Request, EventRequest, Response, OutputData, EventType, SpanEvent
 from llm import detection, generation
-
+from presidio import setup_presidio, process_text, deanonymize
 from database import insert_event
 
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
@@ -12,10 +12,17 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     # Specify the id of the Chrome extension to allow it to call the backend
-    allow_origins = [f"chrome-extension://{CHROME_EXTENSION_ID}",  "http://localhost:3000", "http://localhost:8000"],
-    allow_methods = ["GET", "POST"],
-    allow_headers = ["*"]
+    allow_origins=[
+        f"chrome-extension://{CHROME_EXTENSION_ID}",
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
+
+setup_presidio()
+
 
 @app.post("/analyse")
 async def analyse(request: Request):
@@ -27,33 +34,40 @@ async def analyse(request: Request):
     for doc in request.data:
         # Remove "\n" from text
         text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
+        anonymized_text, mapping = process_text(text)
+        text = anonymized_text
         # Detection
         detected_spans = detection(text)
         # Generation
         reformulated_spans = generation(text, detected_spans, strategy)
         print(reformulated_spans)
-        results[doc.id] = OutputData(text = text, unfair_spans = reformulated_spans)
-        analysis_request =EventRequest(
-                event = EventType.ANALYSIS,
-                spans = [
-                    SpanEvent(
-                        original = text[s.start_char:s.end_char],
-                        reformulation = s.reformulation,
-                        current_used = ""
-                    )
-                    for s in reformulated_spans
-                ],
-                session_id =request.session_id,
-                user_id = request.user_id,
-                email_id = doc.id,
-                strategy = strategy
-            )
-        
+
+        # user sees deanonimized text + shifted spans
+        deanonymized_text, unfair_spans = deanonymize(text, mapping, reformulated_spans)
+        results[doc.id] = OutputData(text=deanonymized_text, unfair_spans=unfair_spans)
+
+        # db saves only anonimized data
+        analysis_request = EventRequest(
+            event=EventType.ANALYSIS,
+            spans=[
+                SpanEvent(
+                    original=text[s.start_char : s.end_char],
+                    reformulation=s.reformulation,
+                    current_used="",
+                )
+                for s in reformulated_spans
+            ],
+            session_id=request.session_id,
+            user_id=request.user_id,
+            email_id=doc.id,
+            strategy=strategy,
+        )
+
         analysis_events.append(analysis_request)
-    
+
     insert_event(analysis_events)
-    
-    return Response(results = results)
+
+    return Response(results=results)
 
 
 # da rivedere

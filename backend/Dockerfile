@@ -10,6 +10,9 @@ COPY pyproject.toml uv.lock* /app/
 # Install dependencies
 RUN uv sync
 
+# Download the Italian spaCy model required by presidio.py
+RUN uv run python -m spacy download it_core_news_lg
+
 # Copy application code
 COPY . /app/
 
