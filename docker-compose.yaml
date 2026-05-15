@@ -1,4 +1,4 @@
-name: fairlyapp
+version: "3.8"
 services:
     mongodb:
         image: mongo:7
