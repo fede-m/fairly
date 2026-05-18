@@ -33,6 +33,7 @@ function createImgLogo() {
 }
 
 function emailEndsWithAllowedDomain() {
+  if (!USER_EMAIL) return false;
   return DOMAINS.some(d => USER_EMAIL.toLowerCase().endsWith(d))
 }
 
@@ -51,8 +52,13 @@ function initializeSession() {
     return false;
   }
 
-  // Get session ID
-  SESSION_ID = crypto.randomUUID();
+  // Get session ID safely
+  try {
+    SESSION_ID = crypto.randomUUID();
+  } catch (e) {
+    console.warn("crypto.randomUUID unavailable, using fallback.", e);
+    SESSION_ID = Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
 
   try {
     // Get strategies order
@@ -77,7 +83,10 @@ function initializeSession() {
 function setLoadingState(isLoading) {
   const analyzeBtn = document.getElementById("analyze");
 
-  if (!analyzeBtn) return;
+  if (!analyzeBtn) {
+    console.error("setLoadingState: 'analyze' button not found in DOM.");
+    return;
+  }
 
   if (isLoading) {
     analyzeBtn.disabled = true;
@@ -97,6 +106,10 @@ function clearAllPopups() {
 }
 
 function showPopup(type, message, id, container, focusTarget = null) {
+  if (!container) {
+    console.error("showPopup: container is missing for message:", message);
+    return;
+  }
   clearAllPopups()
 
   container.style.position = "relative";
@@ -138,6 +151,11 @@ function showPopup(type, message, id, container, focusTarget = null) {
 function setResultButtons(visible) {
   const acceptBtn = document.getElementById("accept-all");
   const refuseBtn = document.getElementById("refuse-all");
+  if (!acceptBtn || !refuseBtn) {
+    console.error("setResultButtons: 'accept-all' or 'refuse-all' buttons are missing from the DOM.");
+    return;
+  }
+
   const display = visible ? "block" : "none";
   const hidden = !visible;
 
@@ -169,7 +187,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard(span = undefined, ref_reason = "analysis_refresh");
+  discard(undefined, "analysis_refresh");
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -534,6 +552,10 @@ function createInfoDiv() {
   // Create the strategies options 
   STRATEGY_ORDER.forEach((strategy, idx) => {
     let strategyObj = STRATEGIES[strategy];
+    if (!strategyObj) {
+      console.warn(`Strategy '${strategy}' found in order but missing from STRATEGIES.`);
+      return;
+    }
     let hasNested = strategyObj.nestedOptions.length > 0 ? true : false;
     let defaultSelected = idx === 0;
     checklist.appendChild(
@@ -715,7 +737,7 @@ function createSpanPopupDiv(spanEl) {
     // move focus to the next span
     const all = [...document.querySelectorAll("span.highlight")];
     const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze")).focus();
+    (next ?? document.getElementById("analyze"))?.focus();
 
     accept(spanEl, input ? true : false);
     spanDiv.style.display = "none";
@@ -732,7 +754,7 @@ function createSpanPopupDiv(spanEl) {
     // move focus to the next span
     const all = [...document.querySelectorAll("span.highlight")];
     const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze")).focus();
+    (next ?? document.getElementById("analyze"))?.focus();
 
     discard(spanEl);
     spanDiv.style.display = "none";
@@ -763,6 +785,11 @@ function initExtension() {
    * Guards against duplicate initialization by checking for existing widget.
    * @returns {void}
   */
+
+  if (typeof DOMAINS === 'undefined' || typeof STRATEGIES === 'undefined') {
+    console.error("Missing global dependencies.");
+    return;
+  }
 
   // Initialize Session with user information and create Session ID
   if (!initializeSession()) {
@@ -825,8 +852,8 @@ function initExtension() {
 
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
-    const dx = e.clientX - offsetX - parseInt(widget.style.left);
-    const dy = e.clientY - offsetY - parseInt(widget.style.top);
+    const dx = e.clientX - offsetX - (parseInt(widget.style.left, 10) || 0);
+    const dy = e.clientY - offsetY - (parseInt(widget.style.top, 10) || 0);
     if (!moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) moved = true;
     widget.style.left = e.clientX - offsetX + "px";
     widget.style.top = e.clientY - offsetY + "px";
@@ -883,6 +910,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const response = msg.payload;
 
     if (!response || typeof response !== 'object' || response.error) {
+      console.error("onMessage: Invalid response or backend error:", response);
       setLoadingState(false);
       showPopup("warning", "Errore durante l'analisi. Riprova.", "warning-msg", document.getElementById("info-btn-wrapper"));
       return;
@@ -898,8 +926,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // Use ID to get the correct contenteditable window 
         const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
         );
-        if (!div) continue;
-        
+        if (!div) {
+          console.warn(`onMessage payload processing: editable draft window with id '${id}' not found.`);
+          continue;
+        }
+
         const spans = response.results[id].unfair_spans;
         if (spans && spans.length > 0) {
           hasSpans = true;
