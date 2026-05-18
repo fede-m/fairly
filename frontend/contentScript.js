@@ -175,7 +175,7 @@ function startAnalysis() {
     // remove pop-ups
     clearAllPopups()
     // Select all elements on the page which are editable (the open emails) 
-    const editableElements = document.querySelectorAll('[contenteditable="true"]');
+    const editableElements = document.querySelectorAll('div.editable[contenteditable="true"]');
     // Check if there are open emails 
     if (editableElements.length > 0) {
 
@@ -190,25 +190,31 @@ function startAnalysis() {
       }
 
       // Prepare payload for background
-      dataObj["strategy"] = selected.id; 
+      dataObj["strategy"] = selected.id;
       dataObj["data"] = [];
       dataObj["session_id"] = SESSION_ID;
       dataObj["user_id"] = USER_EMAIL;
 
-      editableElements.forEach((element) => { 
-          const data = {}; 
-          const key = element.id; 
-          data["id"] = key; 
-          data["text"] = element.innerText;
-          dataObj["data"].push(data); 
+      editableElements.forEach((element) => {
+        const data = {};
+        const key = element.id;
+        data["id"] = key;
+        data["text"] = element.innerText;
+        dataObj["data"].push(data);
       });
 
-      console.log(dataObj);
       // Send data to background 
       chrome.runtime.sendMessage({
         action: "analyseData",
         payload: dataObj,
-      })
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          console.error("Communication error:", chrome.runtime.lastError.message);
+          setLoadingState(false);
+          const btnWrapper = document.getElementById("info-btn-wrapper");
+          showPopup("warning", "Errore di connessione. Ricarica la pagina.", "warning-msg", btnWrapper);
+        }
+      });
     } else {
       // Create new warning popup
       const btnWrapper = document.getElementById("info-btn-wrapper");
@@ -873,9 +879,17 @@ function initExtension() {
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
-    setLoadingState(false);
     console.log(msg.payload);
     const response = msg.payload;
+
+    if (response.error) {
+      setLoadingState(false);
+      showPopup("warning", "Errore durante l'analisi. Riprova.", "warning-msg", document.getElementById("info-btn-wrapper"));
+      return;
+    }
+
+    // if not error
+    setLoadingState(false);
 
     /* ------------- Create the span elements in the email ------------- */
     let hasSpans = false;
