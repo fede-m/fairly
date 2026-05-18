@@ -208,8 +208,8 @@ function startAnalysis() {
         action: "analyseData",
         payload: dataObj,
       }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Communication error:", chrome.runtime.lastError.message);
+        if (chrome.runtime.lastError || !response) {
+          console.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
           setLoadingState(false);
           const btnWrapper = document.getElementById("info-btn-wrapper");
           showPopup("warning", "Errore di connessione. Ricarica la pagina.", "warning-msg", btnWrapper);
@@ -882,7 +882,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     console.log(msg.payload);
     const response = msg.payload;
 
-    if (response.error) {
+    if (!response || typeof response !== 'object' || response.error) {
       setLoadingState(false);
       showPopup("warning", "Errore durante l'analisi. Riprova.", "warning-msg", document.getElementById("info-btn-wrapper"));
       return;
@@ -893,15 +893,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     /* ------------- Create the span elements in the email ------------- */
     let hasSpans = false;
-    for (const id in response.results) {
-      // Use ID to get the correct contenteditable window 
-      const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
-      );
-      const spans = response.results[id].unfair_spans;
-      if (spans && spans.length > 0) {
-        hasSpans = true;
-        // Highligh the spans that were detected and their alternatives 
-        highlightSpans(div, response.results[id].unfair_spans);
+    if (response.results) {
+      for (const id in response.results) {
+        // Use ID to get the correct contenteditable window 
+        const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
+        );
+        if (!div) continue;
+        
+        const spans = response.results[id].unfair_spans;
+        if (spans && spans.length > 0) {
+          hasSpans = true;
+          // Highligh the spans that were detected and their alternatives 
+          highlightSpans(div, response.results[id].unfair_spans);
+        }
       }
     }
 
