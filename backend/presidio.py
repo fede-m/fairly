@@ -2,10 +2,10 @@ from presidio_analyzer import AnalyzerEngine
 from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 from presidio_analyzer.nlp_engine import NlpEngineProvider
-import json
-from pprint import pprint
+from presidio_analyzer import Pattern, PatternRecognizer
 
-ENTITIES = ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION", "URL"]
+# checks for all entities
+ENTITIES = None
 
 
 def make_placeholder(
@@ -26,12 +26,16 @@ def anonymize(text: str) -> tuple[str, dict]:
     mapping = {}  # placeholder -> original
     counters = {}  # entity_type -> count
 
+    active_entities = (
+        ENTITIES if ENTITIES is not None else list({r.entity_type for r in results})
+    )
+
     operators = {
         entity: OperatorConfig(
             "custom",
             {"lambda": lambda t, e=entity: make_placeholder(e, t, mapping, counters)},
         )
-        for entity in ENTITIES
+        for entity in active_entities
     }
 
     anon_result = anonymizer.anonymize(
@@ -138,9 +142,40 @@ def setup_presidio():
     analyzer = AnalyzerEngine(
         nlp_engine=provider.create_engine(), supported_languages=["it"]
     )
+
+    add_custom_recognizers(analyzer)
     anonymizer = AnonymizerEngine()
 
     print("Presidio Analyzer initialized with Italian language support.")
+
+
+def add_custom_recognizers(analyzer: AnalyzerEngine):
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="CREDIT_CARD",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="credit_card_it",
+                    regex=r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b",
+                    score=0.5,
+                )
+            ],
+        )
+    )
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="IBAN_CODE",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="iban_it",
+                    regex=r"(?i)\b[A-Z]{2}[ \t-]*\d{2}(?:[ \t-]*[A-Z0-9]){13,32}\b(?=\r?\n|$)",
+                    score=0.85,
+                )
+            ],
+        )
+    )
 
 
 def process_text(text: str) -> tuple[str, dict]:
