@@ -170,7 +170,8 @@ def add_custom_recognizers(analyzer: AnalyzerEngine):
             patterns=[
                 Pattern(
                     name="iban_it",
-                    regex=r"(?i)\b[A-Z]{2}[ \t-]*\d{2}(?:[ \t-]*[A-Z0-9]){13,32}\b(?=\r?\n|$)",
+                    # IT + 2 check digits + 1 CIN letter + 22 digits (ABI+CAB+account), allowing separators anywhere.
+                    regex=r"(?i)\b[A-Z]{2}[ \t-]*\d{2}[ \t-]*[A-Z](?:[ \t-]*\d){21,22}\b(?=\r?\n|$)",
                     score=0.85,
                 )
             ],
