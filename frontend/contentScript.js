@@ -193,7 +193,8 @@ function startAnalysis() {
     // remove pop-ups
     clearAllPopups()
     // Select all elements on the page which are editable (the open emails) 
-    const editableElements = document.querySelectorAll('div.editable[contenteditable="true"]');
+    // div.editable[contenteditable="true"]
+    const editableElements = document.querySelectorAll('div.Am.Al.editable[contenteditable="true"]');
     // Check if there are open emails 
     if (editableElements.length > 0) {
 
@@ -908,7 +909,6 @@ function initExtension() {
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
-    console.log(msg.payload);
     const response = msg.payload;
 
     if (!response || typeof response !== 'object' || response.error) {
