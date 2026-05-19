@@ -744,6 +744,11 @@ function createSpanPopupDiv(spanEl) {
 
     accept(spanEl, input ? true : false);
     spanDiv.style.display = "none";
+
+    // Check if any spans remain after discarding
+    if (document.querySelectorAll("span.highlight").length === 0) {
+      setResultButtons(false);
+    }
   });
 
   // Discard (refuse, restore original)
@@ -761,6 +766,11 @@ function createSpanPopupDiv(spanEl) {
 
     discard(spanEl);
     spanDiv.style.display = "none";
+
+    // Check if any spans remain after discarding
+    if (document.querySelectorAll("span.highlight").length === 0) {
+      setResultButtons(false);
+    }
   });
 
   spanBtnWrap.appendChild(accBtn);
