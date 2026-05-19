@@ -943,7 +943,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!response || typeof response !== 'object' || response.error) {
       console.error("onMessage: Invalid response or backend error:", response);
       setLoadingState(false);
-      showPopup("warning", "Errore durante l'analisi. Riprova.", "warning-msg", document.getElementById("info-btn-wrapper"));
+
+      let errorMsg = "Errore durante l'analisi. Riprova.";
+      if (response && response.error && String(response.error).includes("Failed to fetch")) {
+        errorMsg = "Errore di connessione. Riprova più tardi.";
+      }
+
+      showPopup("warning", errorMsg, "warning-msg", document.getElementById("info-btn-wrapper"));
       return;
     }
 
