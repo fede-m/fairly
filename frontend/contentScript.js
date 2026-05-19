@@ -213,6 +213,8 @@ function startAnalysis() {
       dataObj["data"] = [];
       dataObj["session_id"] = SESSION_ID;
       dataObj["user_id"] = USER_EMAIL;
+      // remember the selected options for future uses
+      localStorage.setItem("fairlyLastStrategy", selected.id);
 
       editableElements.forEach((element) => {
         const data = {};
@@ -319,6 +321,9 @@ function createInfoDiv() {
   paragraph.innerText = "Scegli una soluzione piú inclusiva!";
   infoDiv.appendChild(paragraph);
 
+  // last used strategy
+  const savedStrategy = localStorage.getItem("fairlyLastStrategy");
+
   // Check-list container 
   const checklist = document.createElement("div");
   checklist.className = "checklist";
@@ -382,26 +387,38 @@ function createInfoDiv() {
 
       // Create the div for the nested options (e.g. "lo studente e la studente")
       const nestedDiv = document.createElement("div");
+
+      // saved strategy selection
+      const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
+
       nestedDiv.className = "nested-checklist";
-      nestedDiv.style.display = "none";
+      nestedDiv.style.display = shouldExpand ? "flex" : "none";
       nestedDiv.setAttribute("role", "radiogroup");
-      nestedDiv.setAttribute("aria-hidden", "true");
+      nestedDiv.setAttribute("aria-hidden", shouldExpand ? "false" : "true");
       nestedDiv.setAttribute(
         "aria-label",
         `Opzioni per la strategia ${labelText}`
       );
 
+      if (shouldExpand) {
+        arrowBtn.innerHTML = arrowUpSVG;
+        arrowBtn.setAttribute("aria-expanded", "true");
+      }
+
       // Loop through the possible options for the current strategy
       nestedOption.forEach((optText, idx) => {
+
+        const radioId = `${strategyName}-${idx}`;
+        const isChecked = savedStrategy ? (savedStrategy === radioId) : (defaultSelected && idx === 0);
 
         // Create label and checkbox for option
         const nestedLabel = document.createElement("label");
         const nestedCheckbox = createRadio(
-          `${strategyName}-${idx}`,
+          radioId,
           `Opzione della strategia ${labelText}: ${optText}`,
-          defaultSelected && idx === 0
+          isChecked
         );
-        nestedCheckbox.tabIndex = -1;
+        nestedCheckbox.tabIndex = shouldExpand ? 0 : -1;
 
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
@@ -438,8 +455,10 @@ function createInfoDiv() {
         }
       });
     } else {
+      const radioId = strategyName;
+      const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
       const label = document.createElement("label");
-      const checkbox = createRadio(strategyName, `Strategia inclusiva: ${labelText}`);
+      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, isChecked);
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
