@@ -113,8 +113,8 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
                     break
 
             # Apply shift to both start and end
-            adjusted_span["start_char"] = span.start_char + cumulative_shift
-            adjusted_span["end_char"] = span.end_char + cumulative_shift
+            adjusted_span.start_char = span.start_char + cumulative_shift
+            adjusted_span.end_char = span.end_char + cumulative_shift
 
             adjusted_spans.append(adjusted_span)
 

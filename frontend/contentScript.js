@@ -222,10 +222,12 @@ function startAnalysis() {
       });
 
       // Send data to background 
+      console.log("[contentScript] Sending analyseData to background...", dataObj);
       chrome.runtime.sendMessage({
         action: "analyseData",
         payload: dataObj,
       }, (response) => {
+        console.log("[contentScript] Got immediate response from background:", response);
         if (chrome.runtime.lastError || !response) {
           console.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
           setLoadingState(false);
