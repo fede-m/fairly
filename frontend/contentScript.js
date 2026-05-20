@@ -790,7 +790,7 @@ async function initExtension() {
 
   // Initialize Session with user information and create Session ID
   if (!await initializeSession()) {
-    console.error("Inizializzazione di Fairly fallita! Failry non supporta domini diversi da 'unito.it'");
+    console.error("Inizializzazione di Fairly fallita! Fairly non supporta domini diversi da 'unito.it'");
     return;
   };
 
