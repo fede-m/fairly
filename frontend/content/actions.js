@@ -74,10 +74,15 @@ function discard(span = undefined, ref_reason = "user_refuse"){
     );
 
     if (span === undefined) resetButtons();
-    chrome.runtime.sendMessage({
+    try {
+        chrome.runtime.sendMessage({
                 action:"storeEvent",
                 payload: refuseEvents
             });
+    } catch (error) {
+        console.error("Failed to store event: ", error);
+    }
+    
 } 
 
 function accept(span = undefined, input = false){
@@ -139,8 +144,13 @@ function accept(span = undefined, input = false){
     }
     );
     if (span === undefined) resetButtons();
-    chrome.runtime.sendMessage({
+    try {
+            chrome.runtime.sendMessage({
                 action:"storeEvent",
                 payload: acceptEvents
             });
+    } catch (error) {
+        console.error("Failed to store event: ", error);
+    }
+
 }

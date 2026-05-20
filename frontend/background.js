@@ -5,10 +5,35 @@ const API = {
 
   get analyse() {return `${this.baseUrl}/analyse`;},
   get storeEvent() {return `${this.baseUrl}/store-event`;},
-  get storeFeedback() {return `${this.baseUrl}/store-feedback`;}
+}
+
+let keepAliveInterval = null;
+
+function startKeepAlive() {
+  /** Keep service worker alive during backend call.
+   * Without this, MV3 service workers are terminated after ~30 seconds of inactivity.
+   * If the LLM call lasts longer, the response is lost.
+   */
+  if (keepAliveInterval) return;
+  // Ping every 25 seconds to prevent service worker termination by Chrome
+  keepAliveInterval = setInterval(() => {
+    chrome.runtime.getPlatformInfo(() => {}); 
+  }, 25000);
+}
+
+function stopKeepAlive() {
+  /**
+   * Stops the pinging every 25 seconds to keep the service worker alive
+   *  when the call to the backend is done
+   */
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+  }
 }
 
 async function analyseData(payload) {
+  startKeepAlive();
   // Check payload is valid
   if (payload == null) {
     console.error("Not a valid payload!");
@@ -46,6 +71,8 @@ async function analyseData(payload) {
       code: "NETWORK_ERROR",
       details: error.message 
     };
+  } finally {
+    stopKeepAlive();
   }
 }
 
@@ -90,8 +117,6 @@ async function storeEvent(payload) {
   }
 }
 
-async function storeFeedback() { }
-
 chrome.runtime.onMessage.addListener((msg, sender) => {
   if (msg.action == "analyseData") {
     /* data = [
@@ -113,11 +138,9 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
-    console.log(data);
     storeEvent(data)
       .then(res => console.log(res))
       .catch(err => console.error("Failed to store event:", err));
   }
-  else if (msg.action == "storeFeedback") { }
 });
 

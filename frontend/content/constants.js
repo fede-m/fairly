@@ -1,5 +1,5 @@
 const LINK = Object.freeze({
-  PRIVACY: "https://fairly.di.unito.it/il-progetto/",
+  PRIVACY: "https://fairly.unito.it/privacy-policy/",
   INFO: "https://fairly.di.unito.it/approfondisci-qui-2/"
 });
 const STRATEGIES = Object.freeze(

@@ -149,12 +149,10 @@ async function initializeSession() {
     // Get strategies order
     const result = await chrome.storage.local.get("fairlyStrategyOrder");
     if (result.fairlyStrategyOrder) {
-      console.log(result);
       STRATEGY_ORDER = result.fairlyStrategyOrder;
     } else {
       const strategies = Object.keys(STRATEGIES);
       const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5);
-      console.log(randomizedOrder);
       await chrome.storage.local.set({"fairlyStrategyOrder": randomizedOrder});
       STRATEGY_ORDER = randomizedOrder;
     }
@@ -255,7 +253,6 @@ function startAnalysis() {
    * Displays a warning popup if no editable emails are found.
    * @returns {void}
   */
-
   // Check whether the Failry widget still exists
   if (!isWidgetValid()) {
     console.warn("Fairly widget not found. Extension might have been reloaded");
@@ -307,15 +304,20 @@ function startAnalysis() {
           data["text"] = element.innerText;
           dataObj["data"].push(data); 
       });
-
-      console.log(dataObj);
       // Send data to background 
-      chrome.runtime.sendMessage({
-        action: "analyseData",
-        payload: dataObj,
-      })
+      try {
+          chrome.runtime.sendMessage({
+          action: "analyseData",
+          payload: dataObj,
+        });
+      } catch (error) {
+        console.error("Failed to send message to background: ", error);
+        setLoadingState(false);
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        showPopup("error", "Errore di comunicazione con l'estensione. Ricarica la pagina.", "error-msg", btnWrapper);
+      }
+      
     } else {
-      // Create new warning popup
         const btnWrapper = document.getElementById("info-btn-wrapper");
         if (!btnWrapper) {
           console.error("CRITICAL: info-btn-wrapper not found in DOM!");
