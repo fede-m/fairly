@@ -134,7 +134,7 @@ def generation(text: str, spans:list[Span], strategy: str):
 
             return reformulated_spans
         except Exception as e:
-            print(f"The following exception occurred: {e}")
-            return spans
+            print(f"Generation failed with error: {e}")
+            raise Exception(f"Generation failed: {str(e)}")
     else:
         return spans

@@ -2,13 +2,17 @@
   "manifest_version": 3,
   "name": "Fairly",
   "version": "0.1.0",
-  "description": "Check your text and detect non-inclusive language in your Google products",
+  "description": "Fairly ti aiuta a controllare le tue email per renderle più inclusive. Funziona su Gmail per utenti dell’Università di Torino.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
-    "https://mail.google.com/*"
+    "https://mail.google.com/*",
+    "https://api.fairly.di.unito.it/*"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -32,22 +36,27 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "fairly_logo.png",
-        "fairly_logo_complete.png",
-        "logo_merge2.png",
-        "logo_merge.png",
-        "logo_merge3.png"
+        "fairly_logo_fata.png",
+        "fairly_logo_fata_scritta.png"
       ],
       "matches": [
         "https://mail.google.com/*"
       ]
     }
   ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }, 
   "action": {
+    "default_popup": "popup.html",
     "default_icon": {
-      "16": "fairly_logo.png",
-      "24": "fairly_logo.png",
-      "32": "fairly_logo.png"
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
     },
     "default_title": "Fairly"
   }

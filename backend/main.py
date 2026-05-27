@@ -1,12 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import hmac
+import hashlib
 from models import Request, EventRequest, Response, OutputData, EventType, SpanEvent
 from llm import detection, generation
 
 from database import insert_event
 
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 app = FastAPI()
 
 app.add_middleware(
@@ -17,47 +20,80 @@ app.add_middleware(
     allow_headers = ["*"]
 )
 
+def _hash_email(email):
+    return hmac.new(
+            SECRET_KEY.encode(),
+            email.encode(),
+            hashlib.sha256
+        ).hexdigest()
+
 @app.post("/analyse")
 async def analyse(request: Request):
     print(request)
     results = {}
     strategy = request.strategy
+    email = request.user_id.strip().lower()
+    request.user_id = _hash_email(email)
+    
     # Store request
     analysis_events = []
-    for doc in request.data:
-        # Remove "\n" from text
-        text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
-        # Detection
-        detected_spans = detection(text)
-        # Generation
-        reformulated_spans = generation(text, detected_spans, strategy)
-        print(reformulated_spans)
-        results[doc.id] = OutputData(text = text, unfair_spans = reformulated_spans)
-        analysis_request =EventRequest(
-                event = EventType.ANALYSIS,
-                spans = [
-                    SpanEvent(
-                        original = text[s.start_char:s.end_char],
-                        reformulation = s.reformulation,
-                        current_used = ""
-                    )
-                    for s in reformulated_spans
-                ],
-                session_id =request.session_id,
-                user_id = request.user_id,
-                email_id = doc.id,
-                strategy = strategy
-            )
+    try:
+        for doc in request.data:
+            # Remove "\n" from text
+            text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
+            # Detection
+            detected_spans = detection(text)
+            # Generation
+            try:
+                reformulated_spans = generation(text, detected_spans, strategy)
+            except Exception as e:
+                # Return error response if generation fails
+                return {
+                    "error": True,
+                    "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
+                    "code": "ANALYSIS_FAILED",
+                    "details": str(e)
+                }
+            
+            print(reformulated_spans)
+            results[doc.id] = OutputData(text = text, unfair_spans = reformulated_spans)
+            analysis_request =EventRequest(
+                    event = EventType.ANALYSIS,
+                    spans = [
+                        SpanEvent(
+                            original = text[s.start_char:s.end_char],
+                            reformulation = s.reformulation,
+                            current_used = ""
+                        )
+                        for s in reformulated_spans
+                    ],
+                    session_id =request.session_id,
+                    user_id = request.user_id,
+                    email_id = doc.id,
+                    strategy = strategy
+                )
+            
+            analysis_events.append(analysis_request)
         
-        analysis_events.append(analysis_request)
-    
-    insert_event(analysis_events)
-    
-    return Response(results = results)
+        insert_event(analysis_events)
+        
+        return Response(results = results)
+    except Exception as e:
+        print(f"Analysis failed with error: {e}")
+        return {
+            "error": True,
+            "message": "Si è verificato un errore durante l'analisi.",
+            "code": "ANALYSIS_FAILED",
+            "details": str(e)
+        }
 
 
 # da rivedere
 @app.post("/store-event")
-async def store_event(request: list[EventRequest]):
-    insert_event(request)
+async def store_event(requests: list[EventRequest]):
+    # Hash email address
+    for event in requests:
+        email = event.user_id.strip().lower()
+        event.user_id = _hash_email(email)
+    insert_event(requests)
     return {"status": 200, "message": "Everything is fine"}
