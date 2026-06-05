@@ -12,12 +12,14 @@ function resetButtons() {
 }
 
 
-function discard(span = undefined, ref_reason = "user_refuse"){
+function discard({span = undefined, ref_reason = "user_refuse", isAll = false} = {}){
     
     const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
+    console.log(highlightedSpans);
     // No spans to modify
     if (highlightedSpans.length === 0) return;
 
+    const strategySelected = document.querySelector(".checklist-choice:checked");
     const grouped = new Map();
     highlightedSpans.forEach(s => {
         let emailId = s.dataset.emailId;
@@ -37,7 +39,9 @@ function discard(span = undefined, ref_reason = "user_refuse"){
                     session_id: SESSION_ID,
                     user_id: USER_EMAIL,
                     email_id: eId,
-                    refuse_reason: ref_reason
+                    strategy: strategySelected.id,
+                    refuse_reason: ref_reason,
+                    is_all: isAll
                 };
 
             // Restore original text
@@ -46,6 +50,7 @@ function discard(span = undefined, ref_reason = "user_refuse"){
                 const reformulation = s.dataset.reformulation; 
                 const userForm = s.dataset.userContent;
                 const spanObj = {
+                    span_id: s.id,
                     original: original,
                     reformulation: reformulation,
                     current_used: original,
@@ -85,17 +90,18 @@ function discard(span = undefined, ref_reason = "user_refuse"){
     
 } 
 
-function accept(span = undefined, input = false){
+function accept({span = undefined, input = false, isAll = false} = {}){
     const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
     // No spans to modify
     if (highlightedSpans.length === 0) return;
 
+    const strategySelected = document.querySelector(".checklist-choice:checked");
     const grouped = new Map();
     highlightedSpans.forEach(s => {
         let emailId = s.dataset.emailId;
         if (!grouped.has(emailId)) {
             grouped.set(emailId, []);
-        }
+        };
         grouped.get(emailId).push(s);
     }
     );
@@ -108,7 +114,9 @@ function accept(span = undefined, input = false){
                 spans: [],
                 session_id: SESSION_ID,
                 user_id: USER_EMAIL,
+                strategy: strategySelected.id,
                 email_id: eId,
+                is_all: isAll
             };
 
         // Restore original text
@@ -117,8 +125,8 @@ function accept(span = undefined, input = false){
             const reformulation = s.dataset.reformulation;
             const currentUsed = input ? s.dataset.currentUsed : s.dataset.reformulation;
             const userForm = s.dataset.userContent;
-            
             const spanObj = {
+                span_id: s.id,
                 original: original,
                 reformulation: reformulation,
                 current_used: reformulation,
@@ -144,6 +152,7 @@ function accept(span = undefined, input = false){
     }
     );
     if (span === undefined) resetButtons();
+    console.log(acceptEvents);
     try {
             chrome.runtime.sendMessage({
                 action:"storeEvent",
