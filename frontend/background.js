@@ -6,8 +6,10 @@ logger.log("Background service worker loaded");
 const API = {
   baseUrl: CONFIG.BASE_URL,
 
-  get analyse() { return `${this.baseUrl}/analyse`; },
-  get storeEvent() { return `${this.baseUrl}/store-event`; },
+  get analyse() {return `${this.baseUrl}/analyse`;},
+  get storeEvent() {return `${this.baseUrl}/store-event`;},
+  get addUser() {return `${this.baseUrl}/add-user`;},
+  get storeInfo() {return `${this.baseUrl}/store-info-event`;},
 }
 
 let keepAliveInterval = null;
@@ -35,8 +37,7 @@ function stopKeepAlive() {
   }
 }
 
-async function analyseData(payload) {
-  startKeepAlive();
+async function makeRequest(url, payload, errorContext = "request", timeoutMs = 30000) {
   // Check payload is valid
   if (payload == null) {
     logger.error("Not a valid payload!");
@@ -46,6 +47,9 @@ async function analyseData(payload) {
       code: "INVALID_PAYLOAD"
     };
   }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const startTime = performance.now();
     logger.log("[" + new Date().toISOString() + "] Sending data to backend... API:", API.analyse);
@@ -53,6 +57,7 @@ async function analyseData(payload) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      signal: controller.signal
     });
 
     const responseTime = performance.now();
@@ -63,8 +68,8 @@ async function analyseData(payload) {
       logger.error(`Backend error: ${response.status}`);
       return {
         error: true,
-        message: `Error during the analysis with status code ${response.status}`,
-        code: "ANALYSIS_FAILED",
+        message: `Error during ${errorContext} with status code ${response.status}`,
+        code: "REQUEST_FAILED",
         status: response.status
       };
     }
@@ -76,58 +81,44 @@ async function analyseData(payload) {
     logger.log("[" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
     return result;
   } catch (error) {
+    if (error.name === "AbortError") {
+      logger.error("Request timeout:", error);
+      return {
+        error: true,
+        message: `${errorContext} took too long (>${timeoutMs/1000}s). Server may be unavailable.`,
+        code: "TIMEOUT",
+        details: "Request aborted"
+      }
+    }
     logger.error("Network error:", error);
-    return {
+    return { 
       error: true,
       message: "Network error. Check if server available.",
       code: "NETWORK_ERROR",
       details: error.message
     };
+  }
+}
+
+async function analyseData(payload) {
+  startKeepAlive();
+  try{
+    return await makeRequest(API.analyse, payload, "analysis", 40000);
   } finally {
     stopKeepAlive();
   }
 }
 
 async function storeEvent(payload) {
-  // Check payload is valid
-  if (payload == null) {
-    logger.error("Not a valid payload!");
-    return {
-      error: true,
-      message: "Invalid payload!",
-      code: "INVALID_PAYLOAD"
-    };
-  }
-  try {
-    const response = await fetch(API.storeEvent, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+  return makeRequest(API.storeEvent, payload, "storing event");
+}
 
-    // Check HTTP status
-    if (!response.ok) {
-      logger.error(`Backend error: ${response.status}`);
-      return {
-        error: true,
-        message: `Error during storing with status code ${response.status}`,
-        code: "STORE_FAILED",
-        status: response.status
-      };
-    }
+async function addUser(payload) {
+  return makeRequest(API.addUser, payload, "adding user");
+}
 
-    const result = await response.json();
-    return result;
-  }
-  catch (error) {
-    logger.error("Network error:", error);
-    return {
-      error: true,
-      message: "Network error. Check if server available.",
-      code: "NETWORK_ERROR",
-      details: error.message
-    };
-  }
+async function storeInfo(payload) {
+  return makeRequest(API.storeInfo, payload, "adding user");
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -161,9 +152,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
+    console.log(data);
     storeEvent(data)
       .then(res => logger.log(res))
       .catch(err => logger.error("Failed to store event:", err));
+  }
+  else if (msg.action == "addUser") {
+    const data = msg.payload;
+    console.log(data);
+    addUser(data)
+    .then(res => console.log(res))
+    .catch(err => console.error("Failed to add user:", err));
+  }
+  else if (msg.action == "storeInfo"){
+    const data = msg.payload;
+    storeInfo(data)
+    .then(res => console.log(res))
+    .catch(err => console.log("Failed to store info event:", err))
   }
 });
 

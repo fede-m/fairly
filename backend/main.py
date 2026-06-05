@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import hmac
 import hashlib
-from models import Request, EventRequest, Response, OutputData, EventType, SpanEvent
+from models import Request, StoreEventRequest, Response, OutputData, EventType, SpanEvent, User, InfoEventRequest
 from llm import detection, generation
 from presidio import setup_presidio, process_text, deanonymize
-from database import insert_event
+from database import insert_event, insert_user, insert_info_event
 
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -35,7 +35,6 @@ def _hash_email(email):
 
 @app.post("/analyse")
 async def analyse(request: Request):
-    print(request)
     results = {}
     strategy = request.strategy
     email = request.user_id.strip().lower()
@@ -69,24 +68,27 @@ async def analyse(request: Request):
                 anonymized_text, mapping, reformulated_spans
             )
             results[doc.id] = OutputData(text=deanonymized_text, unfair_spans=unfair_spans)
-
-            # db saves only anonimized data
-            analysis_request = EventRequest(
-                event=EventType.ANALYSIS,
-                spans=[
-                    SpanEvent(
-                        original=anonymized_text[s.start_char : s.end_char],
-                        reformulation=s.reformulation,
-                        current_used="",
-                    )
-                    for s in reformulated_spans
-                ],
-                session_id=request.session_id,
-                user_id=request.user_id,
-                email_id=doc.id,
-                strategy=strategy,
-            )
-
+            analysis_request =StoreEventRequest(
+                    event = EventType.ANALYSIS,
+                    spans = [
+                        SpanEvent(
+                            span_id = s.span_id,
+                            # start_char = s.start_char,
+                            # end_char = s.end_char,
+                            original = anonymized_text[s.start_char:s.end_char],
+                            reformulation = s.reformulation,
+                            current_used = ""
+                        )
+                        for s in reformulated_spans
+                    ],
+                    session_id =request.session_id,
+                    user_id = request.user_id,
+                    email_id = doc.id,
+                    strategy = strategy,
+                    email_char_count = doc.char_length,
+                    email_word_count = doc.word_count,
+                )
+            
             analysis_events.append(analysis_request)
 
         insert_event(analysis_events)
@@ -103,10 +105,30 @@ async def analyse(request: Request):
 
 # da rivedere
 @app.post("/store-event")
-async def store_event(requests: list[EventRequest]):
+async def store_event(requests: list[StoreEventRequest]):
     # Hash email address
     for event in requests:
         email = event.user_id.strip().lower()
         event.user_id = _hash_email(email)
     insert_event(requests)
-    return {"status": 200, "message": "Everything is fine"}
+    return {"status": 200, "message": "Event was stored successfully"}
+
+
+@app.post("/store-info-event")
+async def store_info_event(request: InfoEventRequest):
+    # Hash email address
+    email = request.user_id.strip().lower()
+    request.user_id = _hash_email(email)
+    insert_info_event(request)
+    return {"status": 200, "message": "Info event was stored successfully"}
+
+
+@app.post("/add-user")
+async def store_user(user: User):
+    if user:
+        # Hash email address
+        email = user.user_id.strip().lower()
+        user.user_id = _hash_email(email)
+        insert_user(user)
+        return {"status": 200, "message": "User was added successfully"}
+

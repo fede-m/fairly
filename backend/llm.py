@@ -12,6 +12,7 @@ from groq import Groq
 import instructor
 import requests
 from openai import OpenAI
+import uuid
 
 load_dotenv()
 
@@ -25,14 +26,15 @@ tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TO
 # Setup client
 client = OpenAI(
     base_url = os.getenv("HPC4AI_URL", ""),
-    api_key = os.getenv("OPENWEB_API", "")
+    api_key = os.getenv("OPENWEB_API", ""),
+    timeout= 40.0
 )
 
 client = instructor.patch(client, mode = instructor.Mode.JSON)
 
-def generate_new_span(text:str,start:int, end:int):
+def generate_new_span(text:str,start:int, end:int) -> Span:
     span = Span(
-        span_id = "",
+        span_id = str(uuid.uuid4()),
         start_char = int(start),
         end_char = int(end),
         tokens = [],
@@ -91,13 +93,9 @@ def detection(text: str) -> list[Span]:
                     building_span = True
             else:
                 building_span = False 
-
-    # Add unique id to each span   
-    for span in spans:
-        span.span_id = f"{span.start_char}_{span.end_char}"
     return spans
 
-def generation(text: str, spans:list[Span], strategy: str):
+def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     if not spans:
         return []
     # Get the span id and the text
@@ -135,6 +133,6 @@ def generation(text: str, spans:list[Span], strategy: str):
             return reformulated_spans
         except Exception as e:
             print(f"Generation failed with error: {e}")
-            raise Exception(f"Generation failed: {str(e)}")
+            raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
     else:
         return spans

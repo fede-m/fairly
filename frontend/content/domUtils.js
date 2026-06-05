@@ -13,7 +13,7 @@
 function createSpanPopupDiv(spanEl) {
   // Validate span element 
   if (!spanEl || !spanEl.dataset.original || !spanEl.dataset.reformulation) {
-    console.error("Invalid span element - missing required data attributes");
+    logger.error("Invalid span element - missing required data attributes");
     return null;
   }
 
@@ -103,7 +103,7 @@ function createSpanPopupDiv(spanEl) {
     const next = all[all.indexOf(spanEl) + 1];
     (next ?? document.getElementById("analyze")).focus();
 
-    accept(spanEl, input ? true : false);
+    accept({span: spanEl, input: input ? true : false});
     spanDiv.style.display = "none";
   });
 
@@ -120,7 +120,7 @@ function createSpanPopupDiv(spanEl) {
     const next = all[all.indexOf(spanEl) + 1];
     (next ?? document.getElementById("analyze")).focus();
 
-    discard(spanEl);
+    discard({span: spanEl});
     spanDiv.style.display = "none";
   });
 
@@ -154,7 +154,7 @@ function createSpanPopupDiv(spanEl) {
 function highlightSpans(div, spans) {
   // Validate input
   if (!div || !div.isConnected) {
-    console.error("Invalid contenteditable div - may have been removed");
+    logger.error("Invalid contenteditable div - may have been removed");
     return false;
   }
 
@@ -192,126 +192,129 @@ function highlightSpans(div, spans) {
       const nodeStart = charIndex;
       const nodeEnd = charIndex + nodeText.length;
 
-      // Find all spans that overlap with this node 
-      const nodeSpans = spans.filter((span) => span.start_char < nodeEnd && span.end_char > nodeStart);
-      // If no span is found, simply update the index 
-      if (nodeSpans.length === 0) {
-        charIndex += nodeText.length;
-        return;
-      }
-      // Build an array of {text, isHighlight} -> each will be a new node later and the highlight true/false will define if you need to wrap it into a span or not 
-      let parts = [];
-      let lastIdx = 0;
-      nodeSpans.forEach((span) => {
-        // Calculate start and end index of the part to highlight in the current node text (considering that it goes from 0 to node.length) 
-        const spanStart = Math.max(span.start_char - nodeStart, 0);
-        const spanEnd = Math.min(span.end_char - nodeStart, nodeText.length);
-        if (spanStart > lastIdx) {
-          // Add the "before" text 
+        // Find all spans that overlap with this node 
+        const nodeSpans = spans.filter((span) => span.start_char < nodeEnd && span.end_char > nodeStart);
+        // If no span is found, simply update the index 
+        if (nodeSpans.length === 0) {
+          charIndex += nodeText.length;
+          return;
+        }
+        // Build an array of {text, isHighlight} -> each will be a new node later and the highlight true/false will define if you need to wrap it into a span or not 
+        let parts = [];
+        let lastIdx = 0;
+        nodeSpans.forEach((span) => {
+          // Calculate start and end index of the part to highlight in the current node text (considering that it goes from 0 to node.length) 
+          const spanStart = Math.max(span.start_char - nodeStart, 0);
+          const spanEnd = Math.min(span.end_char - nodeStart, nodeText.length);
+          if (spanStart > lastIdx) {
+            // Add the "before" text 
+            parts.push({
+              text: nodeText.slice(lastIdx, spanStart),
+              isHighlight: false,
+              reformulation: null,
+              id: null,
+            });
+          }
+          // Add the text of the span 
+          const part = {
+            text: nodeText.slice(spanStart, spanEnd),
+            isHighlight: true,
+            reformulation: span.reformulation,
+            id: span.span_id,
+          };
+          parts.push(part);
+          lastIdx = spanEnd;
+        });
+        // Add the after text (after having processed all the spans in the current node) 
+        if (lastIdx < nodeText.length) {
           parts.push({
             text: nodeText.slice(lastIdx, spanStart),
             isHighlight: false,
             reformulation: null,
+            id: null
           });
         }
-        // Add the text of the span 
-        const part = {
-          text: nodeText.slice(spanStart, spanEnd),
-          isHighlight: true,
-          reformulation: span.reformulation
-        };
-        parts.push(part);
-        lastIdx = spanEnd;
-      });
-      // Add the after text (after having processed all the spans in the current node) 
-      if (lastIdx < nodeText.length) {
-        parts.push({
-          text: nodeText.slice(lastIdx),
-          isHighlight: false,
-          reformulation: null
-        });
-      }
-      // Create temporary fragment to substitute the node with 
-      const frag = document.createDocumentFragment();
-      parts.forEach((part, idx) => {
+        // Create temporary fragment to substitute the node with 
+        const frag = document.createDocumentFragment();
+        parts.forEach((part, idx) => {
 
-        if (part.isHighlight) {
+          if (part.isHighlight) {
 
-          const spanEl = document.createElement("span");
-          spanEl.id = `span-${++spanId}`;
-          spanEl.className = "highlight";
-          // Keep original text
-          spanEl.innerText = part.reformulation;
-          spanEl.setAttribute("contenteditable", "false");
-          // button-like behaviour
-          spanEl.setAttribute("role", "button");
-          // reachable by tab key
-          spanEl.tabIndex = 0
-          // aria label optimist
-          spanEl.setAttribute("aria-label",
-            `Suggerimento Fairly: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
-          );
-          // Store original text and reformulation in the object 
-          spanEl.dataset.original = part.text;
-          spanEl.dataset.reformulation = part.reformulation;
-          spanEl.dataset.currentUsed = part.text;
-          spanEl.dataset.emailId = div.id;
+            const spanEl = document.createElement("span");
+            spanEl.id = part.id;
+            spanEl.className = "highlight";
+            // Keep original text
+            spanEl.innerText = part.text;
+            spanEl.setAttribute("contenteditable", "false");
+            // button-like behaviour
+            spanEl.setAttribute("role", "button");
+            // reachable by tab key
+            spanEl.tabIndex = 0
+            // aria label optimist
+            spanEl.setAttribute("aria-label",
+              `Suggerimento Fairly: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
+            );
+            // Store original text and reformulation in the object 
+            spanEl.dataset.original = part.text;
+            spanEl.dataset.reformulation = part.reformulation;
+            spanEl.dataset.currentUsed = part.text;
+            spanEl.dataset.emailId = div.id;
 
-          // space and enter open the spandiv
-          spanEl.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              spanEl.click();
-            }
-          });
-
-          const spanDiv = createSpanPopupDiv(spanEl);
-
-          if (!spanDiv) {
-            console.error(`Failed to create popup for span: ${part.text}`);
-            // Option 1: Skip this span and continue
-            frag.appendChild(spanEl); // Add span without popup
-            return;
-          }
-
-          frag.appendChild(spanEl);
-          // Add click event 
-          spanEl.addEventListener("click", (e) => {
-            e.stopPropagation();
-            // close popups
-            clearAllPopups();
-            // Hide all other spanDivs
-            document.querySelectorAll(".span-div").forEach(s => {
-              if (s.id !== spanDiv.id) { s.style.display = "none"; }
-            });
-            // Toggle visibility
-            const isVisible = spanDiv.style.display === "block";
-
-            if (isVisible) {
-              spanDiv.style.display = "none";
-              spanDiv.style.visibility = "hidden";
-            } else {
-              // Append to body if not already present
-              if (!document.body.contains(spanDiv)) {
-                document.body.appendChild(spanDiv);
+            // space and enter open the spandiv
+            spanEl.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                spanEl.click();
               }
+            });
 
-              positionPopup(spanDiv, spanEl)
-              spanDiv.focus();
+            const spanDiv = createSpanPopupDiv(spanEl);
+
+            if (!spanDiv) {
+              logger.error(`Failed to create popup for span: ${part.text}`);
+                // Option 1: Skip this span and continue
+                frag.appendChild(spanEl); // Add span without popup
+                return;
             }
-          })
-        } else if (part.text) {
-          frag.appendChild(document.createTextNode(part.text));
-        }
-      });
-      node.replaceWith(frag);
-      charIndex += nodeText.length;
-    });
+            
+            frag.appendChild(spanEl);
+            // Add click event 
+            spanEl.addEventListener("click", (e) => {
+              e.stopPropagation();
+              // close popups
+              clearAllPopups();
+              // Hide all other spanDivs
+              document.querySelectorAll(".span-div").forEach(s => {
+                if (s.id !== spanDiv.id) { s.style.display = "none"; }
+              });
+              // Toggle visibility
+              const isVisible = spanDiv.style.display === "block";
 
+              if (isVisible) {
+                spanDiv.style.display = "none";
+                spanDiv.style.visibility = "hidden";
+              } else {
+                // Append to body if not already present
+                if (!document.body.contains(spanDiv)) {
+                  document.body.appendChild(spanDiv);
+                }
+
+                positionPopup(spanDiv, spanEl)
+                spanDiv.focus();
+              }
+            })
+          } else if (part.text) {
+            frag.appendChild(document.createTextNode(part.text));
+          }
+        });
+        node.replaceWith(frag);
+        charIndex += nodeText.length;
+      });
+      
     return true;
 
   } catch (error) {
-    console.error("Error highlighting spans:", error);
+    logger.error("Error highlighting spans:", error);
     return false;
   }
 }
@@ -354,4 +357,95 @@ function positionPopup(spanDiv, spanEl) {
   spanDiv.style.left = `${left}px`;
   spanDiv.style.top = `${top}px`;
   spanDiv.style.visibility = "visible";
+}
+
+
+function showConsentDialog() {
+  /**
+   * Creates the consent dialog div where the user should give their consent in order to use Fairly.
+   * In case the user accepts the conditions, Fairly widget is shown on page
+   * Otherwise, it is not
+   * TODO: define what happens when the user opts out from using Fairly:
+   * whether they can still use the tool but we do not collect data OR we block access to the tool
+   * This is the draggable floating widget that appears on the page.
+   * @returns {null}
+   */
+  console.log("You need to give your consent first!")
+  const overlay = document.createElement("div");
+  overlay.id = "fairly-consent-overlay";
+  overlay.className = "consent-overlay"
+  const dialog = document.createElement("div");
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "fairly-consent-title");
+  dialog.className = "consent-dialog"
+  // Close button (counts as refusal)
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "popup-close-btn";
+  closeBtn.setAttribute("aria-label", "Chiudi finestra di consenso");
+  closeBtn.innerHTML = ICONS.close;
+  closeBtn.addEventListener("click", () => {
+    CONSENT_GIVEN = false;
+    chrome.storage.local.set({"fairlyConsentGiven": false});
+    overlay.remove();
+  });
+  
+  // Title
+  const title = document.createElement("h2");
+  title.textContent = "Informativa sull'uso dei dati";
+  // Paragraph
+  const p1 = document.createElement("p");
+  p1.textContent = "Per funzionare, Fairly invia il testo delle email ad un server dell'Università di Torino per analizzare ed eventualmente suggerire formulazioni più inclusive tramite modelli di intelligenza artificiale.";
+  const p2 = document.createElement("p");
+  p2.textContent = "I modelli vengono eseguiti sull'infrastruttura dell'Università di Torino e di HPC4AI. I dati non vengono condivisi con terze parti né utilizzati per l'addestramento o il miglioramento dei modelli."
+  // const p3 = document.createElement("p");
+  // p3.textContent = "Prima dell'analisi, il contenuto dell'email viene anonimizzato, rimuovendo eventuali informazioni personali identificalbili (Personally Identifiable Information, PII) presenti nel testo."
+  const p3 = document.createElement("p");
+  p3.textContent = "Fairly non conserva il testo completo delle email, ma solo eventuali porzioni di testo segnalate come non inclusive e le relative interazioni dell'utente con l'applicazione. Inoltre, l'indirizzo email dell'utente viene salvato solo dopo essere stato pseudonimizzato."
+  const p4 = document.createElement("p");
+  p4.textContent = "Tali dati vengono conservati esclusivamente per finalità di ricerca e possono essere consultati unicamente da personale autorizzato dell’Università di Torino."
+  const p5 = document.createElement("p");
+  p5.textContent = "Per saperne di più potete consultare la nostra ";
+  const a = document.createElement("a");
+  a.href = LINK.PRIVACY;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.textContent = "Privacy Policy";
+  p5.appendChild(a);
+
+  const btnWrap = document.createElement("div");
+  btnWrap.className = "consent-dialog-btnWrap";
+  const accept = document.createElement("button");
+  accept.className = "accept-all-btn";
+  accept.textContent = "Accetta";
+  accept.addEventListener("click", () => {
+    CONSENT_GIVEN = true;
+    chrome.storage.local.set({"fairlyConsentGiven": true});
+    overlay.remove();
+    initExtension();
+  });
+  const refuse = document.createElement("button");
+  refuse.className = "refuse-all-btn";
+  refuse.textContent = "Rifiuta";
+  refuse.addEventListener("click", () => {
+    CONSENT_GIVEN = false;
+    chrome.storage.local.set({"fairlyConsentGiven": false});
+    overlay.remove();
+  });
+
+  btnWrap.appendChild(accept);
+  btnWrap.appendChild(refuse);
+  
+  dialog.appendChild(closeBtn);
+  dialog.appendChild(title);
+  dialog.appendChild(p1);
+  dialog.appendChild(p2);
+  dialog.appendChild(p3);
+  dialog.appendChild(p4);
+  dialog.appendChild(p5);
+  dialog.appendChild(btnWrap);
+
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  acceptBtn.focus();
 }
