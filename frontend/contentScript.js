@@ -2,6 +2,7 @@ let SESSION_ID = null;
 let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
 let CONSENT_GIVEN = null;
+let analysisTimeoutId = null;
 
 function countWords (text) {
   return text.trim()
@@ -231,6 +232,15 @@ function startAnalysis() {
           action: "analyseData",
           payload: dataObj,
         });
+        
+        // Set timeout: if no response in 45 seconds, show error
+        if (analysisTimeoutId) clearTimeout(analysisTimeoutId);
+        analysisTimeoutId = setTimeout(() => {
+          console.error("Analysis request timeout - no response from background");
+          setLoadingState(false);
+          const btnWrapper = document.getElementById("info-btn-wrapper");
+          showPopup("error", ERROR_MESSAGES["TIMEOUT"] || "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.", "error-msg", btnWrapper);
+        }, 45000);
       } catch (error) {
         console.error("Failed to send message to background: ", error);
         setLoadingState(false);
@@ -897,6 +907,11 @@ async function initExtension() {
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
+    // Clear the analysis timeout if it exists
+    if (analysisTimeoutId) {
+      clearTimeout(analysisTimeoutId);
+      analysisTimeoutId = null;
+    }
 
     // Check if widget exists
     if (!isWidgetValid()) {
@@ -911,7 +926,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Check if error contains response
     if (response.error) {
       const btnWrapper = document.getElementById("info-btn-wrapper");
-      showPopup("error", ERROR_MESSAGES[response.code], 'error-msg', btnWrapper);
+      showPopup("error", ERROR_MESSAGES[response.code] || "Si è verificato un errore. Riprova più tardi.", 'error-msg', btnWrapper);
       console.error(`Analysis failed with ${response.code}: `, response.details);
       return;
     }
