@@ -69,7 +69,7 @@ async function makeRequest(url, payload, errorContext = "request", timeoutMs = 3
       return {
         error: true,
         message: `Error during ${errorContext} with status code ${response.status}`,
-        code: "REQUEST_FAILED",
+        code: "ANALYSIS_FAILED",
         status: response.status
       };
     }

@@ -49,8 +49,17 @@ async def analyse(request: Request):
             # Remove "\n" from text
             text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
             anonymized_text, mapping = process_text(text)
-            # Detection
-            detected_spans = detection(anonymized_text)
+            try:
+                # Detection
+                detected_spans = detection(anonymized_text)
+            except Exception as e:
+                # Return error response if generation fails
+                return {
+                    "error": True,
+                    "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
+                    "code": "ANALYSIS_FAILED",
+                    "details": str(e)
+                }
             # Generation
             try:
                 reformulated_spans = generation(anonymized_text, detected_spans, strategy)
