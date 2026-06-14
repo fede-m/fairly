@@ -100,7 +100,7 @@ function setLoadingState(isLoading) {
 }
 
 function clearAllPopups() {
-  ["warning-msg", "no-span-message"].forEach(id => {
+  ["error-msg", "warning-msg", "no-span-message"].forEach(id => {
     document.getElementById(id)?.remove();
   });
 }
