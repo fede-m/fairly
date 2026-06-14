@@ -1,19 +1,4 @@
-# Error propagation
-
-| Error Type  | Description                               | Where it Happens | Error propagation stack |Current Handling | Missing/incomplete |
-
-|:-------------|-----------------------------------------:|------------------------:|------------------------:|----------------:|:-------------------|
-
-|LLM Timeout   | LLM API doesn't respond within 40 seconds| `llm.py`: `generation()`| `llm.py` raises Exception --> `main.py` catches in inner try-except --> returns |setosa     |
-
-|          4.8|         3.0|          1.4|         0.1|setosa     |
-
-|          6.1|         2.8|          4.7|         1.2|versicolor |
-
-|          6.1|         3.0|          4.6|         1.4|versicolor |
-
-
-## Error-types handling
+# Error-types handling
 ### GenAI error or BERT error
 - Description: generation or detection fail
 - Where it Happens:  `llm.py`: `generation()`/ `detection()`
@@ -68,5 +53,9 @@
     2. if background returns a response (200 or error) within this framework (`processedData` listener), the timeout is set back to null
     3. if no response is sent within 45 seconds, it means the background is down (otherwise the 40-seconds background timeout would have triggered), and `contentScript` resets the timeout, stops the loading, and shows the error popup
 
-
+# Timeouts
+- To avoid requests hang forever, we have defined 3 timeouts:
+    - 35 seconds OpenAI timeout: if the request to the LLM lasts longer than 35 seconds, the connection is interrupted and an error is returned and handled in the background
+    - 40 seconds background timeout: if the entire request to the backend (detection + generation) lasts longer than 40 seconds, the request to the backend is interrupted and the background sends a timeout error
+    - 45 seconds contentScript timeout: if the background does not send a response back to the contentScript within 45 seconds, possibly due to a background problem (e.g. server has crashed), contentScript interrupts the request, sets the loading state to false and returns a span error.
  
