@@ -27,7 +27,7 @@ tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TO
 client = OpenAI(
     base_url = os.getenv("HPC4AI_URL", ""),
     api_key = os.getenv("OPENWEB_API", ""),
-    timeout= 40.0
+    timeout= 35.0
 )
 
 client = instructor.patch(client, mode = instructor.Mode.JSON)
