@@ -1,5 +1,10 @@
 importScripts("config.js");
-console.log("Background service worker loaded");
+
+import { createLogger } from './logger.js';
+const logger = createLogger(import.meta.url);
+
+logger.log("Background service worker loaded");
+
 const API = {
   baseUrl: CONFIG.BASE_URL,
 
@@ -10,12 +15,12 @@ const API = {
 
 async function analyseData(payload) {
   if (payload == null) {
-    console.error("[background] Not a valid payload!");
+    console.error("Not a valid payload!");
     return { error: "Invalid payload!" };
   }
   try {
     const startTime = performance.now();
-    console.log("[background] [" + new Date().toISOString() + "] Sending data to backend... API:", API.analyse);
+    logger.log("[" + new Date().toISOString() + "] Sending data to backend... API:", API.analyse);
     const response = await fetch(API.analyse, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,15 +29,15 @@ async function analyseData(payload) {
 
     const responseTime = performance.now();
     const elapsedMs = (responseTime - startTime).toFixed(2);
-    console.log("[background] [" + new Date().toISOString() + "] Got response from backend. Status:", response.status, "Elapsed time:", elapsedMs + "ms");
+    logger.log("[" + new Date().toISOString() + "] Got response from backend. Status:", response.status, "Elapsed time:", elapsedMs + "ms");
     // Convert response to json
     const result = await response.json();
     const endTime = performance.now();
     const totalElapsedMs = (endTime - startTime).toFixed(2);
-    console.log("[background] [" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
+    logger.log("[" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
     return result;
   } catch (error) {
-    console.error("[background] Error calling backend:", error);
+    console.error("Error calling backend:", error);
     return { error: error.message };
   }
 }
@@ -42,8 +47,8 @@ async function storeEvent(payload) {
     console.error("Not a valid payload!");
   }
   try {
-    console.log(payload);
-    console.log(JSON.stringify(payload));
+    logger.log(payload);
+    logger.log(JSON.stringify(payload));
     const response = await fetch(API.storeEvent, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -68,31 +73,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       {"id": "2", "text":"myText2"},
       ...
     ] */
-    console.log("[background] Received analyseData action. Payload:", msg.payload);
+    logger.log("Received analyseData action. Payload:", msg.payload);
     const data = msg.payload;
     const tabId = sender.tab ? sender.tab.id : null;
     analyseData(data).then((result) => {
-      console.log("[background] Returned from analyseData(). Checking tabId:", tabId);
+      logger.log("Returned from analyseData(). Checking tabId:", tabId);
       if (tabId) {
-        console.log("[background] Sending processedData to tab:", tabId, "with result:", result);
+        logger.log("Sending processedData to tab:", tabId, "with result:", result);
         chrome.tabs.sendMessage(tabId, {
           action: "processedData",
           payload: result,
         });
       } else {
-        console.warn("[background] No tabId available to send the message back to!");
+        console.warn("No tabId available to send the message back to!");
       }
     });
     // Immediately reply so the contentScript's callback doesn't throw a "port closed" error
-    console.log("[background] Sending initial processing_started response back to tab.");
+    logger.log("Sending initial processing_started response back to tab.");
     sendResponse({ status: "processing_started" });
     return true;
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
-    console.log(data);
+    logger.log(data);
     storeEvent(data)
-      .then(res => console.log(res))
+      .then(res => logger.log(res))
       .catch(err => console.error("Failed to store event:", err));
   }
   else if (msg.action == "storeFeedback") { }

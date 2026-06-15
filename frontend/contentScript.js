@@ -1,3 +1,6 @@
+import { createLogger } from './logger.js';
+const logger = createLogger(import.meta.url);
+
 let SESSION_ID = null;
 let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
@@ -225,12 +228,12 @@ function startAnalysis() {
       });
 
       // Send data to background 
-      console.log("[contentScript] Sending analyseData to background...", dataObj);
+      logger.log("Sending analyseData to background...", dataObj);
       chrome.runtime.sendMessage({
         action: "analyseData",
         payload: dataObj,
       }, (response) => {
-        console.log("[contentScript] Got immediate response from background:", response);
+        logger.log("Got immediate response from background:", response);
         if (chrome.runtime.lastError || !response) {
           console.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
           setLoadingState(false);
