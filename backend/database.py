@@ -26,14 +26,14 @@ print(user)
 MONGO_URL = f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
 
 ## COMMENT THIS TO TEST LOCALLY
-### Connect to the MongoDB Cluster
-## client = MongoClient(MONGO_URL)
-##
-## dbs = client.list_database_names()
-## print(dbs)
-##
-## db = client["fairly_db"]
-## collection = db["user_events"]
+# Connect to the MongoDB Cluster
+client = MongoClient(MONGO_URL)
+
+dbs = client.list_database_names()
+print(dbs)
+
+db = client["fairly_db"]
+collection = db["user_events"]
 
 
 def insert_event(events: list[EventRequest]):
