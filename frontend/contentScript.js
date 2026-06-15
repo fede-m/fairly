@@ -1,5 +1,5 @@
-import { createLogger } from './logger.js';
-const logger = createLogger(import.meta.url);
+importScripts("logger.js");
+const logger = createLogger("contentScript.js");
 
 let SESSION_ID = null;
 let USER_EMAIL = null;

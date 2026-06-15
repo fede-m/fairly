@@ -1,8 +1,6 @@
-importScripts("config.js");
+importScripts("config.js", "logger.js");
 
-import { createLogger } from './logger.js';
-const logger = createLogger(import.meta.url);
-
+const logger = createLogger("background.js");
 logger.log("Background service worker loaded");
 
 const API = {
