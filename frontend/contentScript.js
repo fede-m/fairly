@@ -325,7 +325,7 @@ function createInfoDiv() {
   infoDiv.appendChild(paragraph);
 
   // last used strategy
-  const savedStrategy = chrome.storage.local.getItem("fairlyLastStrategy");
+  // const savedStrategy = chrome.storage.local.getItem("fairlyLastStrategy");
 
   // Check-list container 
   const checklist = document.createElement("div");
@@ -392,7 +392,8 @@ function createInfoDiv() {
       const nestedDiv = document.createElement("div");
 
       // saved strategy selection
-      const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
+      // const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
+      const shouldExpand = false
 
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = shouldExpand ? "flex" : "none";
@@ -412,14 +413,14 @@ function createInfoDiv() {
       nestedOption.forEach((optText, idx) => {
 
         const radioId = `${strategyName}-${idx}`;
-        const isChecked = savedStrategy ? (savedStrategy === radioId) : (defaultSelected && idx === 0);
+        // const isChecked = savedStrategy ? (savedStrategy === radioId) : (defaultSelected && idx === 0);
 
         // Create label and checkbox for option
         const nestedLabel = document.createElement("label");
         const nestedCheckbox = createRadio(
           radioId,
           `Opzione della strategia ${labelText}: ${optText}`,
-          isChecked
+          False
         );
         nestedCheckbox.tabIndex = shouldExpand ? 0 : -1;
 
@@ -459,9 +460,9 @@ function createInfoDiv() {
       });
     } else {
       const radioId = strategyName;
-      const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
+      //const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
       const label = document.createElement("label");
-      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, isChecked);
+      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, False);
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
@@ -582,7 +583,7 @@ function createInfoDiv() {
       return;
     }
     let hasNested = strategyObj.nestedOptions.length > 0 ? true : false;
-    let defaultSelected = idx === 0;
+    // let defaultSelected = idx === 0;
     checklist.appendChild(
       createChecklistItem(
         strategyObj.name,
@@ -590,7 +591,7 @@ function createInfoDiv() {
         hasNested,
         strategyObj.info,
         strategyObj.nestedOptions,
-        defaultSelected
+        // defaultSelected
       ));
   })
 
