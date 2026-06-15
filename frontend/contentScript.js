@@ -1,4 +1,3 @@
-importScripts("logger.js");
 const logger = createLogger("contentScript.js");
 
 let SESSION_ID = null;
@@ -420,7 +419,7 @@ function createInfoDiv() {
         const nestedCheckbox = createRadio(
           radioId,
           `Opzione della strategia ${labelText}: ${optText}`,
-          False
+          false
         );
         nestedCheckbox.tabIndex = shouldExpand ? 0 : -1;
 
@@ -462,7 +461,7 @@ function createInfoDiv() {
       const radioId = strategyName;
       //const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
       const label = document.createElement("label");
-      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, False);
+      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, false);
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
