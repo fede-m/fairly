@@ -44,13 +44,13 @@ function initializeSession() {
   const meta = document.getElementsByName("og-profile-acct");
 
   if (!meta || !meta.length) {
-    console.warn("Could not find user email meta tag.");
+    logger.warn("Could not find user email meta tag.");
     return false;
   }
 
   USER_EMAIL = meta[0].content;
   if (!emailEndsWithAllowedDomain()) {
-    console.warn("Not a valid domain!");
+    logger.warn("Not a valid domain!");
     return false;
   }
 
@@ -58,7 +58,7 @@ function initializeSession() {
   try {
     SESSION_ID = crypto.randomUUID();
   } catch (e) {
-    console.warn("crypto.randomUUID unavailable, using fallback.", e);
+    logger.warn("crypto.randomUUID unavailable, using fallback.", e);
     SESSION_ID = Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
@@ -74,7 +74,7 @@ function initializeSession() {
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
-    console.warn("localStorage unavailable, using random strategy order.", e);
+    logger.warn("localStorage unavailable, using random strategy order.", e);
     STRATEGY_ORDER = Object.keys(STRATEGIES).sort(() => Math.random() - 0.5);
   }
 
@@ -86,7 +86,7 @@ function setLoadingState(isLoading) {
   const analyzeBtn = document.getElementById("analyze");
 
   if (!analyzeBtn) {
-    console.error("setLoadingState: 'analyze' button not found in DOM.");
+    logger.error("setLoadingState: 'analyze' button not found in DOM.");
     return;
   }
 
@@ -109,9 +109,10 @@ function clearAllPopups() {
 
 function showPopup(type, message, id, container, focusTarget = null) {
   if (!container) {
-    console.error("showPopup: container is missing for message:", message);
+    logger.error("showPopup: container is missing for message:", message);
     return;
   }
+
   clearAllPopups()
 
   container.style.position = "relative";
@@ -154,7 +155,7 @@ function setResultButtons(visible) {
   const acceptBtn = document.getElementById("accept-all");
   const refuseBtn = document.getElementById("refuse-all");
   if (!acceptBtn || !refuseBtn) {
-    console.error("setResultButtons: 'accept-all' or 'refuse-all' buttons are missing from the DOM.");
+    logger.error("setResultButtons: 'accept-all' or 'refuse-all' buttons are missing from the DOM.");
     return;
   }
 
@@ -205,8 +206,11 @@ function startAnalysis() {
       const selected = document.querySelector(".checklist-choice:checked");
 
       if (!selected) {
+        // Create new warning popup
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        showPopup("warning", "E' necessario selezionare una strategia di riformulazione!", "warning-msg", btnWrapper);
+        logger.log("startAnalysis: No strategy selected.");
         setLoadingState(false);
-        console.warn("No strategy selected!");
         return;
       }
 
@@ -234,7 +238,7 @@ function startAnalysis() {
       }, (response) => {
         logger.log("Got immediate response from background:", response);
         if (chrome.runtime.lastError || !response) {
-          console.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
+          logger.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
           setLoadingState(false);
           const btnWrapper = document.getElementById("info-btn-wrapper");
           showPopup("warning", "Errore di connessione. Ricarica la pagina.", "warning-msg", btnWrapper);
@@ -348,7 +352,7 @@ function createInfoDiv() {
     const item = document.createElement("div");
 
     if (!strategyName || !Object.keys(STRATEGIES).includes(strategyName)) {
-      console.warn("createChecklistItem: invalid strategyName", strategyName);
+      logger.warn("createChecklistItem: invalid strategyName", strategyName);
       return item;
     }
 
@@ -578,7 +582,7 @@ function createInfoDiv() {
   STRATEGY_ORDER.forEach((strategy, idx) => {
     let strategyObj = STRATEGIES[strategy];
     if (!strategyObj) {
-      console.warn(`Strategy '${strategy}' found in order but missing from STRATEGIES.`);
+      logger.warn(`Strategy '${strategy}' found in order but missing from STRATEGIES.`);
       return;
     }
     let hasNested = strategyObj.nestedOptions.length > 0 ? true : false;
@@ -628,7 +632,8 @@ function createInfoDiv() {
   analyzeButton.textContent = "Analizza";
 
   // Start analysis when clicking on analyze button
-  analyzeButton.addEventListener("click", () => {
+  analyzeButton.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevents document click listener from clearing the popup
     setLoadingState(true);
     startAnalysis();
   });
@@ -822,7 +827,7 @@ function initExtension() {
   */
 
   if (typeof DOMAINS === 'undefined' || typeof STRATEGIES === 'undefined') {
-    console.error("Missing global dependencies.");
+    logger.error("Missing global dependencies.");
     return;
   }
 
@@ -967,7 +972,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
         );
         if (!div) {
-          console.warn(`onMessage payload processing: editable draft window with id '${id}' not found.`);
+          logger.warn(`onMessage payload processing: editable draft window with id '${id}' not found.`);
           continue;
         }
 

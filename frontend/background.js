@@ -13,7 +13,7 @@ const API = {
 
 async function analyseData(payload) {
   if (payload == null) {
-    console.error("Not a valid payload!");
+    logger.error("Not a valid payload!");
     return { error: "Invalid payload!" };
   }
   try {
@@ -35,14 +35,14 @@ async function analyseData(payload) {
     logger.log("[" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
     return result;
   } catch (error) {
-    console.error("Error calling backend:", error);
+    logger.error("Error calling backend:", error);
     return { error: error.message };
   }
 }
 
 async function storeEvent(payload) {
   if (payload == null) {
-    console.error("Not a valid payload!");
+    logger.error("Not a valid payload!");
   }
   try {
     logger.log(payload);
@@ -57,7 +57,7 @@ async function storeEvent(payload) {
     return result;
   }
   catch (error) {
-    console.error("Error calling backend:", error);
+    logger.error("Error calling backend:", error);
     return { error: error.message };
   }
 }
@@ -83,7 +83,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           payload: result,
         });
       } else {
-        console.warn("No tabId available to send the message back to!");
+        logger.warn("No tabId available to send the message back to!");
       }
     });
     // Immediately reply so the contentScript's callback doesn't throw a "port closed" error
@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     logger.log(data);
     storeEvent(data)
       .then(res => logger.log(res))
-      .catch(err => console.error("Failed to store event:", err));
+      .catch(err => logger.error("Failed to store event:", err));
   }
   else if (msg.action == "storeFeedback") { }
 
