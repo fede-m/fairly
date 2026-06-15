@@ -35,15 +35,16 @@ async def analyse(request: Request):
         # Remove "\n" from text
         text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
         anonymized_text, mapping = process_text(text)
-        text = anonymized_text
         # Detection
-        detected_spans = detection(text)
+        detected_spans = detection(anonymized_text)
         # Generation
-        reformulated_spans = generation(text, detected_spans, strategy)
+        reformulated_spans = generation(anonymized_text, detected_spans, strategy)
         print(reformulated_spans)
 
         # user sees deanonimized text + shifted spans
-        deanonymized_text, unfair_spans = deanonymize(text, mapping, reformulated_spans)
+        deanonymized_text, unfair_spans = deanonymize(
+            anonymized_text, mapping, reformulated_spans
+        )
         results[doc.id] = OutputData(text=deanonymized_text, unfair_spans=unfair_spans)
 
         # db saves only anonimized data
@@ -51,7 +52,7 @@ async def analyse(request: Request):
             event=EventType.ANALYSIS,
             spans=[
                 SpanEvent(
-                    original=text[s.start_char : s.end_char],
+                    original=anonymized_text[s.start_char : s.end_char],
                     reformulation=s.reformulation,
                     current_used="",
                 )
