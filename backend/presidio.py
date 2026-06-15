@@ -166,6 +166,7 @@ def add_custom_recognizers(analyzer: AnalyzerEngine):
             supported_language="it",
             patterns=[
                 Pattern(
+                    name="iban_it",
                     regex=r"(?i)\bIT[ \t-]\d{2}[ \t-][A-Z](?:[ \t-]*\d){22}\b",
                     score=0.85,
                 )
@@ -184,6 +185,7 @@ if __name__ == "__main__":
 
     email = """Gentile Marco Rossi,
     la contatto da parte del Professor Giuseppe Verdi dell'Università di Torino.
+    il Professore Giuseppe Verdi. lei è mario rossi. giuseppe verdi è chi le parla.
     Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
     Cordiali saluti"""
 
