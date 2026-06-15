@@ -64,17 +64,17 @@ function initializeSession() {
 
   try {
     // Get strategies order
-    const strategyOrder = chrome.storage.local.getItem("fairlyStrategyOrder");
+    const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
     if (strategyOrder) {
       STRATEGY_ORDER = JSON.parse(strategyOrder);
     } else {
       const strategies = Object.keys(STRATEGIES);
       const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
-      chrome.storage.local.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
+      localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
-    console.warn("chrome.storage.local unavailable, using random strategy order.", e);
+    console.warn("localStorage unavailable, using random strategy order.", e);
     STRATEGY_ORDER = Object.keys(STRATEGIES).sort(() => Math.random() - 0.5);
   }
 
@@ -216,7 +216,7 @@ function startAnalysis() {
       dataObj["session_id"] = SESSION_ID;
       dataObj["user_id"] = USER_EMAIL;
       // remember the selected options for future uses
-      chrome.storage.local.setItem("fairlyLastStrategy", selected.id);
+      //chrome.storage.local.setItem("fairlyLastStrategy", selected.id);
 
       editableElements.forEach((element) => {
         const data = {};
