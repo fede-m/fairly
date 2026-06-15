@@ -45,8 +45,7 @@ def anonymize(text: str) -> tuple[str, dict]:
 
 
 def remove_overlaps(results):
-    """Quando vengono identificati due diversi identificativi sovrapposti,
-    mantenerne solo uno, il più probabile"""
+    """To avoid overlapping entities, we keep the highest scoring one."""
     results = sorted(results, key=lambda r: r.score, reverse=True)
     kept = []
     for r in results:
@@ -100,9 +99,7 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
     adjusted_spans = []
     if spans:
         for span in spans:
-            adjusted_span = (
-                span.copy(deep=True) if hasattr(span, "copy") else span.__dict__.copy()
-            )
+            adjusted_span = span.model_copy(deep=True)
 
             # Calculate cumulative shift up to start_char
             cumulative_shift = 0
@@ -169,9 +166,7 @@ def add_custom_recognizers(analyzer: AnalyzerEngine):
             supported_language="it",
             patterns=[
                 Pattern(
-                    name="iban_it",
-                    # IT + 2 check digits + 1 CIN letter + 22 digits (ABI+CAB+account), allowing separators anywhere.
-                    regex=r"(?i)\b[A-Z]{2}[ \t-]*\d{2}[ \t-]*[A-Z](?:[ \t-]*\d){21,22}\b(?=\r?\n|$)",
+                    regex=r"(?i)\bIT[ \t-]\d{2}[ \t-][A-Z](?:[ \t-]*\d){22}\b",
                     score=0.85,
                 )
             ],
