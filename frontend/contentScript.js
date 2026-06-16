@@ -3,6 +3,97 @@ const logger = createLogger("contentScript.js");
 let SESSION_ID = null;
 let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
+let CONSENT_GIVEN = null;
+
+function showConsentDialog() {
+  /**
+   * Creates the consent dialog div where the user should give their consent in order to use Fairly.
+   * In case the user accepts the conditions, Fairly widget is shown on page
+   * Otherwise, it is not
+   * TODO: define what happens when the user opts out from using Fairly:
+   * whether they can still use the tool but we do not collect data OR we block access to the tool
+   * This is the draggable floating widget that appears on the page.
+   * @returns {null}
+   */
+  console.log("You need to give your consent first!")
+  const overlay = document.createElement("div");
+  overlay.id = "fairly-consent-overlay";
+  overlay.className = "consent-overlay"
+  const dialog = document.createElement("div");
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute("aria-modal", "true");
+  dialog.setAttribute("aria-labelledby", "fairly-consent-title");
+  dialog.className = "consent-dialog"
+  // Close button (counts as refusal)
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "popup-close-btn";
+  closeBtn.setAttribute("aria-label", "Chiudi finestra di consenso");
+  closeBtn.innerHTML = ICONS.close;
+  closeBtn.addEventListener("click", () => {
+    CONSENT_GIVEN = false;
+    chrome.storage.local.set({"fairlyConsentGiven": false});
+    overlay.remove();
+  });
+  
+  // Title
+  const title = document.createElement("h2");
+  title.textContent = "Informativa sull'uso dei dati";
+  // Paragraph
+  const p1 = document.createElement("p");
+  p1.textContent = "Per funzionare, Fairly invia il testo delle email ad un server dell'Università di Torino per analizzare ed eventualmente suggerire formulazioni più inclusive tramite modelli di intelligenza artificiale.";
+  const p2 = document.createElement("p");
+  p2.textContent = "I modelli vengono eseguiti sull'infrastruttura dell'Università di Torino e di HPC4AI. I dati non vengono condivisi con terze parti né utilizzati per l'addestramento o il miglioramento dei modelli."
+  // const p3 = document.createElement("p");
+  // p3.textContent = "Prima dell'analisi, il contenuto dell'email viene anonimizzato, rimuovendo eventuali informazioni personali identificalbili (Personally Identifiable Information, PII) presenti nel testo."
+  const p3 = document.createElement("p");
+  p3.textContent = "Fairly non conserva il testo completo delle email, ma solo eventuali porzioni di testo segnalate come non inclusive e le relative interazioni dell'utente con l'applicazione. Inoltre, l'indirizzo email dell'utente viene salvato solo dopo essere stato pseudonimizzato."
+  const p4 = document.createElement("p");
+  p4.textContent = "Tali dati vengono conservati esclusivamente per finalità di ricerca e possono essere consultati unicamente da personale autorizzato dell’Università di Torino."
+  const p5 = document.createElement("p");
+  p5.textContent = "Per saperne di più potete consultare la nostra ";
+  const a = document.createElement("a");
+  a.href = LINK.PRIVACY;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.textContent = "Privacy Policy";
+  p5.appendChild(a);
+
+  const btnWrap = document.createElement("div");
+  btnWrap.className = "consent-dialog-btnWrap";
+  const accept = document.createElement("button");
+  accept.className = "accept-all-btn";
+  accept.textContent = "Accetta";
+  accept.addEventListener("click", () => {
+    CONSENT_GIVEN = true;
+    chrome.storage.local.set({"fairlyConsentGiven": true});
+    overlay.remove();
+    initExtension();
+  });
+  const refuse = document.createElement("button");
+  refuse.className = "refuse-all-btn";
+  refuse.textContent = "Rifiuta";
+  refuse.addEventListener("click", () => {
+    CONSENT_GIVEN = false;
+    chrome.storage.local.set({"fairlyConsentGiven": false});
+    overlay.remove();
+  });
+
+  btnWrap.appendChild(accept);
+  btnWrap.appendChild(refuse);
+  
+  dialog.appendChild(closeBtn);
+  dialog.appendChild(title);
+  dialog.appendChild(p1);
+  dialog.appendChild(p2);
+  dialog.appendChild(p3);
+  dialog.appendChild(p4);
+  dialog.appendChild(p5);
+  dialog.appendChild(btnWrap);
+
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  acceptBtn.focus();
+}
 /* Create HTML elements for the UI */
 function createWidget() {
   /**
@@ -28,7 +119,7 @@ function createImgLogo() {
    */
   const img = document.createElement("img");
   // The chrome.runtime.getURL('fairly_logo.png') constructs a full internal URL to the extension's resources 
-  img.src = chrome.runtime.getURL("fairly_logo.png");
+  img.src = chrome.runtime.getURL("fairly_logo_fata.png");
   img.className = "fairly-logo";
   img.alt = "Fairly - apri pannello";
   return img;
@@ -39,7 +130,7 @@ function emailEndsWithAllowedDomain() {
   return DOMAINS.some(d => USER_EMAIL.toLowerCase().endsWith(d))
 }
 
-function initializeSession() {
+async function initializeSession() {
   // Get user email
   const meta = document.getElementsByName("og-profile-acct");
 
@@ -64,13 +155,13 @@ function initializeSession() {
 
   try {
     // Get strategies order
-    const strategyOrder = localStorage.getItem("fairlyStrategyOrder");
-    if (strategyOrder) {
-      STRATEGY_ORDER = JSON.parse(strategyOrder);
+    const result = await chrome.storage.local.get("fairlyStrategyOrder");
+    if (result.fairlyStrategyOrder) {
+      STRATEGY_ORDER = result.fairlyStrategyOrder;
     } else {
       const strategies = Object.keys(STRATEGIES);
-      const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5)
-      localStorage.setItem("fairlyStrategyOrder", JSON.stringify(randomizedOrder));
+      const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5);
+      await chrome.storage.local.set({"fairlyStrategyOrder": randomizedOrder});
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
@@ -114,13 +205,12 @@ function showPopup(type, message, id, container, focusTarget = null) {
   }
 
   clearAllPopups()
-
   container.style.position = "relative";
-
   const popup = document.createElement("div");
   popup.id = id;
-  popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
-  // popup.setAttribute("role", type === "success" ? "status" : "alert"); ridondante ?
+  //popup.className = `message-popup ${type === "success" ? "success-popup" : "warning-popup"}`;
+  popup.className = `message-popup ${POPUP_MESSAGES[type]}`
+  popup.style.visibility = "visible";
 
   const msg = document.createElement("span");
   msg.textContent = message;
@@ -138,10 +228,8 @@ function showPopup(type, message, id, container, focusTarget = null) {
       const target = typeof focusTarget === "string"
         ? document.querySelector(focusTarget)
         : focusTarget;
-
       target?.focus();
     }
-
   });
 
   popup.appendChild(msg);
@@ -186,6 +274,11 @@ function startAnalysis() {
    * Displays a warning popup if no editable emails are found.
    * @returns {void}
   */
+  // Check whether the Failry widget still exists
+  if (!isWidgetValid()) {
+    console.warn("Fairly widget not found. Extension might have been reloaded");
+    return; // Early exit if widget is gone
+  }
 
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
@@ -195,9 +288,15 @@ function startAnalysis() {
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
     clearAllPopups()
+
     // Select all elements on the page which are editable (the open emails) 
-    // div.editable[contenteditable="true"]
-    const editableElements = document.querySelectorAll('div.Am.Al.editable[contenteditable="true"]');
+    const editableElements = Array.from(document.querySelectorAll('div[role="textbox"][contenteditable="true"]'))
+      .filter(el => {
+        // Check if element has a parent with data-compose-id and is visible
+        const hasComposeParent = el.closest('[data-compose-id]') !== null;
+        const isVisible = el.offsetParent !== null;
+        return hasComposeParent && isVisible;
+      });
     // Check if there are open emails 
     if (editableElements.length > 0) {
 
@@ -229,26 +328,30 @@ function startAnalysis() {
         data["text"] = element.innerText;
         dataObj["data"].push(data);
       });
-
       // Send data to background 
-      logger.log("Sending analyseData to background...", dataObj);
-      chrome.runtime.sendMessage({
-        action: "analyseData",
-        payload: dataObj,
-      }, (response) => {
-        logger.log("Got immediate response from background:", response);
-        if (chrome.runtime.lastError || !response) {
-          logger.error("Communication error:", chrome.runtime.lastError ? chrome.runtime.lastError.message : "No response");
-          setLoadingState(false);
-          const btnWrapper = document.getElementById("info-btn-wrapper");
-          showPopup("warning", "Errore di connessione. Ricarica la pagina.", "warning-msg", btnWrapper);
-        }
-      });
+      try {
+          chrome.runtime.sendMessage({
+          action: "analyseData",
+          payload: dataObj,
+        });
+      } catch (error) {
+        console.error("Failed to send message to background: ", error);
+        setLoadingState(false);
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        showPopup("error", "Errore di comunicazione con l'estensione. Ricarica la pagina.", "error-msg", btnWrapper);
+      }
+      
     } else {
-      // Create new warning popup
-      const btnWrapper = document.getElementById("info-btn-wrapper");
-      showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
-      setLoadingState(false);
+        const btnWrapper = document.getElementById("info-btn-wrapper");
+        if (!btnWrapper) {
+          console.error("CRITICAL: info-btn-wrapper not found in DOM!");
+          setLoadingState(false);
+          return;
+        }
+
+        // Create new warning popup
+        showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
+        setLoadingState(false);
     }
   };
 }
@@ -317,7 +420,7 @@ function createInfoDiv() {
   /* -----------------  infoDiv content ----------------- */
   // Add tab bar at the top of the div with widget title 
   const logo = document.createElement("img");
-  logo.src = chrome.runtime.getURL("logo_merge3.png");
+  logo.src = chrome.runtime.getURL("fairly_logo_fata_scritta.png");
   logo.className = "fairly-logo-complete";
   logo.alt = "Fairly";
   infoDiv.appendChild(logo);
@@ -493,7 +596,20 @@ function createInfoDiv() {
       infoPopover.setAttribute("aria-hidden", "true");
       infoPopover.setAttribute("tabindex", "-1");
       infoPopover.dataset.triggerId = triggerId;
-      infoPopover.textContent = strategyInfo;
+      const p = document.createElement("p");
+      p.className = "info-popover-text";
+      const a = document.createElement("a");
+      a.textContent = "qui";
+      a.href = LINK.INFO;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.marginLeft = "4px";
+      p.appendChild(document.createTextNode(strategyInfo + " " + "Puoi saperne di più "));
+      p.appendChild(a);
+      p.appendChild(document.createTextNode("."))
+
+      //infoPopover.textContent = strategyInfo;
+      infoPopover.appendChild(p);
       infoPopover.hidden = true;
 
       const updateButtonLabel = () => {
@@ -638,12 +754,21 @@ function createInfoDiv() {
     startAnalysis();
   });
 
-
+  // Privacy policy link
+  const privacyLink = document.createElement("a");
+  privacyLink.href = LINK.PRIVACY;
+  privacyLink.textContent = "Privacy Policy";
+  privacyLink.target = "_blank"; // Browser opens the link in a new tab
+  privacyLink.rel = "noopener noreferrer"; // Prevents tab nabbing
+  privacyLink.className = "privacy-link";
+  privacyLink.setAttribute("aria-label", "Apri la Privacy Policy in una nuova scheda");
+  
   buttonWrapper.appendChild(acceptAllBtn);
   buttonWrapper.appendChild(refuseAllBtn);
   buttonWrapper.appendChild(analyzeButton);
   infoDiv.appendChild(checklist);
   infoDiv.appendChild(buttonWrapper);
+  infoDiv.appendChild(privacyLink);
 
   // ESC closes open popover and keeps focus inside widget
   // focus trap
@@ -657,7 +782,7 @@ function createInfoDiv() {
     }
     if (e.key === "Tab") {
       const focusable = [...infoDiv.querySelectorAll(
-        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
+        'button:not([disabled]), input:not([disabled]), a, [tabindex="0"]'
       )].filter(el => !el.closest('[aria-hidden="true"]'));
       const first = focusable[0];
       const last = focusable.at(-1);
@@ -683,137 +808,23 @@ function setSpanText(spanEl, value) {
   else spanEl.insertBefore(document.createTextNode(value), spanEl.firstChild);
 }
 
-function createSpanPopupDiv(spanEl) {
+function isWidgetValid() {
   /**
-   * Creates a popup div for an individual highlighted span.
-   * Displays the original text (crossed out) and provides controls to:
-   * - Edit: Enter a custom inclusive reformulation
-   * - Save: Save the user's custom reformulation (which is then displayed, still highlighted, inside the email)
-   * - Revert: Restore the AI-suggested reformulation
-   * - Accept: Apply the current reformulation and remove the highlight
-   * - Refuse: Discard the reformulation and restore the original text
-   * @param {HTMLSpanElement} spanEl - The highlighted span element this popup is associated with
-   * @returns {HTMLDivElement} The popup div element
-   */
-
-  // saves users reformulations history
-  const history = []
-
-  // Create the div element
-  const spanDiv = document.createElement("div");
-  spanDiv.id = `div-${spanEl.id}`;
-  spanDiv.className = "span-div";
-  spanDiv.style.display = "none";
-  spanDiv.setAttribute("role", "dialog");
-  spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.original}`);
-  spanDiv.setAttribute("tabindex", "-1");
-
-  // close on esc
-  spanDiv.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { spanDiv.style.display = "none"; spanEl.focus(); }
-    if (e.key === "Tab") {
-      const focusable = [...spanDiv.querySelectorAll(
-        'button:not([disabled]), input:not([disabled]), [tabindex="0"]'
-      )];
-      const first = focusable[0];
-      const last = focusable.at(-1);
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    }
-  });
-
-  // Show the old text
-  const p = document.createElement("p");
-  //p.style.padding = "0px";
-  p.innerHTML = `<strong><del>${spanEl.dataset.original}</del><strong>`;
-  p.style.margin = "0 0 8px 0";
-
-  const inputWrap = document.createElement("div");
-  inputWrap.className = "input-wrap";
-
-  const inputLabel = document.createElement("label");
-  inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
-  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.";//\nSalvandola, Fairly la proporrà nelle future analisi.";
-  inputLabel.className = "span-div-input-label";
-
-  const inputFormulation = document.createElement("input");
-  inputFormulation.id = `user-ref-${spanEl.id}`;
-  inputFormulation.type = "text";
-  inputFormulation.placeholder = "Es. studenti e studentesse";
-  /*inputFormulation.value = spanEl.dataset.currentUsed ?? "";*/
-  inputFormulation.addEventListener("click", e => e.stopPropagation());
-
-  inputWrap.appendChild(inputLabel);
-  inputWrap.appendChild(inputFormulation);
-
-  // Buttons
-  const spanBtnWrap = document.createElement("div");
-  spanBtnWrap.className = "btn-wrapper span-div-btn-wrapper";
-
-  // Accept (keep current span text, no input change)
-  const accBtn = document.createElement("button");
-  accBtn.className = "span-action-btn span-acc-btn";
-  accBtn.textContent = "Accetta";
-  accBtn.setAttribute("aria-label", "Accetta questa riformulazione");
-  accBtn.addEventListener("click", e => {
-    e.stopPropagation();
-    const input = inputFormulation.value.trim();
-    if (input) {
-      spanEl.dataset.userContent = input;
-      spanEl.dataset.currentUsed = input;
-      setSpanText(spanEl, input);
-    }
-
-    // move focus to the next span
-    const all = [...document.querySelectorAll("span.highlight")];
-    const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze"))?.focus();
-
-    accept(spanEl, input ? true : false);
-    spanDiv.style.display = "none";
-
-    // Check if any spans remain after discarding
-    if (document.querySelectorAll("span.highlight").length === 0) {
-      setResultButtons(false);
-    }
-  });
-
-  // Discard (refuse, restore original)
-  const discardBtn = document.createElement("button");
-  discardBtn.className = "span-action-btn span-discard-btn";
-  discardBtn.textContent = "Rifiuta";
-  discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
-  discardBtn.addEventListener("click", e => {
-    e.stopPropagation();
-
-    // move focus to the next span
-    const all = [...document.querySelectorAll("span.highlight")];
-    const next = all[all.indexOf(spanEl) + 1];
-    (next ?? document.getElementById("analyze"))?.focus();
-
-    discard(spanEl);
-    spanDiv.style.display = "none";
-
-    // Check if any spans remain after discarding
-    if (document.querySelectorAll("span.highlight").length === 0) {
-      setResultButtons(false);
-    }
-  });
-
-  spanBtnWrap.appendChild(accBtn);
-  //spanBtnWrap.appendChild(saveAccBtn);
-  spanBtnWrap.appendChild(discardBtn);
-  //spanBtnWrap.appendChild(revertBtn);
-
-  spanDiv.appendChild(p);
-  spanDiv.appendChild(inputWrap);
-  spanDiv.appendChild(spanBtnWrap);
-  spanDiv.addEventListener("click", e => e.stopPropagation());
-
-  return spanDiv
+   * Checks that the Fairly widget is still in the DOM
+   * Since Gmail is a SOA (Single-Page App) if the user reloads the extension or the page is modified, 
+   * the widget might be removed
+   * @returns bool
+  */
+  return document.getElementById("fairly-widget") !== null;
 }
 
-function initExtension() {
+function cleanStaleDraftSpans(span) {
+  // If they still have the class "highlight" it means they are still 
+    if (span.classList.contains("highlight")) return;
+    span.replaceWith(document.createTextNode(span.textContent));
+}
+
+async function initExtension() {
 
   /**
    * Initializes the Fairly Chrome extension on the current page.
@@ -832,13 +843,20 @@ function initExtension() {
   }
 
   // Initialize Session with user information and create Session ID
-  if (!initializeSession()) {
+  if (!await initializeSession()) {
+    console.error("Inizializzazione di Fairly fallita! Fairly non supporta domini diversi da 'unito.it'");
     return;
   };
 
   // Check if a widget already exists 
   if (document.getElementById("fairly-widget")) return;
 
+  // Check if user already gave consent
+  const {fairlyConsentGiven} = await chrome.storage.local.get("fairlyConsentGiven");
+  if (!fairlyConsentGiven) {
+    showConsentDialog();
+    return;
+  }
 
   /* --------- Initialize Widget elements --------- */
   const widget = createWidget();
@@ -927,7 +945,10 @@ function initExtension() {
         s.style.display = "none";
       });
     }
-    clearAllPopups();
+    if (!e.target.closest(".message-popup") && !e.target.closest("#analyze")) {
+      clearAllPopups();
+    }
+    
   });
 
   // close the widget if esc is pressed and nothing else is open
@@ -940,58 +961,88 @@ function initExtension() {
     img.setAttribute("aria-expanded", "false");
     img.focus();
   });
+
+  // Observer to cleanup the spans after the user has closed the email (with Fairly spans still opened)
+  const draftCleanupObserver = new MutationObserver((mutations) => {
+    /**
+     * The MutationObserver is a browser feature that watches for changes in the DOM
+     * It records every time elements are added/removed from the page, attributes change, text content changes
+     * Here, we need it to observe whether there is a new compose window added (the user clicked on "Write email" or is responding to an email)
+     * and, if it is, we want to check whether it contains stale spens (that is, spans that were neither accepted not refused by the user 
+     * and are therefore never converted into a text node) and clean it up
+     */
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        // Get only elements nodes
+        if (node.nodeType != Node.ELEMENT_NODE) continue;  
+        // Check if current node contains span elements
+        const fairlySpans = node.querySelectorAll('span[aria-label^="Suggerimento Fairly"]');
+        // Delete if they are stale spans
+        fairlySpans.forEach( (span) => {
+          cleanStaleDraftSpans(span);
+        }
+        )}};
+  });
+  draftCleanupObserver.observe(document.body, {childList: true, subtree: true})
 }
 
 
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
+
+    // Check if widget exists
+    if (!isWidgetValid()) {
+      console.warn("Fairly widget not found. Discarding analysis results.");
+      setLoadingState(false);
+      return;  
+    }
+
+    setLoadingState(false);
     const response = msg.payload;
 
-    if (!response || typeof response !== 'object' || response.error) {
-      logger.error("onMessage: Invalid response or backend error:", response);
-      setLoadingState(false);
-
-      const errText = response?.error
-        ? (response.error.message || response.error.toString())
-        : "";
-
-      let errorMsg = "Errore durante l'analisi. Riprova.";
-      if (errText.includes("Failed to fetch")) {
-        errorMsg = "Errore di connessione. Riprova più tardi.";
-      }
-
-      showPopup("warning", errorMsg, "warning-msg", document.getElementById("info-btn-wrapper"));
+    // Check if error contains response
+    if (response.error) {
+      const btnWrapper = document.getElementById("info-btn-wrapper");
+      showPopup("error", ERROR_MESSAGES[response.code], 'error-msg', btnWrapper);
+      console.error(`Analysis failed with ${response.code}: `, response.details);
       return;
     }
 
-    // if not error
-    setLoadingState(false);
-
     /* ------------- Create the span elements in the email ------------- */
     let hasSpans = false;
-    if (response.results) {
-      for (const id in response.results) {
-        // Use ID to get the correct contenteditable window 
-        const div = document.querySelector(`div[contenteditable="true"]#${CSS.escape(id)}` // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
-        );
-        if (!div) {
-          logger.warn(`onMessage payload processing: editable draft window with id '${id}' not found.`);
+    let highlightError = false;
+    for (const id in response.results) {
+      // Use ID to get the correct contenteditable window 
+      const div = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(id)}`); // NOTE: CSS.escape is used to escape the ":" in front of the id of the Gmail content windows 
+
+      // Check if compose div still exists
+      if (!div) {
+        console.warn(`Compose window ${id} no longer exists`);
+        continue;
+      }
+
+      const spans = response.results[id].unfair_spans;
+      if (spans && spans.length > 0) {
+        
+        // Highligh the spans that were detected and their alternatives 
+        const highlightSuccess = highlightSpans(div, response.results[id].unfair_spans);
+        if (!highlightSuccess) {
+          console.error(`Failed to highlight spans in email ${id}`);
+          highlightError = true;
           continue;
         }
-
-        const spans = response.results[id].unfair_spans;
-        if (spans && spans.length > 0) {
-          hasSpans = true;
-          // Highligh the spans that were detected and their alternatives 
-          highlightSpans(div, response.results[id].unfair_spans);
-        }
+        hasSpans = true;
       }
     }
 
     /* ------------- Update buttons content ------------- */
     const btnWrapper = document.getElementById("info-btn-wrapper");
-
+    if (highlightError) {
+      showPopup("error", "Si è verificato un errore durante l'evidenziazione dei suggerimenti.", "error-msg", btnWrapper);
+      setResultButtons(false);
+      return;
+    }
     if (hasSpans) {
       setResultButtons(true);
       // Remove existing messages
@@ -1010,13 +1061,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // Create the extension on page load
 window.addEventListener("load", () => {
   // Prevent multiple injection of the script in Gmail 
-  if (window.__fairlyInitialized) return;
-
-  window.__fairlyInitialized = true;
+  if (document.getElementById("fairly-widget")) return;
   setTimeout(initExtension, 2000);
 });
-
-// Just before reloading the page, we clean up any span introduced by our widget
-// window.addEventListener("beforeunload", () => {
-//     discard();
-// });

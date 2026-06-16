@@ -2,8 +2,6 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 import urllib.parse
-import hmac
-import hashlib
 import certifi
 from models import EventRequest
 
@@ -37,15 +35,5 @@ collection = db["user_events"]
 
 
 def insert_event(events: list[EventRequest]):
-
-    ## Comment this out to make it work
-    return
-
-    for event in events:
-        # Hash the user id
-        email = event.user_id.strip().lower()
-        event.user_id = hmac.new(
-            SECRET_KEY.encode(), email.encode(), hashlib.sha256
-        ).hexdigest()
-
+    for event in events:    
         inserted_id = collection.insert_one(event.dict()).inserted_id

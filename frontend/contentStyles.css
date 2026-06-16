@@ -12,6 +12,7 @@
   --color-accept: #27AA5E;
   --color-accept-bg: #c0f0d4;
   --color-refuse: #dc3545;
+  --color-error-bg: #f0cec0;
   --color-warning-bg: #f0e5c0;
   --color-warning-border: rgba(204, 170, 46, 0.3);
   --save-and-accept: #008CBA;
@@ -511,6 +512,12 @@
   color: var(--color-primary);
 }
 
+.error-popup {
+  background: var(--color-error-bg);
+  border: 1px solid rgba(204, 85, 46, 0.3);
+  color: var(--color-primary);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -601,9 +608,39 @@
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 16px;
+  font-weight: normal;
+  line-height: 1.5;
   color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(32, 33, 85, 0.12);
   z-index: 10001;
+}
+
+.info-popover-text {
+  font-weight: normal !important;
+  color: var(--color-primary);
+  text-align: left !important;
+}
+
+.info-popover-text a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.info-popover-text a:hover {
+  opacity: 0.8;
+}
+
+.privacy-link {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .info-btn svg {
@@ -618,3 +655,57 @@
     display: none;
   }
 }
+
+.consent-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.consent-dialog {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.consent-dialog h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1f54;
+}
+
+.consent-dialog p {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+.consent-dialog a {
+  color: #1e1f54;
+}
+
+.consent-dialog .popup-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  transform: none;
+}
+
+.consent-dialog-btnWrap {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+
+

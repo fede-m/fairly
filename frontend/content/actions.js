@@ -64,14 +64,25 @@ function discard(span = undefined, ref_reason = "user_refuse"){
                 s.replaceWith(document.createTextNode(original));
             });
             refuseEvents.push(refuseEvent);
+
+            // Trigger input event on the contenteditable div to notify Gmail of changes
+            const contentDiv = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(eId)}`);
+            if (contentDiv) {
+                contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
+            }
         }
     );
 
     if (span === undefined) resetButtons();
-    chrome.runtime.sendMessage({
+    try {
+        chrome.runtime.sendMessage({
                 action:"storeEvent",
                 payload: refuseEvents
             });
+    } catch (error) {
+        console.error("Failed to store event: ", error);
+    }
+    
 } 
 
 function accept(span = undefined, input = false){
@@ -104,13 +115,13 @@ function accept(span = undefined, input = false){
         spanList.forEach((s) => { 
             const original = s.dataset.original; 
             const reformulation = s.dataset.reformulation;
-            const currentUsed = s.dataset.currentUsed;
+            const currentUsed = input ? s.dataset.currentUsed : s.dataset.reformulation;
             const userForm = s.dataset.userContent;
             
             const spanObj = {
                 original: original,
                 reformulation: reformulation,
-                current_used: currentUsed,
+                current_used: reformulation,
             }
 
             if (userForm) {
@@ -124,11 +135,22 @@ function accept(span = undefined, input = false){
             s.replaceWith(document.createTextNode(currentUsed));
         });
         acceptEvents.push(acceptEvent);
+
+        // Trigger input event on the contenteditable div to notify Gmail of changes
+        const contentDiv = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(eId)}`);
+        if (contentDiv) {
+            contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     }
     );
     if (span === undefined) resetButtons();
-    chrome.runtime.sendMessage({
+    try {
+            chrome.runtime.sendMessage({
                 action:"storeEvent",
                 payload: acceptEvents
             });
+    } catch (error) {
+        console.error("Failed to store event: ", error);
+    }
+
 }
