@@ -27,24 +27,28 @@ FALSE_POSITIVE_PERSONS = {
 
 
 def make_placeholder(
-    entity_type: str, original: str, mapping: dict, counters: dict
+    entity_type: str, original: str, mapping: dict, counters: dict, seen: dict
 ) -> str:
+    key = (entity_type, original)
+    if key in seen:
+        return seen[key]
+
     counters[entity_type] = counters.get(entity_type, 0) + 1
     placeholder = f"[{entity_type}_{counters[entity_type]}]"
     mapping[placeholder] = original
+    seen[key] = placeholder
     return placeholder
 
 
 def anonymize(text: str) -> tuple[str, dict]:
     """Returns anonymized text and a mapping {placeholder: original}."""
     results = analyzer.analyze(text=text, language="it", entities=ENTITIES)
-
     results = remove_overlaps(results)
-
     results = fix_person_entities(results, text)
 
     mapping = {}  # placeholder -> original
     counters = {}  # entity_type -> count
+    seen = {}  # Same entity gets same placeholder
 
     active_entities = (
         ENTITIES if ENTITIES is not None else list({r.entity_type for r in results})
@@ -53,7 +57,11 @@ def anonymize(text: str) -> tuple[str, dict]:
     operators = {
         entity: OperatorConfig(
             "custom",
-            {"lambda": lambda t, e=entity: make_placeholder(e, t, mapping, counters)},
+            {
+                "lambda": lambda t, e=entity: make_placeholder(
+                    e, t, mapping, counters, seen
+                )
+            },
         )
         for entity in active_entities
     }
