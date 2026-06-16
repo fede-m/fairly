@@ -1,3 +1,5 @@
+const logger = createLogger("contentScript.js");
+
 let SESSION_ID = null;
 let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
@@ -124,6 +126,7 @@ function createImgLogo() {
 }
 
 function emailEndsWithAllowedDomain() {
+  if (!USER_EMAIL) return false;
   return DOMAINS.some(d => USER_EMAIL.toLowerCase().endsWith(d))
 }
 
@@ -132,18 +135,23 @@ async function initializeSession() {
   const meta = document.getElementsByName("og-profile-acct");
 
   if (!meta || !meta.length) {
-    console.warn("Could not find user email meta tag.");
+    logger.warn("Could not find user email meta tag.");
     return false;
   }
 
   USER_EMAIL = meta[0].content;
   if (!emailEndsWithAllowedDomain()) {
-    console.warn("Not a valid domain!");
+    logger.warn("Not a valid domain!");
     return false;
   }
 
-  // Get session ID
-  SESSION_ID = crypto.randomUUID();
+  // Get session ID safely
+  try {
+    SESSION_ID = crypto.randomUUID();
+  } catch (e) {
+    logger.warn("crypto.randomUUID unavailable, using fallback.", e);
+    SESSION_ID = Date.now().toString(36) + Math.random().toString(36).substring(2);
+  }
 
   try {
     // Get strategies order
@@ -157,7 +165,7 @@ async function initializeSession() {
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
-    console.warn("localStorage unavailable, using random strategy order.", e);
+    logger.warn("localStorage unavailable, using random strategy order.", e);
     STRATEGY_ORDER = Object.keys(STRATEGIES).sort(() => Math.random() - 0.5);
   }
 
@@ -168,7 +176,10 @@ async function initializeSession() {
 function setLoadingState(isLoading) {
   const analyzeBtn = document.getElementById("analyze");
 
-  if (!analyzeBtn) return;
+  if (!analyzeBtn) {
+    logger.error("setLoadingState: 'analyze' button not found in DOM.");
+    return;
+  }
 
   if (isLoading) {
     analyzeBtn.disabled = true;
@@ -188,6 +199,11 @@ function clearAllPopups() {
 }
 
 function showPopup(type, message, id, container, focusTarget = null) {
+  if (!container) {
+    logger.error("showPopup: container is missing for message:", message);
+    return;
+  }
+
   clearAllPopups()
   container.style.position = "relative";
   const popup = document.createElement("div");
@@ -226,6 +242,11 @@ function showPopup(type, message, id, container, focusTarget = null) {
 function setResultButtons(visible) {
   const acceptBtn = document.getElementById("accept-all");
   const refuseBtn = document.getElementById("refuse-all");
+  if (!acceptBtn || !refuseBtn) {
+    logger.error("setResultButtons: 'accept-all' or 'refuse-all' buttons are missing from the DOM.");
+    return;
+  }
+
   const display = visible ? "block" : "none";
   const hidden = !visible;
 
@@ -262,7 +283,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard(span = undefined, ref_reason = "analysis_refresh");
+  discard(undefined, "analysis_refresh");
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -284,25 +305,28 @@ function startAnalysis() {
       const selected = document.querySelector(".checklist-choice:checked");
 
       if (!selected) {
-        setLoadingState(false);
-        console.warn("No strategy selected!");
+        // Create new warning popup
         const btnWrapper = document.getElementById("info-btn-wrapper");
-        showPopup("warning", "Seleziona una strategia prima di analizzare", "warning-msg", btnWrapper);
+        showPopup("warning", "E' necessario selezionare una strategia di riformulazione!", "warning-msg", btnWrapper);
+        logger.log("startAnalysis: No strategy selected.");
+        setLoadingState(false);
         return;
       }
 
       // Prepare payload for background
-      dataObj["strategy"] = selected.id; 
+      dataObj["strategy"] = selected.id;
       dataObj["data"] = [];
       dataObj["session_id"] = SESSION_ID;
       dataObj["user_id"] = USER_EMAIL;
+      // remember the selected options for future uses
+      //chrome.storage.local.setItem("fairlyLastStrategy", selected.id);
 
-      editableElements.forEach((element) => { 
-          const data = {}; 
-          const key = element.id; 
-          data["id"] = key; 
-          data["text"] = element.innerText;
-          dataObj["data"].push(data); 
+      editableElements.forEach((element) => {
+        const data = {};
+        const key = element.id;
+        data["id"] = key;
+        data["text"] = element.innerText;
+        dataObj["data"].push(data);
       });
       // Send data to background 
       try {
@@ -406,6 +430,9 @@ function createInfoDiv() {
   paragraph.innerText = "Scegli una soluzione piú inclusiva!";
   infoDiv.appendChild(paragraph);
 
+  // last used strategy
+  // const savedStrategy = chrome.storage.local.getItem("fairlyLastStrategy");
+
   // Check-list container 
   const checklist = document.createElement("div");
   checklist.className = "checklist";
@@ -428,7 +455,7 @@ function createInfoDiv() {
     const item = document.createElement("div");
 
     if (!strategyName || !Object.keys(STRATEGIES).includes(strategyName)) {
-      console.warn("createChecklistItem: invalid strategyName", strategyName);
+      logger.warn("createChecklistItem: invalid strategyName", strategyName);
       return item;
     }
 
@@ -469,26 +496,39 @@ function createInfoDiv() {
 
       // Create the div for the nested options (e.g. "lo studente e la studente")
       const nestedDiv = document.createElement("div");
+
+      // saved strategy selection
+      // const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
+      const shouldExpand = false
+
       nestedDiv.className = "nested-checklist";
-      nestedDiv.style.display = "none";
+      nestedDiv.style.display = shouldExpand ? "flex" : "none";
       nestedDiv.setAttribute("role", "radiogroup");
-      nestedDiv.setAttribute("aria-hidden", "true");
+      nestedDiv.setAttribute("aria-hidden", shouldExpand ? "false" : "true");
       nestedDiv.setAttribute(
         "aria-label",
         `Opzioni per la strategia ${labelText}`
       );
 
+      if (shouldExpand) {
+        arrowBtn.innerHTML = arrowUpSVG;
+        arrowBtn.setAttribute("aria-expanded", "true");
+      }
+
       // Loop through the possible options for the current strategy
       nestedOption.forEach((optText, idx) => {
+
+        const radioId = `${strategyName}-${idx}`;
+        // const isChecked = savedStrategy ? (savedStrategy === radioId) : (defaultSelected && idx === 0);
 
         // Create label and checkbox for option
         const nestedLabel = document.createElement("label");
         const nestedCheckbox = createRadio(
-          `${strategyName}-${idx}`,
+          radioId,
           `Opzione della strategia ${labelText}: ${optText}`,
-          defaultSelected && idx === 0
+          false
         );
-        nestedCheckbox.tabIndex = -1;
+        nestedCheckbox.tabIndex = shouldExpand ? 0 : -1;
 
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
@@ -525,8 +565,10 @@ function createInfoDiv() {
         }
       });
     } else {
+      const radioId = strategyName;
+      //const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
       const label = document.createElement("label");
-      const checkbox = createRadio(strategyName, `Strategia inclusiva: ${labelText}`);
+      const checkbox = createRadio(radioId, `Strategia inclusiva: ${labelText}`, false);
 
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(" " + labelText));
@@ -655,8 +697,12 @@ function createInfoDiv() {
   // Create the strategies options 
   STRATEGY_ORDER.forEach((strategy, idx) => {
     let strategyObj = STRATEGIES[strategy];
+    if (!strategyObj) {
+      logger.warn(`Strategy '${strategy}' found in order but missing from STRATEGIES.`);
+      return;
+    }
     let hasNested = strategyObj.nestedOptions.length > 0 ? true : false;
-    let defaultSelected = idx === 0;
+    // let defaultSelected = idx === 0;
     checklist.appendChild(
       createChecklistItem(
         strategyObj.name,
@@ -664,7 +710,7 @@ function createInfoDiv() {
         hasNested,
         strategyObj.info,
         strategyObj.nestedOptions,
-        defaultSelected
+        // defaultSelected
       ));
   })
 
@@ -702,7 +748,8 @@ function createInfoDiv() {
   analyzeButton.textContent = "Analizza";
 
   // Start analysis when clicking on analyze button
-  analyzeButton.addEventListener("click", () => {
+  analyzeButton.addEventListener("click", (e) => {
+    e.stopPropagation(); // Prevents document click listener from clearing the popup
     setLoadingState(true);
     startAnalysis();
   });
@@ -790,6 +837,11 @@ async function initExtension() {
    * @returns {void}
   */
 
+  if (typeof DOMAINS === 'undefined' || typeof STRATEGIES === 'undefined') {
+    logger.error("Missing global dependencies.");
+    return;
+  }
+
   // Initialize Session with user information and create Session ID
   if (!await initializeSession()) {
     console.error("Inizializzazione di Fairly fallita! Fairly non supporta domini diversi da 'unito.it'");
@@ -858,8 +910,8 @@ async function initExtension() {
 
   document.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
-    const dx = e.clientX - offsetX - parseInt(widget.style.left);
-    const dy = e.clientY - offsetY - parseInt(widget.style.top);
+    const dx = e.clientX - offsetX - (parseInt(widget.style.left, 10) || 0);
+    const dy = e.clientY - offsetY - (parseInt(widget.style.top, 10) || 0);
     if (!moved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) moved = true;
     widget.style.left = e.clientX - offsetX + "px";
     widget.style.top = e.clientY - offsetY + "px";

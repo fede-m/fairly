@@ -1,0 +1,262 @@
+from presidio_analyzer import AnalyzerEngine
+from presidio_anonymizer import AnonymizerEngine
+from presidio_anonymizer.entities import OperatorConfig
+from presidio_analyzer.nlp_engine import NlpEngineProvider
+from presidio_analyzer import Pattern, PatternRecognizer
+import re
+
+# checks for all entities
+ENTITIES = None
+
+HONORIFIC_PREFIXES = re.compile(
+    r"^(Professore|Professoressa|Prof\.?|Dott\.?(?:ssa)?|Sig\.?(?:ra|na)?|Avv\.?|Ing\.?|Dr\.?)\s+",
+    re.IGNORECASE,
+)
+
+FALSE_POSITIVE_PERSONS = {
+    "cordiali",
+    "distinti",
+    "saluti",
+    "grazie",
+    "buongiorno",
+    "buonasera",
+    "egregio",
+    "egregia",
+    "gentile",
+}
+
+
+def make_placeholder(
+    entity_type: str, original: str, mapping: dict, counters: dict, seen: dict
+) -> str:
+    key = (entity_type, original)
+    if key in seen:
+        return seen[key]
+
+    counters[entity_type] = counters.get(entity_type, 0) + 1
+    placeholder = f"[{entity_type}_{counters[entity_type]}]"
+    mapping[placeholder] = original
+    seen[key] = placeholder
+    return placeholder
+
+
+def anonymize(text: str) -> tuple[str, dict]:
+    """Returns anonymized text and a mapping {placeholder: original}."""
+    results = analyzer.analyze(text=text, language="it", entities=ENTITIES)
+    results = remove_overlaps(results)
+    results = fix_person_entities(results, text)
+
+    mapping = {}  # placeholder -> original
+    counters = {}  # entity_type -> count
+    seen = {}  # Same entity gets same placeholder
+
+    active_entities = (
+        ENTITIES if ENTITIES is not None else list({r.entity_type for r in results})
+    )
+
+    operators = {
+        entity: OperatorConfig(
+            "custom",
+            {
+                "lambda": lambda t, e=entity: make_placeholder(
+                    e, t, mapping, counters, seen
+                )
+            },
+        )
+        for entity in active_entities
+    }
+
+    anon_result = anonymizer.anonymize(
+        text=text, analyzer_results=results, operators=operators
+    )
+    return anon_result.text, mapping
+
+
+def remove_overlaps(results):
+    """To avoid overlapping entities, we keep the highest scoring one."""
+    results = sorted(results, key=lambda r: r.score, reverse=True)
+    kept = []
+    for r in results:
+        if not any(r.start < k.end and r.end > k.start for k in kept):
+            kept.append(r)
+    return sorted(kept, key=lambda r: r.start)
+
+
+def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list]:
+    """Deanonymize text and adjust span indices accordingly.
+
+    Args:
+        text: The anonymized text
+        mapping: Dict mapping placeholders to original values
+        spans: Optional list of Span objects with start_char and end_char indices
+
+    Returns:
+        A tuple of (deanonymized_text, adjusted_spans)
+    """
+    # Sort placeholders by position in text (reverse) to avoid index shifting issues
+    # Find all placeholder positions
+    positions = []
+    for placeholder in mapping.keys():
+        start = 0
+        while True:
+            pos = text.find(placeholder, start)
+            if pos == -1:
+                break
+            positions.append((pos, placeholder))
+            start = pos + 1
+
+    # Sort by position in reverse order so we replace from end to start
+    positions.sort(reverse=True)
+
+    shifts = {}  # Maps original placeholder positions to character shifts
+
+    # Apply replacements (from end to start to preserve indices)
+    for pos, placeholder in positions:
+        original = mapping[placeholder]
+        shifts[pos] = len(original) - len(placeholder)
+        text = text[:pos] + original + text[pos + len(placeholder) :]
+
+    # Adjust span indices if provided
+    adjusted_spans = []
+    if spans:
+        sorted_positions = sorted(shifts.keys())
+        for span in spans:
+            adjusted_span = span.model_copy(deep=True)
+            start_shift = sum(
+                shifts[p] for p in sorted_positions if p < span.start_char
+            )
+            end_shift = sum(shifts[p] for p in sorted_positions if p < span.end_char)
+            adjusted_span.start_char = span.start_char + start_shift
+            adjusted_span.end_char = span.end_char + end_shift
+            adjusted_spans.append(adjusted_span)
+
+    return text, adjusted_spans
+
+
+# Global instances - initialized by setup_presidio()
+analyzer = None
+anonymizer = None
+
+
+def setup_presidio():
+    """
+    Must be called before using anonymize() or process_text().
+    """
+    global analyzer, anonymizer
+
+    provider = NlpEngineProvider(
+        nlp_configuration={
+            "nlp_engine_name": "spacy",
+            "models": [{"lang_code": "it", "model_name": "it_core_news_lg"}],
+        }
+    )
+
+    analyzer = AnalyzerEngine(
+        nlp_engine=provider.create_engine(), supported_languages=["it"]
+    )
+
+    add_custom_recognizers(analyzer)
+    anonymizer = AnonymizerEngine()
+
+    print("Presidio Analyzer initialized with Italian language support.")
+
+
+def add_custom_recognizers(analyzer: AnalyzerEngine):
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="CREDIT_CARD",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="credit_card_it",
+                    regex=r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b",
+                    score=0.5,
+                )
+            ],
+        )
+    )
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="IBAN_CODE",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="iban_it",
+                    regex=r"(?i)\bIT[ \t-]\d{2}[ \t-][A-Z](?:[ \t-]*\d){22}\b",
+                    score=0.85,
+                )
+            ],
+        )
+    )
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="NUMBER",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="digit_run",
+                    regex=r"\d{3,}",
+                    score=0.25,  # lower than other patterns
+                )
+            ],
+        )
+    )
+
+
+# in the example, Professore Giuseppe Verdi is recognized as PERSON,
+# same goes for Cordiali saluti.
+# This is a simplistic fix
+def fix_person_entities(results, text):
+    """Trim honorific prefixes from PERSON spans and drop single-token false positives."""
+    fixed = []
+    for r in results:
+        if r.entity_type != "PERSON":
+            fixed.append(r)
+            continue
+        span_text = text[r.start : r.end]
+        # Drop salutation/closing false positives
+        if span_text.strip().lower() in FALSE_POSITIVE_PERSONS:
+            continue
+        # Trim leading honorific
+        match = HONORIFIC_PREFIXES.match(span_text)
+        if match:
+            r.start += match.end()
+        fixed.append(r)
+    return fixed
+
+
+def process_text(text: str) -> tuple[str, dict]:
+    anon, mapping = anonymize(text)
+    return anon, mapping
+
+
+if __name__ == "__main__":
+    setup_presidio()
+
+    email = """Gentile Marco Rossi,
+    la contatto da parte del professor Giuseppe Verdi dell'Università di Torino.
+    il Professore Giuseppe Verdi. lei è mario rossi. giuseppe verdi è chi le parla.
+    La mia matricola è 343899, la matricola del mio studente è 100111.
+    il mio numero preferito è 12.
+    Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
+    Cordiali saluti"""
+
+    email2 = """Buonasera
+    Vi contatto ripetutamente per la questione delle sedie aziendali.
+    La docenza di Sistemi, assegnata al prof bascali, alla prof.sa tiscali ed a Giulio Coei non è sostenibile.
+    Le candidature di dottorato son falsate dal decreto 3710 del luglio 2012
+    I fondi del progetto EUR666 sono stati spesi male.
+    """
+
+    anon, mapping = anonymize(email)
+    print("=== ANONYMIZED ===")
+    print(anon)
+    print("\n=== MAPPING ===")
+    print(mapping)
+
+    # Qui avverrebbero le ulteriori lavorazioni nel backend
+    processed = anon
+
+    restored = deanonymize(processed, mapping)
+    print("\n=== RESTORED ===")
+    print(restored)

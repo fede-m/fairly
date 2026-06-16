@@ -21,7 +21,9 @@ password = os.environ.get("MONGO_INITDB_ROOT_PASSWORD")
 
 print(user)
 # MONGODB_URI = f"mongodb+srv://{user}:{password}@fairlycluster.khg90i7.mongodb.net/?appName=FairlyCluster"
-MONGO_URL=f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
+MONGO_URL = f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
+
+## COMMENT THIS TO TEST LOCALLY
 # Connect to the MongoDB Cluster
 client = MongoClient(MONGO_URL)
 
@@ -35,7 +37,3 @@ collection = db["user_events"]
 def insert_event(events: list[EventRequest]):
     for event in events:    
         inserted_id = collection.insert_one(event.dict()).inserted_id
-
-
-
-

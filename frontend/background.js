@@ -1,7 +1,10 @@
-console.log("Background service worker loaded");
-const BASE_URL = "http://localhost:8000"
+importScripts("config.js", "logger.js");
+
+const logger = createLogger("background.js");
+logger.log("Background service worker loaded");
+
 const API = {
-  baseUrl: BASE_URL,
+  baseUrl: CONFIG.BASE_URL,
 
   get analyse() {return `${this.baseUrl}/analyse`;},
   get storeEvent() {return `${this.baseUrl}/store-event`;},
@@ -43,12 +46,17 @@ async function analyseData(payload) {
     };
   }
   try {
+    const startTime = performance.now();
+    logger.log("[" + new Date().toISOString() + "] Sending data to backend... API:", API.analyse);
     const response = await fetch(API.analyse, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
+    const responseTime = performance.now();
+    const elapsedMs = (responseTime - startTime).toFixed(2);
+    logger.log("[" + new Date().toISOString() + "] Got response from backend. Status:", response.status, "Elapsed time:", elapsedMs + "ms");
     // Check HTTP status
     if (!response.ok) {
       console.error(`Backend error: ${response.status}`);
@@ -62,6 +70,9 @@ async function analyseData(payload) {
 
     // Convert response to json
     const result = await response.json();
+    const endTime = performance.now();
+    const totalElapsedMs = (endTime - startTime).toFixed(2);
+    logger.log("[" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
     return result;
   } catch (error) {
     console.error("Network error:", error);
@@ -124,23 +135,33 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       {"id": "2", "text":"myText2"},
       ...
     ] */
+    logger.log("Received analyseData action. Payload:", msg.payload);
     const data = msg.payload;
+    const tabId = sender.tab ? sender.tab.id : null;
     analyseData(data).then((result) => {
-      if (sender.tab && sender.tab.id) {
-        chrome.tabs.sendMessage(sender.tab.id, {
+      logger.log("Returned from analyseData(). Checking tabId:", tabId);
+      if (tabId) {
+        logger.log("Sending processedData to tab:", tabId, "with result:", result);
+        chrome.tabs.sendMessage(tabId, {
           action: "processedData",
           payload: result,
         }).catch((err) => {
           console.error("Failed to communicate with contentScript: ", err)
         });
+      } else {
+        logger.warn("No tabId available to send the message back to!");
       }
     });
+    // Immediately reply so the contentScript's callback doesn't throw a "port closed" error
+    logger.log("Sending initial processing_started response back to tab.");
+    sendResponse({ status: "processing_started" });
+    return true;
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
     storeEvent(data)
-      .then(res => console.log(res))
-      .catch(err => console.error("Failed to store event:", err));
+      .then(res => logger.log(res))
+      .catch(err => logger.error("Failed to store event:", err));
   }
 });
 
