@@ -6,8 +6,8 @@ logger.log("Background service worker loaded");
 const API = {
   baseUrl: CONFIG.BASE_URL,
 
-  get analyse() {return `${this.baseUrl}/analyse`;},
-  get storeEvent() {return `${this.baseUrl}/store-event`;},
+  get analyse() { return `${this.baseUrl}/analyse`; },
+  get storeEvent() { return `${this.baseUrl}/store-event`; },
 }
 
 let keepAliveInterval = null;
@@ -20,7 +20,7 @@ function startKeepAlive() {
   if (keepAliveInterval) return;
   // Ping every 25 seconds to prevent service worker termination by Chrome
   keepAliveInterval = setInterval(() => {
-    chrome.runtime.getPlatformInfo(() => {}); 
+    chrome.runtime.getPlatformInfo(() => { });
   }, 25000);
 }
 
@@ -39,8 +39,9 @@ async function analyseData(payload) {
   startKeepAlive();
   // Check payload is valid
   if (payload == null) {
-    console.error("Not a valid payload!");
-    return { error: true,
+    logger.error("Not a valid payload!");
+    return {
+      error: true,
       message: "Invalid payload!",
       code: "INVALID_PAYLOAD"
     };
@@ -59,7 +60,7 @@ async function analyseData(payload) {
     logger.log("[" + new Date().toISOString() + "] Got response from backend. Status:", response.status, "Elapsed time:", elapsedMs + "ms");
     // Check HTTP status
     if (!response.ok) {
-      console.error(`Backend error: ${response.status}`);
+      logger.error(`Backend error: ${response.status}`);
       return {
         error: true,
         message: `Error during the analysis with status code ${response.status}`,
@@ -75,12 +76,12 @@ async function analyseData(payload) {
     logger.log("[" + new Date().toISOString() + "] Parsed JSON from backend. Total elapsed time:", totalElapsedMs + "ms");
     return result;
   } catch (error) {
-    console.error("Network error:", error);
-    return { 
+    logger.error("Network error:", error);
+    return {
       error: true,
       message: "Network error. Check if server available.",
       code: "NETWORK_ERROR",
-      details: error.message 
+      details: error.message
     };
   } finally {
     stopKeepAlive();
@@ -90,8 +91,9 @@ async function analyseData(payload) {
 async function storeEvent(payload) {
   // Check payload is valid
   if (payload == null) {
-    console.error("Not a valid payload!");
-    return { error: true,
+    logger.error("Not a valid payload!");
+    return {
+      error: true,
       message: "Invalid payload!",
       code: "INVALID_PAYLOAD"
     };
@@ -105,7 +107,7 @@ async function storeEvent(payload) {
 
     // Check HTTP status
     if (!response.ok) {
-      console.error(`Backend error: ${response.status}`);
+      logger.error(`Backend error: ${response.status}`);
       return {
         error: true,
         message: `Error during storing with status code ${response.status}`,
@@ -118,17 +120,17 @@ async function storeEvent(payload) {
     return result;
   }
   catch (error) {
-    console.error("Network error:", error);
-    return { 
+    logger.error("Network error:", error);
+    return {
       error: true,
       message: "Network error. Check if server available.",
       code: "NETWORK_ERROR",
-      details: error.message 
+      details: error.message
     };
   }
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action == "analyseData") {
     /* data = [
       {"id": "1", "text":"myText1"},
@@ -146,7 +148,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
           action: "processedData",
           payload: result,
         }).catch((err) => {
-          console.error("Failed to communicate with contentScript: ", err)
+          logger.error("Failed to communicate with contentScript: ", err)
         });
       } else {
         logger.warn("No tabId available to send the message back to!");

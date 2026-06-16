@@ -15,7 +15,7 @@ function showConsentDialog() {
    * This is the draggable floating widget that appears on the page.
    * @returns {null}
    */
-  console.log("You need to give your consent first!")
+  logger.log("You need to give your consent first!")
   const overlay = document.createElement("div");
   overlay.id = "fairly-consent-overlay";
   overlay.className = "consent-overlay"
@@ -31,10 +31,10 @@ function showConsentDialog() {
   closeBtn.innerHTML = ICONS.close;
   closeBtn.addEventListener("click", () => {
     CONSENT_GIVEN = false;
-    chrome.storage.local.set({"fairlyConsentGiven": false});
+    chrome.storage.local.set({ "fairlyConsentGiven": false });
     overlay.remove();
   });
-  
+
   // Title
   const title = document.createElement("h2");
   title.textContent = "Informativa sull'uso dei dati";
@@ -65,7 +65,7 @@ function showConsentDialog() {
   accept.textContent = "Accetta";
   accept.addEventListener("click", () => {
     CONSENT_GIVEN = true;
-    chrome.storage.local.set({"fairlyConsentGiven": true});
+    chrome.storage.local.set({ "fairlyConsentGiven": true });
     overlay.remove();
     initExtension();
   });
@@ -74,13 +74,13 @@ function showConsentDialog() {
   refuse.textContent = "Rifiuta";
   refuse.addEventListener("click", () => {
     CONSENT_GIVEN = false;
-    chrome.storage.local.set({"fairlyConsentGiven": false});
+    chrome.storage.local.set({ "fairlyConsentGiven": false });
     overlay.remove();
   });
 
   btnWrap.appendChild(accept);
   btnWrap.appendChild(refuse);
-  
+
   dialog.appendChild(closeBtn);
   dialog.appendChild(title);
   dialog.appendChild(p1);
@@ -92,7 +92,7 @@ function showConsentDialog() {
 
   overlay.appendChild(dialog);
   document.body.appendChild(overlay);
-  acceptBtn.focus();
+  accept.focus();
 }
 /* Create HTML elements for the UI */
 function createWidget() {
@@ -161,7 +161,7 @@ async function initializeSession() {
     } else {
       const strategies = Object.keys(STRATEGIES);
       const randomizedOrder = [...strategies].sort(() => Math.random() - 0.5);
-      await chrome.storage.local.set({"fairlyStrategyOrder": randomizedOrder});
+      await chrome.storage.local.set({ "fairlyStrategyOrder": randomizedOrder });
       STRATEGY_ORDER = randomizedOrder;
     }
   } catch (e) {
@@ -276,7 +276,7 @@ function startAnalysis() {
   */
   // Check whether the Failry widget still exists
   if (!isWidgetValid()) {
-    console.warn("Fairly widget not found. Extension might have been reloaded");
+    logger.warn("Fairly widget not found. Extension might have been reloaded");
     return; // Early exit if widget is gone
   }
 
@@ -330,28 +330,28 @@ function startAnalysis() {
       });
       // Send data to background 
       try {
-          chrome.runtime.sendMessage({
+        chrome.runtime.sendMessage({
           action: "analyseData",
           payload: dataObj,
         });
       } catch (error) {
-        console.error("Failed to send message to background: ", error);
+        logger.error("Failed to send message to background: ", error);
         setLoadingState(false);
         const btnWrapper = document.getElementById("info-btn-wrapper");
         showPopup("error", "Errore di comunicazione con l'estensione. Ricarica la pagina.", "error-msg", btnWrapper);
       }
-      
-    } else {
-        const btnWrapper = document.getElementById("info-btn-wrapper");
-        if (!btnWrapper) {
-          console.error("CRITICAL: info-btn-wrapper not found in DOM!");
-          setLoadingState(false);
-          return;
-        }
 
-        // Create new warning popup
-        showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
+    } else {
+      const btnWrapper = document.getElementById("info-btn-wrapper");
+      if (!btnWrapper) {
+        logger.error("CRITICAL: info-btn-wrapper not found in DOM!");
         setLoadingState(false);
+        return;
+      }
+
+      // Create new warning popup
+      showPopup("warning", "Non ci sono mail da analizzare!", "warning-msg", btnWrapper);
+      setLoadingState(false);
     }
   };
 }
@@ -762,7 +762,7 @@ function createInfoDiv() {
   privacyLink.rel = "noopener noreferrer"; // Prevents tab nabbing
   privacyLink.className = "privacy-link";
   privacyLink.setAttribute("aria-label", "Apri la Privacy Policy in una nuova scheda");
-  
+
   buttonWrapper.appendChild(acceptAllBtn);
   buttonWrapper.appendChild(refuseAllBtn);
   buttonWrapper.appendChild(analyzeButton);
@@ -820,8 +820,8 @@ function isWidgetValid() {
 
 function cleanStaleDraftSpans(span) {
   // If they still have the class "highlight" it means they are still 
-    if (span.classList.contains("highlight")) return;
-    span.replaceWith(document.createTextNode(span.textContent));
+  if (span.classList.contains("highlight")) return;
+  span.replaceWith(document.createTextNode(span.textContent));
 }
 
 async function initExtension() {
@@ -844,7 +844,7 @@ async function initExtension() {
 
   // Initialize Session with user information and create Session ID
   if (!await initializeSession()) {
-    console.error("Inizializzazione di Fairly fallita! Fairly non supporta domini diversi da 'unito.it'");
+    logger.error("Inizializzazione di Fairly fallita! Fairly non supporta domini diversi da 'unito.it'");
     return;
   };
 
@@ -852,7 +852,7 @@ async function initExtension() {
   if (document.getElementById("fairly-widget")) return;
 
   // Check if user already gave consent
-  const {fairlyConsentGiven} = await chrome.storage.local.get("fairlyConsentGiven");
+  const { fairlyConsentGiven } = await chrome.storage.local.get("fairlyConsentGiven");
   if (!fairlyConsentGiven) {
     showConsentDialog();
     return;
@@ -948,7 +948,7 @@ async function initExtension() {
     if (!e.target.closest(".message-popup") && !e.target.closest("#analyze")) {
       clearAllPopups();
     }
-    
+
   });
 
   // close the widget if esc is pressed and nothing else is open
@@ -974,16 +974,18 @@ async function initExtension() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         // Get only elements nodes
-        if (node.nodeType != Node.ELEMENT_NODE) continue;  
+        if (node.nodeType != Node.ELEMENT_NODE) continue;
         // Check if current node contains span elements
         const fairlySpans = node.querySelectorAll('span[aria-label^="Suggerimento Fairly"]');
         // Delete if they are stale spans
-        fairlySpans.forEach( (span) => {
+        fairlySpans.forEach((span) => {
           cleanStaleDraftSpans(span);
         }
-        )}};
+        )
+      }
+    };
   });
-  draftCleanupObserver.observe(document.body, {childList: true, subtree: true})
+  draftCleanupObserver.observe(document.body, { childList: true, subtree: true })
 }
 
 
@@ -993,9 +995,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     // Check if widget exists
     if (!isWidgetValid()) {
-      console.warn("Fairly widget not found. Discarding analysis results.");
+      logger.warn("Fairly widget not found. Discarding analysis results.");
       setLoadingState(false);
-      return;  
+      return;
     }
 
     setLoadingState(false);
@@ -1005,7 +1007,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (response.error) {
       const btnWrapper = document.getElementById("info-btn-wrapper");
       showPopup("error", ERROR_MESSAGES[response.code], 'error-msg', btnWrapper);
-      console.error(`Analysis failed with ${response.code}: `, response.details);
+      logger.error(`Analysis failed with ${response.code}: `, response.details);
       return;
     }
 
@@ -1018,17 +1020,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
       // Check if compose div still exists
       if (!div) {
-        console.warn(`Compose window ${id} no longer exists`);
+        logger.warn(`Compose window ${id} no longer exists`);
         continue;
       }
 
       const spans = response.results[id].unfair_spans;
       if (spans && spans.length > 0) {
-        
+
         // Highligh the spans that were detected and their alternatives 
         const highlightSuccess = highlightSpans(div, response.results[id].unfair_spans);
         if (!highlightSuccess) {
-          console.error(`Failed to highlight spans in email ${id}`);
+          logger.error(`Failed to highlight spans in email ${id}`);
           highlightError = true;
           continue;
         }
