@@ -108,39 +108,26 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
     # Sort by position in reverse order so we replace from end to start
     positions.sort(reverse=True)
 
-    # Track character shift for each position
-    char_shift = 0
     shifts = {}  # Maps original placeholder positions to character shifts
-
-    for pos, placeholder in positions:
-        original = mapping[placeholder]
-        shift = len(original) - len(placeholder)
-        shifts[pos] = shift
-        char_shift += shift
 
     # Apply replacements (from end to start to preserve indices)
     for pos, placeholder in positions:
         original = mapping[placeholder]
+        shifts[pos] = len(original) - len(placeholder)
         text = text[:pos] + original + text[pos + len(placeholder) :]
 
     # Adjust span indices if provided
     adjusted_spans = []
     if spans:
+        sorted_positions = sorted(shifts.keys())
         for span in spans:
             adjusted_span = span.model_copy(deep=True)
-
-            # Calculate cumulative shift up to start_char
-            cumulative_shift = 0
-            for shift_pos in sorted(shifts.keys()):
-                if shift_pos < span.start_char:
-                    cumulative_shift += shifts[shift_pos]
-                else:
-                    break
-
-            # Apply shift to both start and end
-            adjusted_span.start_char = span.start_char + cumulative_shift
-            adjusted_span.end_char = span.end_char + cumulative_shift
-
+            start_shift = sum(
+                shifts[p] for p in sorted_positions if p < span.start_char
+            )
+            end_shift = sum(shifts[p] for p in sorted_positions if p < span.end_char)
+            adjusted_span.start_char = span.start_char + start_shift
+            adjusted_span.end_char = span.end_char + end_shift
             adjusted_spans.append(adjusted_span)
 
     return text, adjusted_spans
@@ -253,6 +240,13 @@ if __name__ == "__main__":
     il mio numero preferito è 12.
     Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
     Cordiali saluti"""
+
+    email2 = """Buonasera
+    Vi contatto ripetutamente per la questione delle sedie aziendali.
+    La docenza di Sistemi, assegnata al prof bascali, alla prof.sa tiscali ed a Giulio Coei non è sostenibile.
+    Le candidature di dottorato son falsate dal decreto 3710 del luglio 2012
+    I fondi del progetto EUR666 sono stati spesi male.
+    """
 
     anon, mapping = anonymize(email)
     print("=== ANONYMIZED ===")
