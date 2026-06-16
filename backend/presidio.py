@@ -3,9 +3,27 @@ from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_analyzer import Pattern, PatternRecognizer
+import re
 
 # checks for all entities
 ENTITIES = None
+
+HONORIFIC_PREFIXES = re.compile(
+    r"^(Professore|Professoressa|Prof\.?|Dott\.?(?:ssa)?|Sig\.?(?:ra|na)?|Avv\.?|Ing\.?|Dr\.?)\s+",
+    re.IGNORECASE,
+)
+
+FALSE_POSITIVE_PERSONS = {
+    "cordiali",
+    "distinti",
+    "saluti",
+    "grazie",
+    "buongiorno",
+    "buonasera",
+    "egregio",
+    "egregia",
+    "gentile",
+}
 
 
 def make_placeholder(
@@ -22,6 +40,8 @@ def anonymize(text: str) -> tuple[str, dict]:
     results = analyzer.analyze(text=text, language="it", entities=ENTITIES)
 
     results = remove_overlaps(results)
+
+    results = fix_person_entities(results, text)
 
     mapping = {}  # placeholder -> original
     counters = {}  # entity_type -> count
@@ -173,6 +193,41 @@ def add_custom_recognizers(analyzer: AnalyzerEngine):
             ],
         )
     )
+    analyzer.registry.add_recognizer(
+        PatternRecognizer(
+            supported_entity="NUMBER",
+            supported_language="it",
+            patterns=[
+                Pattern(
+                    name="digit_run",
+                    regex=r"\d{3,}",
+                    score=0.25,  # lower than other patterns
+                )
+            ],
+        )
+    )
+
+
+# in the example, Professore Giuseppe Verdi is recognized as PERSON,
+# same goes for Cordiali saluti.
+# This is a simplistic fix
+def fix_person_entities(results, text):
+    """Trim honorific prefixes from PERSON spans and drop single-token false positives."""
+    fixed = []
+    for r in results:
+        if r.entity_type != "PERSON":
+            fixed.append(r)
+            continue
+        span_text = text[r.start : r.end]
+        # Drop salutation/closing false positives
+        if span_text.strip().lower() in FALSE_POSITIVE_PERSONS:
+            continue
+        # Trim leading honorific
+        match = HONORIFIC_PREFIXES.match(span_text)
+        if match:
+            r.start += match.end()
+        fixed.append(r)
+    return fixed
 
 
 def process_text(text: str) -> tuple[str, dict]:
@@ -184,8 +239,10 @@ if __name__ == "__main__":
     setup_presidio()
 
     email = """Gentile Marco Rossi,
-    la contatto da parte del Professor Giuseppe Verdi dell'Università di Torino.
+    la contatto da parte del professor Giuseppe Verdi dell'Università di Torino.
     il Professore Giuseppe Verdi. lei è mario rossi. giuseppe verdi è chi le parla.
+    La mia matricola è 343899, la matricola del mio studente è 100111.
+    il mio numero preferito è 12.
     Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
     Cordiali saluti"""
 
