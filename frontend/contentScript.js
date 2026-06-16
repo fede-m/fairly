@@ -949,11 +949,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const response = msg.payload;
 
     if (!response || typeof response !== 'object' || response.error) {
-      console.error("onMessage: Invalid response or backend error:", response);
+      logger.error("onMessage: Invalid response or backend error:", response);
       setLoadingState(false);
 
+      const errText = response?.error
+        ? (response.error.message || response.error.toString())
+        : "";
+
       let errorMsg = "Errore durante l'analisi. Riprova.";
-      if (response && response.error && String(response.error).includes("Failed to fetch")) {
+      if (errText.includes("Failed to fetch")) {
         errorMsg = "Errore di connessione. Riprova più tardi.";
       }
 
