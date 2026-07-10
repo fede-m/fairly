@@ -203,7 +203,7 @@ def add_custom_recognizers(analyzer: AnalyzerEngine):
     )
 
 
-# in the example, Professore Giuseppe Verdi is recognized as PERSON,
+# in the example, Professore Giuseppe Verdi is recognized as PERSON (professore should be left out),
 # same goes for Cordiali saluti.
 # This is a simplistic fix
 def fix_person_entities(results, text):
