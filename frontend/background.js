@@ -196,5 +196,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     .then(res => console.log(res))
     .catch(err => console.log("Failed to store info event:", err))
   }
+  else if (msg.action == "addUser") {
+    const data = msg.payload;
+    console.log(data);
+    addUser(data)
+    .then(res => console.log(res))
+    .catch(err => console.error("Failed to add user:", err));
+  }
+  else if (msg.action == "storeInfo"){
+    const data = msg.payload;
+    storeInfo(data)
+    .then(res => console.log(res))
+    .catch(err => console.log("Failed to store info event:", err))
+  }
 });
 
