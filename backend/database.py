@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import urllib.parse
 import certifi
-from models import EventRequest
+from models import StoreEventRequest, InfoEventRequest, User
 
 # import dns.resolver
 # dns.resolver.default_resolver=dns.resolver.Resolver(configure=False)
