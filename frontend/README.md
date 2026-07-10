@@ -44,21 +44,21 @@ manual testing:
 - [x] cambiare user flow della riformulazione: rimuovere tasto edit, cambiare comportamento del tasto back, aggiungere "salva e accetta"
 - [x] cambiare graficamente per rendere più armonioso il box del cambio annotazione
 - [x] aumentare dimensione del logo iniziale del widget
-- [] effettuare test su individui con problemi visivi per i colori del logo (semanticamente avere due colori separati non ha un vero motivo)
-- [] potenzialmente ingrandire il widget: nessun lato negativo nel farlo
+- ~~[] effettuare test su individui con problemi visivi per i colori del logo (semanticamente avere due colori separati non ha un vero motivo)~~
+- ~~[] potenzialmente ingrandire il widget: nessun lato negativo nel farlo~~
 - [] time limit al loading dell'analisi
 - [x] ~~rimettere i popup in alto, nell'aria live,~~ e dargli dei limiti di espansione orizzontale come il widget direi
 
 ### personalizzazione
 
 - [] save and accept: salvare quelle riformulazioni come esempi da appendere al llm, quando viene usata la determinata opzione. possiamo fare che ogni tot vengono eliminate quelle più simili o quelle più vecchie per evitare di sfondare la context window
-- [] salvare l'ultima riformulazione usata dall'utente e metterla come prima selezionata (magari aprendo quella nested option e mostrandola selezionata all'apertura del widget)
+- ~~[] salvare l'ultima riformulazione usata dall'utente e metterla come prima selezionata (magari aprendo quella nested option e mostrandola selezionata all'apertura del widget)~~ (è stato deciso di no)
 
 ### privacy policy 
 
 - [x] verificare ad una ad una le permission date all'estensione e perchè servono
 - [] privacy notice
-- [] encription e decription dei dati
+- [x] encription e decription dei dati
 
 permissions test: removing all permissions caused no error.
 Possibly because 

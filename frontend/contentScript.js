@@ -1049,7 +1049,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       setResultButtons(true);
       // Remove existing messages
       clearAllPopups()
-      showPopup("success", "Analisi completata. Premi sulle singole ri-formulazioni per accettare, rifiutare o proporre una tua riformulazione.", "no-span-message", btnWrapper, "span.highlight");
+      showPopup("success", "Analisi completata. Premi sulle singole riscritture per accettare, rifiutare o proporre una nuova formulazione!", "no-span-message", btnWrapper, "span.highlight");
     } else {
       // Create new success message
       showPopup("success", "Analisi completata. Nessuno span non inclusivo trovato, ottimo lavoro!", "no-span-message", btnWrapper);
