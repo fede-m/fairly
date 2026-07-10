@@ -68,6 +68,8 @@ Tokens to be addded to the .env file:
 - OPENWEB_API: log into utopia `utopia.hpc4ai.unito.it` and generate a token (settings, account, token)
 - extention token: after adding the front-end to the browser, copy the id from the extentions page
 
+also, create the new config.js in the frontend before loading the extention on chrome
+
 - To make the backend available to the the front-end (Chrome extension), we use `ngrok`.
 - Use the following steps:
   1. Open a terminal and run the backend server using `uvicorn`
