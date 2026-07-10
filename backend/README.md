@@ -2,8 +2,10 @@
 - Virtual environment to select is backend 3.12
 
 ```bash
+cd backend
 uv venv --python 3.12
 uv sync
+source .venv/bin/activate
 ```
 
 - Run the app for developement:
