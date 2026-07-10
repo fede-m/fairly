@@ -67,7 +67,7 @@ function createSpanPopupDiv(spanEl) {
 
   const inputLabel = document.createElement("label");
   inputLabel.setAttribute("for", `user-ref-${spanEl.id}`);
-  inputLabel.textContent = "Accetta la riformulazione Fairly o scrivi la tua riformulazione inclusiva.";//\nSalvandola, Fairly la proporrà nelle future analisi.";
+  inputLabel.textContent = "Accetta la riscrittura Fairly o proponi una nuova formulazione!";
   inputLabel.className = "span-div-input-label";
 
   const inputFormulation = document.createElement("input");
