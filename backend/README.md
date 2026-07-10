@@ -1,6 +1,11 @@
 - Virtual environment was created using uv: https://docs.astral.sh/uv/guides/projects/#pyprojecttoml
 - Virtual environment to select is backend 3.12
 
+```bash
+uv venv --python 3.12
+uv sync
+```
+
 - Run the app for developement:
 
 ```bash
@@ -54,6 +59,12 @@ docker rm 4f8dd1c65754
 
 
 ### Test the deployment
+
+Tokens to be addded to the .env file:
+- huggingface: login and create an access token with read permissions
+- ngrok: Create a free account at ngrok.com. Log in to your dashboard to find your unique authtoken
+- OPENWEB_API: log into utopia `utopia.hpc4ai.unito.it` and generate a token (settings, account, token)
+- extention token: after adding the front-end to the browser, copy the id from the extentions page
 
 - To make the backend available to the the front-end (Chrome extension), we use `ngrok`.
 - Use the following steps:
