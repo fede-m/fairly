@@ -561,7 +561,7 @@ function createInfoDiv() {
           collapseAllNested(nestedDiv, arrowBtn);
           const firstRadio = nestedDiv.querySelector('input[type="radio"]');
           firstRadio?.focus();
-          firstRadio?.click();
+          //firstRadio?.click();
         }
       });
     } else {
