@@ -23,7 +23,7 @@ print(user)
 # MONGODB_URI = f"mongodb+srv://{user}:{password}@fairlycluster.khg90i7.mongodb.net/?appName=FairlyCluster"
 MONGO_URL = f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
 
-## COMMENT THIS TO TEST LOCALLY
+## Comment all of the following to test locally
 # Connect to the MongoDB Cluster
 client = MongoClient(MONGO_URL)
 
