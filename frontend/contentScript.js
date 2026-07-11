@@ -1047,8 +1047,6 @@ document.addEventListener("click", (event) => {
   const wordCount = countWords(text);
   const strategySelected = document.querySelector(".checklist-choice:checked");
   const fairlyUsed = editor.dataset.fairlyUsed === "true";
-  console.log(editor);
-  
   const payload = {
     event: "send",
     spans: [],

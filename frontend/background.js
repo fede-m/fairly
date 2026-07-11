@@ -53,7 +53,7 @@ async function makeRequest(url, payload, errorContext = "request", timeoutMs = 3
   try {
     const startTime = performance.now();
     logger.log("[" + new Date().toISOString() + "] Sending data to backend... API:", API.analyse);
-    const response = await fetch(API.analyse, {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -152,14 +152,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
-    console.log(data);
     storeEvent(data)
       .then(res => logger.log(res))
       .catch(err => logger.error("Failed to store event:", err));
   }
   else if (msg.action == "addUser") {
     const data = msg.payload;
-    console.log(data);
     addUser(data)
     .then(res => logger.log(res))
     .catch(err => logger.error("Failed to add user:", err));
@@ -169,45 +167,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     storeInfo(data)
     .then(res => logger.log(res))
     .catch(err => logger.log("Failed to store info event:", err))
-  }
-  else if (msg.action == "addUser") {
-    const data = msg.payload;
-    console.log(data);
-    addUser(data)
-    .then(res => logger.log(res))
-    .catch(err => logger.error("Failed to add user:", err));
-  }
-  else if (msg.action == "storeInfo"){
-    const data = msg.payload;
-    storeInfo(data)
-    .then(res => logger.log(res))
-    .catch(err => logger.log("Failed to store info event:", err))
-  }
-  else if (msg.action == "addUser") {
-    const data = msg.payload;
-    console.log(data);
-    addUser(data)
-    .then(res => console.log(res))
-    .catch(err => console.error("Failed to add user:", err));
-  }
-  else if (msg.action == "storeInfo"){
-    const data = msg.payload;
-    storeInfo(data)
-    .then(res => console.log(res))
-    .catch(err => console.log("Failed to store info event:", err))
-  }
-  else if (msg.action == "addUser") {
-    const data = msg.payload;
-    console.log(data);
-    addUser(data)
-    .then(res => console.log(res))
-    .catch(err => console.error("Failed to add user:", err));
-  }
-  else if (msg.action == "storeInfo"){
-    const data = msg.payload;
-    storeInfo(data)
-    .then(res => console.log(res))
-    .catch(err => console.log("Failed to store info event:", err))
   }
 });
 

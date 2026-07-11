@@ -1,0 +1,1 @@
+const CONFIG = { BASE_URL: "http://localhost:8000" }; // Sostituire con DNS di Fairly

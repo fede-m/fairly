@@ -224,16 +224,17 @@ function highlightSpans(div, spans) {
           };
           parts.push(part);
           lastIdx = spanEnd;
-        });
+         });
         // Add the after text (after having processed all the spans in the current node) 
         if (lastIdx < nodeText.length) {
           parts.push({
-            text: nodeText.slice(lastIdx, spanStart),
+            text: nodeText.slice(lastIdx),
             isHighlight: false,
             reformulation: null,
             id: null
           });
         }
+       
         // Create temporary fragment to substitute the node with 
         const frag = document.createDocumentFragment();
         parts.forEach((part, idx) => {

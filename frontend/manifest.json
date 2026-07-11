@@ -27,6 +27,7 @@
         "content/actions.js",
         "content/domUtils.js",
         "logger.js",
+        "config.js",
         "contentScript.js"
       ],
       "css": [
