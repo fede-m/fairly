@@ -133,7 +133,7 @@ function accept({span = undefined, input = false, isAll = false} = {}){
                 span_id: s.id,
                 original: original,
                 reformulation: reformulation,
-                current_used: reformulation,
+                current_used: currentUsed,
             }
 
             if (userForm) {
@@ -154,8 +154,10 @@ function accept({span = undefined, input = false, isAll = false} = {}){
     if (contentDiv) {
       contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    if (document.querySelectorAll("span.highlight").length === 0) {
+        setResultButtons(false);
+    }
     if (span === undefined) resetButtons();
-    console.log(acceptEvents);
     try {
             chrome.runtime.sendMessage({
                 action:"storeEvent",
@@ -166,19 +168,4 @@ function accept({span = undefined, input = false, isAll = false} = {}){
     }
   }
   );
-
-  if (document.querySelectorAll("span.highlight").length === 0) {
-    setResultButtons(false);
-  }
-
-  if (span === undefined) resetButtons();
-  try {
-    chrome.runtime.sendMessage({
-      action: "storeEvent",
-      payload: acceptEvents
-    });
-  } catch (error) {
-    logger.error("Failed to store event: ", error);
-  }
-
 }
