@@ -12,6 +12,7 @@ from groq import Groq
 import instructor
 import requests
 from openai import OpenAI
+import uuid
 
 load_dotenv()
 
@@ -25,14 +26,15 @@ tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TO
 # Setup client
 client = OpenAI(
     base_url = os.getenv("HPC4AI_URL", ""),
-    api_key = os.getenv("OPENWEB_API", "")
+    api_key = os.getenv("OPENWEB_API", ""),
+    timeout= 35.0
 )
 
 client = instructor.patch(client, mode = instructor.Mode.JSON)
 
-def generate_new_span(text:str,start:int, end:int):
+def generate_new_span(text:str,start:int, end:int) -> Span:
     span = Span(
-        span_id = "",
+        span_id = str(uuid.uuid4()),
         start_char = int(start),
         end_char = int(end),
         tokens = [],
@@ -42,62 +44,62 @@ def generate_new_span(text:str,start:int, end:int):
     return span
 
 def detection(text: str) -> list[Span]:
-    # Sentence Tokenize text
-    sentences_spans = list(sentence_tokenizer.span_tokenize(text))
-    sentences = [text[start: end] for (start, end) in sentences_spans]
+    try:
+        # Sentence Tokenize text
+        sentences_spans = list(sentence_tokenizer.span_tokenize(text))
+        sentences = [text[start: end] for (start, end) in sentences_spans]
 
-    spans = []
+        spans = []
 
-    for span_sent, sent in zip(sentences_spans,sentences):
-        # Tokenize and get input for model
-        inputs = tokenizer(sent, return_tensors="pt", return_offsets_mapping= True, truncation = True, is_split_into_words = False)
-        
-        # Contain tuples (start_char, end_char for each token in the original sentence)
-        offsets = inputs.pop("offset_mapping")[:,1:-1,:]
+        for span_sent, sent in zip(sentences_spans,sentences):
+            # Tokenize and get input for model
+            inputs = tokenizer(sent, return_tensors="pt", return_offsets_mapping= True, truncation = True, is_split_into_words = False)
+            
+            # Contain tuples (start_char, end_char for each token in the original sentence)
+            offsets = inputs.pop("offset_mapping")[:,1:-1,:]
 
-        # Disable gradient descent calculation
-        with torch.no_grad():
-            outputs = model(**inputs)
-        
-        # Convert logits to predicted labels
-        predictions = torch.argmax(outputs.logits, dim=-1)
+            # Disable gradient descent calculation
+            with torch.no_grad():
+                outputs = model(**inputs)
+            
+            # Convert logits to predicted labels
+            predictions = torch.argmax(outputs.logits, dim=-1)
 
-        # Map IDs to class labels
-        predicted_labels = [model.config.id2label[i.item()] for i in predictions[0][1:-1]]
+            # Map IDs to class labels
+            predicted_labels = [model.config.id2label[i.item()] for i in predictions[0][1:-1]]
 
-        # Keep track on whether a span is being constructed. This prevents having spans which do not start with a B-UNFAIR but just have I-UNFAIR
-        building_span = False
-        for i,label in enumerate(predicted_labels):
-            start = span_sent[0] + offsets[0][i][0]
-            end = span_sent[0] + offsets[0][i][1]
-            if label == "B-UNFAIR":
-                # Create new span
-                new_span = generate_new_span(text, start, end)
-                spans.append(new_span)
-                building_span = True
-
-            elif label == "I-UNFAIR":
-                if building_span:
-                    # Grab the last span to update it
-                    curr_span = spans[-1]
-                    # Update end char position
-                    curr_span.end_char = int(end)
-                    # Add current tokens
-                    curr_span.tokens.append(text[start:end])
-                else:
-                    print(f"Span does not start with B-UNFAIR: {text[start:end]}")
+            # Keep track on whether a span is being constructed. This prevents having spans which do not start with a B-UNFAIR but just have I-UNFAIR
+            building_span = False
+            for i,label in enumerate(predicted_labels):
+                start = span_sent[0] + offsets[0][i][0]
+                end = span_sent[0] + offsets[0][i][1]
+                if label == "B-UNFAIR":
+                    # Create new span
                     new_span = generate_new_span(text, start, end)
                     spans.append(new_span)
                     building_span = True
-            else:
-                building_span = False 
 
-    # Add unique id to each span   
-    for span in spans:
-        span.span_id = f"{span.start_char}_{span.end_char}"
-    return spans
+                elif label == "I-UNFAIR":
+                    if building_span:
+                        # Grab the last span to update it
+                        curr_span = spans[-1]
+                        # Update end char position
+                        curr_span.end_char = int(end)
+                        # Add current tokens
+                        curr_span.tokens.append(text[start:end])
+                    else:
+                        print(f"Span does not start with B-UNFAIR: {text[start:end]}")
+                        new_span = generate_new_span(text, start, end)
+                        spans.append(new_span)
+                        building_span = True
+                else:
+                    building_span = False 
+        return spans
+    except Exception as e:
+         print(f"Detection failed with error: {e}")
+         raise Exception(f"Text analysis failed: {str(e)}")
 
-def generation(text: str, spans:list[Span], strategy: str):
+def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     if not spans:
         return []
     # Get the span id and the text
@@ -135,6 +137,6 @@ def generation(text: str, spans:list[Span], strategy: str):
             return reformulated_spans
         except Exception as e:
             print(f"Generation failed with error: {e}")
-            raise Exception(f"Generation failed: {str(e)}")
+            raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
     else:
         return spans

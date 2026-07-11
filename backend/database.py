@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import urllib.parse
 import certifi
-from models import EventRequest
+from models import StoreEventRequest, InfoEventRequest, User
 
 # import dns.resolver
 # dns.resolver.default_resolver=dns.resolver.Resolver(configure=False)
@@ -32,13 +32,20 @@ print(dbs)
 
 db = client["fairly_db"]
 collection = db["user_events"]
+user_collection = db["user_data"]
 
 
-def insert_event(events: list[EventRequest]):
-    for event in events:
+def insert_event(events: list[StoreEventRequest]):
+    for event in events:    
         inserted_id = collection.insert_one(event.dict()).inserted_id
 
+def insert_user(user: User):
+    inserted_user_id = user_collection.insert_one(user.dict()).inserted_id
+    print(inserted_user_id)
 
-## and also uncomment this to test locally
-# def insert_event(events: list[EventRequest]):
-#    return
+def insert_info_event(event: InfoEventRequest):
+    inserted_id = collection.insert_one(event.dict()).inserted_id
+
+
+
+

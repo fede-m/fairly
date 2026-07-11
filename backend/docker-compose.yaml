@@ -5,7 +5,7 @@ services:
         container_name: fairly-mongo
         restart: unless-stopped
         env_file:
-            - ./backend/.env
+            - .env
         healthcheck:
             test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
             interval: 5s
@@ -22,7 +22,7 @@ services:
         ports:
             - 8000:8000
         env_file:
-            - ./backend/.env
+            - .env
         
         depends_on:
             mongodb:

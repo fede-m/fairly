@@ -4,96 +4,15 @@ let SESSION_ID = null;
 let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
 let CONSENT_GIVEN = null;
+let analysisTimeoutId = null;
 
-function showConsentDialog() {
-  /**
-   * Creates the consent dialog div where the user should give their consent in order to use Fairly.
-   * In case the user accepts the conditions, Fairly widget is shown on page
-   * Otherwise, it is not
-   * TODO: define what happens when the user opts out from using Fairly:
-   * whether they can still use the tool but we do not collect data OR we block access to the tool
-   * This is the draggable floating widget that appears on the page.
-   * @returns {null}
-   */
-  logger.log("You need to give your consent first!")
-  const overlay = document.createElement("div");
-  overlay.id = "fairly-consent-overlay";
-  overlay.className = "consent-overlay"
-  const dialog = document.createElement("div");
-  dialog.setAttribute("role", "dialog");
-  dialog.setAttribute("aria-modal", "true");
-  dialog.setAttribute("aria-labelledby", "fairly-consent-title");
-  dialog.className = "consent-dialog"
-  // Close button (counts as refusal)
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "popup-close-btn";
-  closeBtn.setAttribute("aria-label", "Chiudi finestra di consenso");
-  closeBtn.innerHTML = ICONS.close;
-  closeBtn.addEventListener("click", () => {
-    CONSENT_GIVEN = false;
-    chrome.storage.local.set({ "fairlyConsentGiven": false });
-    overlay.remove();
-  });
-
-  // Title
-  const title = document.createElement("h2");
-  title.textContent = "Informativa sull'uso dei dati";
-  // Paragraph
-  const p1 = document.createElement("p");
-  p1.textContent = "Per funzionare, Fairly invia il testo delle email ad un server dell'Università di Torino per analizzare ed eventualmente suggerire formulazioni più inclusive tramite modelli di intelligenza artificiale.";
-  const p2 = document.createElement("p");
-  p2.textContent = "I modelli vengono eseguiti sull'infrastruttura dell'Università di Torino e di HPC4AI. I dati non vengono condivisi con terze parti né utilizzati per l'addestramento o il miglioramento dei modelli."
-  // const p3 = document.createElement("p");
-  // p3.textContent = "Prima dell'analisi, il contenuto dell'email viene anonimizzato, rimuovendo eventuali informazioni personali identificalbili (Personally Identifiable Information, PII) presenti nel testo."
-  const p3 = document.createElement("p");
-  p3.textContent = "Fairly non conserva il testo completo delle email, ma solo eventuali porzioni di testo segnalate come non inclusive e le relative interazioni dell'utente con l'applicazione. Inoltre, l'indirizzo email dell'utente viene salvato solo dopo essere stato pseudonimizzato."
-  const p4 = document.createElement("p");
-  p4.textContent = "Tali dati vengono conservati esclusivamente per finalità di ricerca e possono essere consultati unicamente da personale autorizzato dell’Università di Torino."
-  const p5 = document.createElement("p");
-  p5.textContent = "Per saperne di più potete consultare la nostra ";
-  const a = document.createElement("a");
-  a.href = LINK.PRIVACY;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  a.textContent = "Privacy Policy";
-  p5.appendChild(a);
-
-  const btnWrap = document.createElement("div");
-  btnWrap.className = "consent-dialog-btnWrap";
-  const accept = document.createElement("button");
-  accept.className = "accept-all-btn";
-  accept.textContent = "Accetta";
-  accept.addEventListener("click", () => {
-    CONSENT_GIVEN = true;
-    chrome.storage.local.set({ "fairlyConsentGiven": true });
-    overlay.remove();
-    initExtension();
-  });
-  const refuse = document.createElement("button");
-  refuse.className = "refuse-all-btn";
-  refuse.textContent = "Rifiuta";
-  refuse.addEventListener("click", () => {
-    CONSENT_GIVEN = false;
-    chrome.storage.local.set({ "fairlyConsentGiven": false });
-    overlay.remove();
-  });
-
-  btnWrap.appendChild(accept);
-  btnWrap.appendChild(refuse);
-
-  dialog.appendChild(closeBtn);
-  dialog.appendChild(title);
-  dialog.appendChild(p1);
-  dialog.appendChild(p2);
-  dialog.appendChild(p3);
-  dialog.appendChild(p4);
-  dialog.appendChild(p5);
-  dialog.appendChild(btnWrap);
-
-  overlay.appendChild(dialog);
-  document.body.appendChild(overlay);
-  accept.focus();
+function countWords (text) {
+  return text.trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
 }
+
 /* Create HTML elements for the UI */
 function createWidget() {
   /**
@@ -193,7 +112,7 @@ function setLoadingState(isLoading) {
 }
 
 function clearAllPopups() {
-  ["warning-msg", "no-span-message"].forEach(id => {
+  ["error-msg", "warning-msg", "no-span-message"].forEach(id => {
     document.getElementById(id)?.remove();
   });
 }
@@ -283,7 +202,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard(undefined, "analysis_refresh");
+  discard({ref_reason: "analysis_refresh", isAll: true});
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -321,12 +240,16 @@ function startAnalysis() {
       // remember the selected options for future uses
       //chrome.storage.local.setItem("fairlyLastStrategy", selected.id);
 
-      editableElements.forEach((element) => {
-        const data = {};
-        const key = element.id;
-        data["id"] = key;
-        data["text"] = element.innerText;
-        dataObj["data"].push(data);
+      editableElements.forEach((element) => { 
+          element.dataset.fairlyUsed = true;
+          const data = {}; 
+          const key = element.id; 
+          const text = element.innerText;
+          data["id"] = key; 
+          data["text"] = text;
+          data["char_length"] = text.length;
+          data["word_count"] = countWords(text);
+          dataObj["data"].push(data);
       });
       // Send data to background 
       try {
@@ -334,6 +257,15 @@ function startAnalysis() {
           action: "analyseData",
           payload: dataObj,
         });
+        
+        // Set timeout: if no response in 45 seconds, show error
+        if (analysisTimeoutId) clearTimeout(analysisTimeoutId);
+        analysisTimeoutId = setTimeout(() => {
+          logger.error("Analysis request timeout - no response from background");
+          setLoadingState(false);
+          const btnWrapper = document.getElementById("info-btn-wrapper");
+          showPopup("error", ERROR_MESSAGES["TIMEOUT"] || "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.", "error-msg", btnWrapper);
+        }, 45000);
       } catch (error) {
         logger.error("Failed to send message to background: ", error);
         setLoadingState(false);
@@ -604,6 +536,19 @@ function createInfoDiv() {
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.style.marginLeft = "4px";
+      a.addEventListener("click", (e) => {
+        const infoData = {
+          user_id: USER_EMAIL,
+          session_id: SESSION_ID,
+          strategy: strategyName,
+          findout_more: true,
+        };
+
+        chrome.runtime.sendMessage({
+          action: "storeInfo",
+          payload: infoData
+        });
+      });
       p.appendChild(document.createTextNode(strategyInfo + " " + "Puoi saperne di più "));
       p.appendChild(a);
       p.appendChild(document.createTextNode("."))
@@ -663,6 +608,17 @@ function createInfoDiv() {
 
       infoBtn.addEventListener("click", (e) => {
         infoPopover.hidden ? openPopover() : closePopover(false);
+        const infoData = {
+          user_id: USER_EMAIL,
+          session_id: SESSION_ID,
+          strategy: strategyName,
+          findout_more: false,
+        };
+
+        chrome.runtime.sendMessage({
+          action: "storeInfo",
+          payload: infoData
+        });
       });
 
       infoBtn.addEventListener("keydown", (e) => {
@@ -728,7 +684,7 @@ function createInfoDiv() {
   acceptAllBtn.style.display = "none";
   acceptAllBtn.setAttribute("aria-hidden", "true");
   acceptAllBtn.addEventListener("click", () => {
-    accept();
+    accept({isAll: true});
   });
   // ------------------- Refuse all button -------------------
   const refuseAllBtn = document.createElement("button");
@@ -739,7 +695,7 @@ function createInfoDiv() {
   refuseAllBtn.style.display = "none";
   refuseAllBtn.setAttribute("aria-hidden", "true");
   refuseAllBtn.addEventListener("click", () => {
-    discard();
+    discard({isAll: true});
   });
   // ------------------- Analyze button -------------------
   const analyzeButton = document.createElement("button");
@@ -856,6 +812,20 @@ async function initExtension() {
   if (!fairlyConsentGiven) {
     showConsentDialog();
     return;
+  }
+
+  const {fairlyUserInfoStored} = await chrome.storage.local.get("fairlyUserInfoStored");
+
+  if (!fairlyUserInfoStored) {
+    const user = {
+      user_id: USER_EMAIL,
+      strategy_order: STRATEGY_ORDER
+    }
+    chrome.runtime.sendMessage({
+      action: "addUser",
+      payload: user
+    });
+    await chrome.storage.local.set({"fairlyUserInfoStored": true})
   }
 
   /* --------- Initialize Widget elements --------- */
@@ -992,6 +962,11 @@ async function initExtension() {
 // Listens to messages coming from background.js --> in this case, the data processed from the backend
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "processedData") {
+    // Clear the analysis timeout if it exists
+    if (analysisTimeoutId) {
+      clearTimeout(analysisTimeoutId);
+      analysisTimeoutId = null;
+    }
 
     // Check if widget exists
     if (!isWidgetValid()) {
@@ -1006,7 +981,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Check if error contains response
     if (response.error) {
       const btnWrapper = document.getElementById("info-btn-wrapper");
-      showPopup("error", ERROR_MESSAGES[response.code], 'error-msg', btnWrapper);
+      showPopup("error", ERROR_MESSAGES[response.code] || "Si è verificato un errore. Riprova più tardi.", 'error-msg', btnWrapper);
       logger.error(`Analysis failed with ${response.code}: `, response.details);
       return;
     }
@@ -1058,6 +1033,37 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
   }
 });
+
+document.addEventListener("click", (event) => {
+  // Check if "Send" button was clicked (support in Italian and English)
+  const sendBtn = event.target.closest('[role="button"][data-tooltip^="Invia"]') || event.target.closest('[role="button"][data-tooltip^="Send"]');
+  if (!sendBtn) return;
+
+  const composeWindow = sendBtn.closest('[role="dialog"]');
+  const editor = composeWindow?.querySelector('[contenteditable="true"]');
+  if (!editor) return;
+  const text = editor.innerText;
+  const textLength = text.length;
+  const wordCount = countWords(text);
+  const strategySelected = document.querySelector(".checklist-choice:checked");
+  const fairlyUsed = editor.dataset.fairlyUsed === "true";
+  const payload = {
+    event: "send",
+    spans: [],
+    session_id: SESSION_ID,
+    user_id: USER_EMAIL,
+    email_id: editor.id,
+    fairly_used: fairlyUsed,
+    strategy: fairlyUsed ? strategySelected.id : null,
+    email_char_count: fairlyUsed ? textLength : null,
+    email_word_count: fairlyUsed ? wordCount : null ,  
+  };
+  console.log(payload);
+  chrome.runtime.sendMessage({
+    action: "storeEvent",
+    payload: [payload]
+  });       
+})
 
 
 // Create the extension on page load
