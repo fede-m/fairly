@@ -1,4 +1,4 @@
-DETECTION_MODEL = "fede-m/fairly_test_model"
+DETECTION_MODEL = "fairly-org/fairly_detection_v0"
 TOKENIZER_MODEL = "osiria/roberta-base-italian"
 # GENERATION_MODEL = "groq/llama-3.3-70b-versatile"
 #GENERATION_MODEL = "SLURM.qwen3:32b-fp16"
