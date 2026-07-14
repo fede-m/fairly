@@ -16,7 +16,7 @@ services:
 
     backend:
         build: 
-            context: ./backend
+            context: .
         container_name: fairly-backend
         restart: unless-stopped
         ports:
