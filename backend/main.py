@@ -129,8 +129,9 @@ async def store_event(requests: list[StoreEventRequest]):
         event.user_id = _hash_email(email)
         # If fairly was used, text is not none
         # it gets anonymized
-        if event.text is not None:
-            event.text, _ = process_text(event.text)
+        if event.event == EventType.SEND:
+            if event.text is not None:
+                event.text, _ = process_text(event.text)
     await insert_event(requests)
     return {"status": 200, "message": "Event was stored successfully"}
 
