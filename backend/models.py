@@ -94,7 +94,9 @@ class SpanEvent(BaseModel):
 
 class StoreEventRequest(BaseModel):
     event: EventType
-    text: str
+    text: str | None = (
+        None  # On send event, if fairly was not used, text is None, otherwise it is the anonymized text
+    )
     spans: list[SpanEvent]
     session_id: str
     user_id: str

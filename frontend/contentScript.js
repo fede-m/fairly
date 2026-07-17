@@ -1050,6 +1050,7 @@ document.addEventListener("click", (event) => {
   const payload = {
     event: "send",
     text: text,
+    spans: [],
     session_id: SESSION_ID,
     user_id: USER_EMAIL,
     email_id: editor.id,
