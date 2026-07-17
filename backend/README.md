@@ -70,18 +70,12 @@ Tokens to be addded to the .env file:
 
 also, create the new config.js in the frontend before loading the extention on chrome
 
-- To make the backend available to the the front-end (Chrome extension), we use `ngrok`.
-- Use the following steps:
-  1. Open a terminal and run the backend server using `uvicorn`
+Then, open a terminal and run the backend server using `uvicorn`
   ```bash
   uvicorn main:app --reload --host 0.0.0.0 --port 8000
   ```
-  2. In another terminal, run:
-  ```bash
-  ngrok http 8000
-  ```
-  3. This will generate a one-time URL (available in `Forwarding`) that you can provide to your extension to call the backend.
-  4. NOTE: everytime you activate the server again, you will be provided with a new URL, so make sure to change it in the front-end
+
+It should work!
   
 
 ### Test Connection on MongoDB
