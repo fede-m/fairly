@@ -7,14 +7,18 @@ __pycache__/
 .venv
 venv/
 
+# Model files
 *.pt
 *.bin
 *.safetensors
+
+# Caches
 .cache
+
+# Git
 .git/
 .gitignore
 
-Dockerfile
-docker-compose.yml
+# Secrets
 .env
 
