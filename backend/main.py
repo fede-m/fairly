@@ -132,6 +132,14 @@ async def store_event(requests: list[StoreEventRequest]):
         if event.event == EventType.SEND:
             if event.text is not None:
                 event.text, _ = process_text(event.text)
+        elif event.even in (EventType.REFUSE, EventType.ACCEPT, event.EventType.EDIT):
+            for span in event.spans:
+                span.original, _ = process_text(span.original)
+                span.reformulation, _ = process_text(span.reformulation)
+                if span.current_used:
+                    span.current_used, _ = process_text(span.current_used)
+                if span.user_form:
+                    span.user_form, _ = process_text(span.user_form)
     await insert_event(requests)
     return {"status": 200, "message": "Event was stored successfully"}
 
