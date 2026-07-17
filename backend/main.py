@@ -4,7 +4,16 @@ from starlette.concurrency import run_in_threadpool
 import os
 import hmac
 import hashlib
-from models import Request, StoreEventRequest, Response, OutputData, EventType, SpanEvent, User, InfoEventRequest
+from models import (
+    Request,
+    StoreEventRequest,
+    Response,
+    OutputData,
+    EventType,
+    SpanEvent,
+    User,
+    InfoEventRequest,
+)
 from llm import detection, generation
 from presidio import setup_presidio, process_text, deanonymize
 from database import insert_event, insert_user, insert_info_event
@@ -27,12 +36,10 @@ app.add_middleware(
 
 setup_presidio()
 
+
 def _hash_email(email):
-    return hmac.new(
-            SECRET_KEY.encode(),
-            email.encode(),
-            hashlib.sha256
-        ).hexdigest()
+    return hmac.new(SECRET_KEY.encode(), email.encode(), hashlib.sha256).hexdigest()
+
 
 @app.post("/analyse")
 async def analyse(request: Request):
@@ -40,12 +47,11 @@ async def analyse(request: Request):
     strategy = request.strategy
     email = request.user_id.strip().lower()
     request.user_id = _hash_email(email)
-    
+
     # Store request
     analysis_events = []
-    
-    
-    try: 
+
+    try:
         for doc in request.data:
             # Remove "\n" from text
             text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
@@ -59,7 +65,7 @@ async def analyse(request: Request):
                     "error": True,
                     "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
                     "code": "ANALYSIS_FAILED",
-                    "details": str(e)
+                    "details": str(e),
                 }
             # Generation
             try:
@@ -70,35 +76,37 @@ async def analyse(request: Request):
                     "error": True,
                     "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
                     "code": "ANALYSIS_FAILED",
-                    "details": str(e)
+                    "details": str(e),
                 }
 
             # user sees deanonimized text + shifted spans
             deanonymized_text, unfair_spans = deanonymize(
                 anonymized_text, mapping, reformulated_spans
             )
-            results[doc.id] = OutputData(text=deanonymized_text, unfair_spans=unfair_spans)
-            analysis_request =StoreEventRequest(
-                    event = EventType.ANALYSIS,
-                    spans = [
-                        SpanEvent(
-                            span_id = s.span_id,
-                            # start_char = s.start_char,
-                            # end_char = s.end_char,
-                            original = anonymized_text[s.start_char:s.end_char],
-                            reformulation = s.reformulation,
-                            current_used = ""
-                        )
-                        for s in reformulated_spans
-                    ],
-                    session_id =request.session_id,
-                    user_id = request.user_id,
-                    email_id = doc.id,
-                    strategy = strategy,
-                    email_char_count = doc.char_length,
-                    email_word_count = doc.word_count,
-                )
-            
+            results[doc.id] = OutputData(
+                text=deanonymized_text, unfair_spans=unfair_spans
+            )
+            analysis_request = StoreEventRequest(
+                event=EventType.ANALYSIS,
+                spans=[
+                    SpanEvent(
+                        span_id=s.span_id,
+                        # start_char = s.start_char,
+                        # end_char = s.end_char,
+                        original=anonymized_text[s.start_char : s.end_char],
+                        reformulation=s.reformulation,
+                        current_used="",
+                    )
+                    for s in reformulated_spans
+                ],
+                session_id=request.session_id,
+                user_id=request.user_id,
+                email_id=doc.id,
+                strategy=strategy,
+                email_char_count=doc.char_length,
+                email_word_count=doc.word_count,
+            )
+
             analysis_events.append(analysis_request)
 
         await insert_event(analysis_events)
@@ -110,16 +118,19 @@ async def analyse(request: Request):
             "error": True,
             "message": "Si è verificato un errore durante l'analisi.",
             "code": "ANALYSIS_FAILED",
-            "details": str(e)
+            "details": str(e),
         }
 
-# da rivedere
+
 @app.post("/store-event")
 async def store_event(requests: list[StoreEventRequest]):
-    # Hash email address
     for event in requests:
         email = event.user_id.strip().lower()
         event.user_id = _hash_email(email)
+        # If fairly was used, text is not none
+        # it gets anonymized
+        if event.text is not None:
+            event.text, _ = process_text(event.text)
     await insert_event(requests)
     return {"status": 200, "message": "Event was stored successfully"}
 
@@ -141,4 +152,3 @@ async def store_user(user: User):
         user.user_id = _hash_email(email)
         await insert_user(user)
         return {"status": 200, "message": "User was added successfully"}
-
