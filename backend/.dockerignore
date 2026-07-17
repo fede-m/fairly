@@ -12,7 +12,7 @@ venv/
 *.safetensors
 .cache
 .git/
-.gitgnore
+.gitignore
 
 Dockerfile
 docker-compose.yml
