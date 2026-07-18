@@ -6,7 +6,7 @@ let STRATEGY_ORDER = null;
 let CONSENT_GIVEN = null;
 let analysisTimeoutId = null;
 
-function countWords (text) {
+function countWords(text) {
   return text.trim()
     .split(/\s+/)
     .filter(Boolean)
@@ -202,7 +202,7 @@ function startAnalysis() {
   // Perform both detection and generation sequentially 
   const currentLocation = window.location.href;
   // Delete all spans that were not accepted
-  discard({ref_reason: "analysis_refresh", isAll: true});
+  discard({ ref_reason: "analysis_refresh", isAll: true });
 
   if (currentLocation.startsWith("https://mail.google.com/")) {
     // remove pop-ups
@@ -240,16 +240,16 @@ function startAnalysis() {
       // remember the selected options for future uses
       //chrome.storage.local.setItem("fairlyLastStrategy", selected.id);
 
-      editableElements.forEach((element) => { 
-          element.dataset.fairlyUsed = true;
-          const data = {}; 
-          const key = element.id; 
-          const text = element.innerText;
-          data["id"] = key; 
-          data["text"] = text;
-          data["char_length"] = text.length;
-          data["word_count"] = countWords(text);
-          dataObj["data"].push(data);
+      editableElements.forEach((element) => {
+        element.dataset.fairlyUsed = true;
+        const data = {};
+        const key = element.id;
+        const text = element.innerText;
+        data["id"] = key;
+        data["text"] = text;
+        data["char_length"] = text.length;
+        data["word_count"] = countWords(text);
+        dataObj["data"].push(data);
       });
       // Send data to background 
       try {
@@ -257,7 +257,7 @@ function startAnalysis() {
           action: "analyseData",
           payload: dataObj,
         });
-        
+
         // Set timeout: if no response in 45 seconds, show error
         if (analysisTimeoutId) clearTimeout(analysisTimeoutId);
         analysisTimeoutId = setTimeout(() => {
@@ -684,7 +684,7 @@ function createInfoDiv() {
   acceptAllBtn.style.display = "none";
   acceptAllBtn.setAttribute("aria-hidden", "true");
   acceptAllBtn.addEventListener("click", () => {
-    accept({isAll: true});
+    accept({ isAll: true });
   });
   // ------------------- Refuse all button -------------------
   const refuseAllBtn = document.createElement("button");
@@ -695,7 +695,7 @@ function createInfoDiv() {
   refuseAllBtn.style.display = "none";
   refuseAllBtn.setAttribute("aria-hidden", "true");
   refuseAllBtn.addEventListener("click", () => {
-    discard({isAll: true});
+    discard({ isAll: true });
   });
   // ------------------- Analyze button -------------------
   const analyzeButton = document.createElement("button");
@@ -814,7 +814,7 @@ async function initExtension() {
     return;
   }
 
-  const {fairlyUserInfoStored} = await chrome.storage.local.get("fairlyUserInfoStored");
+  const { fairlyUserInfoStored } = await chrome.storage.local.get("fairlyUserInfoStored");
 
   if (!fairlyUserInfoStored) {
     const user = {
@@ -825,7 +825,7 @@ async function initExtension() {
       action: "addUser",
       payload: user
     });
-    await chrome.storage.local.set({"fairlyUserInfoStored": true})
+    await chrome.storage.local.set({ "fairlyUserInfoStored": true })
   }
 
   /* --------- Initialize Widget elements --------- */
@@ -1042,13 +1042,14 @@ document.addEventListener("click", (event) => {
   const composeWindow = sendBtn.closest('[role="dialog"]');
   const editor = composeWindow?.querySelector('[contenteditable="true"]');
   if (!editor) return;
-  const text = editor.innerText;
-  const textLength = text.length;
-  const wordCount = countWords(text);
-  const strategySelected = document.querySelector(".checklist-choice:checked");
   const fairlyUsed = editor.dataset.fairlyUsed === "true";
+  const text = fairlyUsed ? editor.innerText : null;
+  const textLength = fairlyUsed ? text.length : null;
+  const wordCount =  fairlyUsed ? countWords(text) : null;
+  const strategySelected = fairlyUsed ? document.querySelector(".checklist-choice:checked") : null;
   const payload = {
     event: "send",
+    text: text,
     spans: [],
     session_id: SESSION_ID,
     user_id: USER_EMAIL,
@@ -1056,13 +1057,13 @@ document.addEventListener("click", (event) => {
     fairly_used: fairlyUsed,
     strategy: fairlyUsed ? strategySelected.id : null,
     email_char_count: fairlyUsed ? textLength : null,
-    email_word_count: fairlyUsed ? wordCount : null ,  
+    email_word_count: fairlyUsed ? wordCount : null,
   };
   console.log(payload);
   chrome.runtime.sendMessage({
     action: "storeEvent",
     payload: [payload]
-  });       
+  });
 })
 
 
