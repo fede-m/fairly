@@ -4,6 +4,7 @@ from starlette.concurrency import run_in_threadpool
 import os
 import hmac
 import hashlib
+import logging
 from models import (
     Request,
     StoreEventRequest,
@@ -18,6 +19,8 @@ from llm import detection, generation
 from presidio import setup_presidio, process_text, deanonymize
 from database import insert_event, insert_user, insert_info_event
 
+logging.basicConfig(level=logging.INFO, filename='app.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 app = FastAPI()
@@ -57,8 +60,8 @@ async def analyse(request: Request):
             text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
             anonymized_text, mapping = process_text(text)
             try:
-                # Detection
-                detected_spans = await run_in_threadpool(detection, anonymized_text)
+                # Detection (on full text)
+                detected_spans = await run_in_threadpool(detection, text)
             except Exception as e:
                 # Return error response if generation fails
                 return {
