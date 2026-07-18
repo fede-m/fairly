@@ -1044,9 +1044,9 @@ document.addEventListener("click", (event) => {
   if (!editor) return;
   const fairlyUsed = editor.dataset.fairlyUsed === "true";
   const text = fairlyUsed ? editor.innerText : null;
-  const textLength = editor.innerText.length;
-  const wordCount = countWords(editor.innerText);
-  const strategySelected = document.querySelector(".checklist-choice:checked");
+  const textLength = fairlyUsed ? text.length : null;
+  const wordCount =  fairlyUsed ? countWords(text) : null;
+  const strategySelected = fairlyUsed ? document.querySelector(".checklist-choice:checked") : null;
   const payload = {
     event: "send",
     text: text,
