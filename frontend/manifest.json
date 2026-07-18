@@ -24,10 +24,14 @@
       "js": [
         "content/constants.js",
         "content/icons.js",
-        "content/actions.js",
-        "content/domUtils.js",
         "content/logger.js",
         "config.js",
+        "content/popups.js",
+        "content/spans.js",
+        "content/actions.js",
+        "content/privacy.js",
+        "content/ui.js",
+        "content/analysis.js",
         "contentScript.js"
       ],
       "css": [
