@@ -13,4 +13,10 @@ const ICONS = Object.freeze({
   <circle cx="12" cy="5" r="1.5" fill="currentColor"/>
   <rect x="10.75" y="9" width="2.5" height="10" rx="1.25" fill="currentColor"/>
 </svg>`,
-})
+});
+
+function svgToNode(svgStr) {
+  const template = document.createElement("template");
+  template.innerHTML = svgStr;
+  return template.content.firstChild;
+}

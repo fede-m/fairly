@@ -15,7 +15,6 @@ function resetButtons() {
 function discard({ span = undefined, ref_reason = "user_refuse", isAll = false } = {}) {
 
   const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
-  console.log(highlightedSpans);
   // No spans to modify
   if (highlightedSpans.length === 0) return;
 

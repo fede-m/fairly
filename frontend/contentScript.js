@@ -103,11 +103,13 @@ function setLoadingState(isLoading) {
   if (isLoading) {
     analyzeBtn.disabled = true;
     analyzeBtn.dataset.originalText = analyzeBtn.textContent;
-    analyzeBtn.innerHTML = `<span class="spinner"></span>`;
+    const spinner = document.createElement("span");
+    spinner.className = "spinner";
+    analyzeBtn.replaceChildren(spinner);
     document.getElementById("fairly-live").textContent = "Analisi in corso...";
   } else {
     analyzeBtn.disabled = false;
-    analyzeBtn.innerHTML = analyzeBtn.dataset.originalText || "Analizza";
+    analyzeBtn.replaceChildren(document.createTextNode(analyzeBtn.dataset.originalText || "Analizza"));
   }
 }
 
@@ -136,7 +138,7 @@ function showPopup(type, message, id, container, focusTarget = null) {
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "popup-close-btn";
-  closeBtn.innerHTML = ICONS.close;
+  closeBtn.appendChild(svgToNode(ICONS.close));
   closeBtn.setAttribute("aria-label", "Chiudi messaggio");
   closeBtn.addEventListener("click", () => {
     popup.remove();
@@ -308,7 +310,7 @@ function collapseAllNested(exceptDiv, exceptBtn) {
   });
   document.querySelectorAll(".arrow-btn").forEach(btn => {
     if (btn === exceptBtn) return;
-    btn.innerHTML = ICONS.arrowDown;
+    btn.replaceChildren(svgToNode(ICONS.arrowDown));
     btn.setAttribute("aria-expanded", "false");
   });
 }
@@ -407,7 +409,7 @@ function createInfoDiv() {
 
       const arrowBtn = document.createElement("button");
       arrowBtn.className = "arrow-btn";
-      arrowBtn.innerHTML = arrowDownSVG;
+      arrowBtn.appendChild(svgToNode(arrowDownSVG));
       arrowBtn.setAttribute(
         "aria-label",
         `Espandi opzioni per la strategia: ${labelText}`
@@ -443,7 +445,7 @@ function createInfoDiv() {
       );
 
       if (shouldExpand) {
-        arrowBtn.innerHTML = arrowUpSVG;
+        arrowBtn.replaceChildren(svgToNode(arrowUpSVG));
         arrowBtn.setAttribute("aria-expanded", "true");
       }
 
@@ -481,7 +483,7 @@ function createInfoDiv() {
           radio.tabIndex = isExpanding ? 0 : -1;
         });
 
-        arrowBtn.innerHTML = isExpanding ? arrowUpSVG : arrowDownSVG;
+        arrowBtn.replaceChildren(svgToNode(isExpanding ? arrowUpSVG : arrowDownSVG));
         arrowBtn.setAttribute("aria-expanded", isExpanding ? "true" : "false");
         arrowBtn.setAttribute(
           "aria-label",
@@ -510,7 +512,7 @@ function createInfoDiv() {
     if (strategyInfo) {
       const infoBtn = document.createElement("button");
       infoBtn.className = "info-btn";
-      infoBtn.innerHTML = ICONS.info;
+      infoBtn.appendChild(svgToNode(ICONS.info));
       infoBtn.type = "button";
 
       const safeId = String(strategyName).toLowerCase().replace(/[^a-z0-9_-]/g, "");
@@ -1059,7 +1061,6 @@ document.addEventListener("click", (event) => {
     email_char_count: fairlyUsed ? textLength : null,
     email_word_count: fairlyUsed ? wordCount : null,
   };
-  console.log(payload);
   chrome.runtime.sendMessage({
     action: "storeEvent",
     payload: [payload]

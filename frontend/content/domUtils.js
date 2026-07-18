@@ -50,7 +50,7 @@ function createSpanPopupDiv(spanEl) {
   del.textContent = spanEl.dataset.original;
   strong.appendChild(del);
   const arrowSpan = document.createElement("span");
-  arrowSpan.innerHTML = ICONS.arrowRight; // Constant, cannot be injected
+  arrowSpan.appendChild(svgToNode(ICONS.arrowRight)); // Constant, cannot be injected
 
   const reformulation = document.createElement("strong");
   reformulation.textContent = " " + spanEl.dataset.reformulation;
@@ -371,7 +371,6 @@ function showConsentDialog() {
    * This is the draggable floating widget that appears on the page.
    * @returns {null}
    */
-  console.log("You need to give your consent first!")
   const overlay = document.createElement("div");
   overlay.id = "fairly-consent-overlay";
   overlay.className = "consent-overlay"
@@ -384,7 +383,7 @@ function showConsentDialog() {
   const closeBtn = document.createElement("button");
   closeBtn.className = "popup-close-btn";
   closeBtn.setAttribute("aria-label", "Chiudi finestra di consenso");
-  closeBtn.innerHTML = ICONS.close;
+  closeBtn.appendChild(svgToNode(ICONS.close));
   closeBtn.addEventListener("click", () => {
     CONSENT_GIVEN = false;
     chrome.storage.local.set({"fairlyConsentGiven": false});
@@ -448,5 +447,5 @@ function showConsentDialog() {
 
   overlay.appendChild(dialog);
   document.body.appendChild(overlay);
-  acceptBtn.focus();
+  accept.focus();
 }

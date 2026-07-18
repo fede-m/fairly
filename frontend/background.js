@@ -1,4 +1,4 @@
-importScripts("config.js", "logger.js");
+importScripts("config.js", "content/logger.js");
 
 const logger = createLogger("background.js");
 logger.log("Background service worker loaded");

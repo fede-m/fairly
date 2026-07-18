@@ -26,7 +26,7 @@
         "content/icons.js",
         "content/actions.js",
         "content/domUtils.js",
-        "logger.js",
+        "content/logger.js",
         "config.js",
         "contentScript.js"
       ],
@@ -60,6 +60,8 @@
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     },
-    "default_title": "Fairly"
+    "default_title": "Fairly",
+    "homepage_url": "https://fairly.di.unito.it",
+    "short_name": "Fairly"
   }
 }
