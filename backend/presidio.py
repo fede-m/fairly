@@ -4,6 +4,9 @@ from presidio_anonymizer.entities import OperatorConfig
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_analyzer import Pattern, PatternRecognizer
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 # checks for all entities
 ENTITIES = None
@@ -158,7 +161,7 @@ def setup_presidio():
     add_custom_recognizers(analyzer)
     anonymizer = AnonymizerEngine()
 
-    print("Presidio Analyzer initialized with Italian language support.")
+    logger.info("Presidio Analyzer initialized with Italian language support.")
 
 
 def add_custom_recognizers(analyzer: AnalyzerEngine):
@@ -228,35 +231,3 @@ def fix_person_entities(results, text):
 def process_text(text: str) -> tuple[str, dict]:
     anon, mapping = anonymize(text)
     return anon, mapping
-
-
-if __name__ == "__main__":
-    setup_presidio()
-
-    email = """Gentile Marco Rossi,
-    la contatto da parte del professor Giuseppe Verdi dell'Università di Torino.
-    il Professore Giuseppe Verdi. lei è mario rossi. giuseppe verdi è chi le parla.
-    La mia matricola è 343899, la matricola del mio studente è 100111.
-    il mio numero preferito è 12.
-    Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
-    Cordiali saluti"""
-
-    email2 = """Buonasera
-    Vi contatto ripetutamente per la questione delle sedie aziendali.
-    La docenza di Sistemi, assegnata al prof bascali, alla prof.sa tiscali ed a Giulio Coei non è sostenibile.
-    Le candidature di dottorato son falsate dal decreto 3710 del luglio 2012
-    I fondi del progetto EUR666 sono stati spesi male.
-    """
-
-    anon, mapping = anonymize(email)
-    print("=== ANONYMIZED ===")
-    print(anon)
-    print("\n=== MAPPING ===")
-    print(mapping)
-
-    # Qui avverrebbero le ulteriori lavorazioni nel backend
-    processed = anon
-
-    restored = deanonymize(processed, mapping)
-    print("\n=== RESTORED ===")
-    print(restored)

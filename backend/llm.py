@@ -3,13 +3,14 @@ import torch
 import nltk
 import os
 from dotenv import load_dotenv
+import logging
 from models import Span, LLMOutput
 from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
 from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
 import instructor
 from openai import AsyncOpenAI
 import uuid
-
+logger = logging.getLogger(__name__)
 load_dotenv()
 
 HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
@@ -84,7 +85,7 @@ def detection(text: str) -> list[Span]:
                         # Add current tokens
                         curr_span.tokens.append(text[start:end])
                     else:
-                        print(f"Span does not start with B-UNFAIR: {text[start:end]}")
+                        logger.warning(f"Span does not start with B-UNFAIR: {text[start:end]}")
                         new_span = generate_new_span(text, start, end)
                         spans.append(new_span)
                         building_span = True
@@ -92,7 +93,7 @@ def detection(text: str) -> list[Span]:
                     building_span = False 
         return spans
     except Exception as e:
-         print(f"Detection failed with error: {e}")
+         logger.exception(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
 async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
@@ -132,7 +133,7 @@ async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
 
             return reformulated_spans
         except Exception as e:
-            print(f"Generation failed with error: {e}")
+            logger.exception(f"Generation failed with error: {e}")
             raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
     else:
         return spans

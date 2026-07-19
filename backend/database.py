@@ -1,13 +1,16 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
+from datetime import datetime, timezone
+import logging
 import os
-from models import StoreEventRequest, InfoEventRequest, User
+from models import StoreEventRequest, InfoEventRequest, FrontendErrorRequest, User
 import urllib
 
 # import dns.resolver
 # dns.resolver.default_resolver=dns.resolver.Resolver(configure=False)
 # dns.resolver.default_resolver.nameservers=['8.8.8.8']
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 # Get secret key for hashing
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -26,7 +29,8 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client["fairly_db"]
 collection = db["user_events"]
 user_collection = db["user_data"]
-
+be_error_collection = db["backend_errors"]
+fe_error_collection = db["frontend_errors"]
 
 def _as_dict(model):
     if hasattr(model, "model_dump"):
@@ -47,6 +51,18 @@ async def insert_user(user: User):
 
 async def insert_info_event(event: InfoEventRequest):
     await collection.insert_one(_as_dict(event))
+
+async def insert_backend_errors(error_type, details, session_id= None, user_id = None):
+    await be_error_collection.insert_one({
+        "timestamp": datetime.now(timezone.utc),
+        "error_type": error_type,
+        "details": str(details),
+        "session_id": session_id,
+        "user_id": user_id
+    })
+
+async def insert_frontend_error(error: FrontendErrorRequest):
+    await fe_error_collection.insert_one(_as_dict(error))
 
 
 

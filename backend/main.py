@@ -1,10 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 import os
 import hmac
 import hashlib
 import logging
+import time
 from models import (
     Request,
     StoreEventRequest,
@@ -14,12 +16,18 @@ from models import (
     SpanEvent,
     User,
     InfoEventRequest,
+    FrontendErrorRequest
 )
 from llm import detection, generation
 from presidio import setup_presidio, process_text, deanonymize
-from database import insert_event, insert_user, insert_info_event
+from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
-logging.basicConfig(level=logging.INFO, filename='app.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
+    handlers=[logging.StreamHandler()]
+)
+
 logger = logging.getLogger(__name__)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -39,13 +47,39 @@ app.add_middleware(
 
 setup_presidio()
 
+@app.middleware("http")
+async def log_requests(request: FastAPIRequest, call_next):
+    # Log for every request for every endpoint
+    start = time.time()
+    response = await call_next(request)
+    elapsed = time.time() - start
+    logger.info("%s %s → %d (%.2fs)", request.method, request.url.path, response.status_code, elapsed)
+    return response
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
+    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    await insert_backend_errors("unhandled", str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"error": True, "message": "Internal server error", "code": "INTERNAL_ERROR"}
+    )
 
 def _hash_email(email):
     return hmac.new(SECRET_KEY.encode(), email.encode(), hashlib.sha256).hexdigest()
 
+@app.post("/add-user")
+async def store_user(user: User):
+    if user:
+        # Hash email address
+        email = user.user_id.strip().lower()
+        user.user_id = _hash_email(email)
+        await insert_user(user)
+        return {"status": 200, "message": "User was added successfully"}
 
 @app.post("/analyse")
 async def analyse(request: Request):
+    logger.info("Analysis request: session=%s, strategy=%s, docs=%d", request.session_id, request.strategy, len(request.data))
     results = {}
     strategy = request.strategy
     email = request.user_id.strip().lower()
@@ -63,6 +97,8 @@ async def analyse(request: Request):
                 # Detection (on full text)
                 detected_spans = await run_in_threadpool(detection, text)
             except Exception as e:
+                logger.exception("Detection failed for session=%s, doc=%s", request.session_id, doc.id)
+                await insert_backend_errors("detection_failed", str(e), session_id=request.session_id, user_id=request.user_id)
                 # Return error response if generation fails
                 return {
                     "error": True,
@@ -74,6 +110,8 @@ async def analyse(request: Request):
             try:
                 reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
             except Exception as e:
+                logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
+                await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
                 # Return error response if generation fails
                 return {
                     "error": True,
@@ -111,12 +149,12 @@ async def analyse(request: Request):
             )
 
             analysis_events.append(analysis_request)
-
         await insert_event(analysis_events)
-
         return Response(results=results)
+    
     except Exception as e:
-        print(f"Analysis failed with error: {e}")
+        logger.exception("Analysis failed for session=%s, doc=%s", request.session_id, doc.id)
+        await insert_backend_errors("analysis_failed", str(e), session_id=request.session_id, user_id=request.user_id)
         return {
             "error": True,
             "message": "Si è verificato un errore durante l'analisi.",
@@ -127,6 +165,7 @@ async def analyse(request: Request):
 
 @app.post("/store-event")
 async def store_event(requests: list[StoreEventRequest]):
+    logger.info("Storing %d event event(s): type:%s", len(requests), [r.event.value for r in requests])
     for event in requests:
         email = event.user_id.strip().lower()
         event.user_id = _hash_email(email)
@@ -155,12 +194,14 @@ async def store_info_event(request: InfoEventRequest):
     await insert_info_event(request)
     return {"status": 200, "message": "Info event was stored successfully"}
 
+@app.post("/log-error")
+async def log_frontend_error(error: FrontendErrorRequest):
+    if error.user_id:
+        email = error.user_id.strip().lower()
+        error.user_id = _hash_email(email)
+    logger.warning("Frontend error from %s: %s", error.source, error.message)
+    await insert_frontend_error(error)
+    return {"status": 200, "message": "Error logged successfully"}
 
-@app.post("/add-user")
-async def store_user(user: User):
-    if user:
-        # Hash email address
-        email = user.user_id.strip().lower()
-        user.user_id = _hash_email(email)
-        await insert_user(user)
-        return {"status": 200, "message": "User was added successfully"}
+
+

@@ -10,6 +10,7 @@ const API = {
   get storeEvent() {return `${this.baseUrl}/store-event`;},
   get addUser() {return `${this.baseUrl}/add-user`;},
   get storeInfo() {return `${this.baseUrl}/store-info-event`;},
+  get logError() {return `${this.baseUrl}/log-error`;},
 }
 
 let keepAliveInterval = null;
@@ -167,6 +168,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     storeInfo(data)
     .then(res => logger.log(res))
     .catch(err => logger.log("Failed to store info event:", err))
+  }
+  else if (msg.action == "logError"){
+    const data = msg.payload;
+    fetch(API.logError, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data),
+    }).catch(err => logger.log("Failed to send error log:", err))
   }
 });
 

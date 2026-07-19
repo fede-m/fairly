@@ -140,7 +140,13 @@ class InfoEventRequest(BaseModel):
     findout_more: bool
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-
+class FrontendErrorRequest(BaseModel):
+    source: str = Field(..., description="Frontend file where the error occurred")
+    message: str = Field(..., description= "Error message")
+    session_id: str | None = None
+    user_id: str | None = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
 class User(BaseModel):
     user_id: str
     inserted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -126,3 +126,28 @@ db.user_events.find().pretty()
 // View just the first event
 db.user_events.findOne()
 ```
+
+## Test presidio
+```
+if __name__ == "__main__":
+    setup_presidio()
+
+    email = """Gentile Marco Rossi,
+    la contatto da parte del professor Giuseppe Verdi dell'Università di Torino.
+    il Professore Giuseppe Verdi. lei è mario rossi. giuseppe verdi è chi le parla.
+    La mia matricola è 343899, la matricola del mio studente è 100111.
+    il mio numero preferito è 12.
+    Può scriverci a segreteria@unito.it oppure chiamare il +39 011 123456.
+    Cordiali saluti"""
+
+    email2 = """Buonasera
+    Vi contatto ripetutamente per la questione delle sedie aziendali.
+    La docenza di Sistemi, assegnata al prof bascali, alla prof.sa tiscali ed a Giulio Coei non è sostenibile.
+    Le candidature di dottorato son falsate dal decreto 3710 del luglio 2012
+    I fondi del progetto EUR666 sono stati spesi male.
+    """
+
+    anon, mapping = anonymize(email)
+    processed = anon
+    restored = deanonymize(processed, mapping)
+```
