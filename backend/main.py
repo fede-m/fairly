@@ -153,7 +153,7 @@ async def analyse(request: Request):
         return Response(results=results)
     
     except Exception as e:
-        logger.exception("Analysis failed for session=%s, doc=%s", request.session_id, doc.id)
+        logger.exception("Analysis failed for session=%s", request.session_id)
         await insert_backend_errors("analysis_failed", str(e), session_id=request.session_id, user_id=request.user_id)
         return {
             "error": True,
