@@ -58,4 +58,16 @@
     - 35 seconds OpenAI timeout: if the request to the LLM lasts longer than 35 seconds, the connection is interrupted and an error is returned and handled in the background
     - 40 seconds background timeout: if the entire request to the backend (detection + generation) lasts longer than 40 seconds, the request to the backend is interrupted and the background sends a timeout error
     - 45 seconds contentScript timeout: if the background does not send a response back to the contentScript within 45 seconds, possibly due to a background problem (e.g. server has crashed), contentScript interrupts the request, sets the loading state to false and returns a span error.
+
+## Errors Observability
+Errors from frontend and backend are stored in the respective MongoDB Collections ("backend_errors" and "frontend_errors"). 
+
+In the frontend:
+- as set in the logger configuration in `logger.js`, all `logger.error()` invokations send a `logError` message to `background.js` (with chrome.runtime.sendMessage specified in the body of the logger error configuration)
+- In `background.js`, the `logError` message triggers a call to the backend's endpoint `/log-error`, which creates an instance of `FrontendErrorMessage`, as defined in `models.py`, and stored it in the `frontend_errors` collection
+
+Errors that originate in the backend (e.g. detection failure, geenration failure etc.)
+- first log the error using `logger.exception()`, which shows also the traceback of the error, and not just the message;
+- store the error in the `backend_errors` collection
+- if an error occurs in the backedn but it is not catched, it triggers the `unhandled_exception_handler` handler, which stores the error in `backend_errors` with the flag "unhandled"
  

@@ -37,17 +37,14 @@ def _as_dict(model):
         return model.model_dump()
     return model.dict()
 
-
 async def insert_event(events: list[StoreEventRequest]):
     if not events:
         return
     docs = [_as_dict(event) for event in events]
     await collection.insert_many(docs)
 
-
 async def insert_user(user: User):
     await user_collection.insert_one(_as_dict(user))
-
 
 async def insert_info_event(event: InfoEventRequest):
     await collection.insert_one(_as_dict(event))
