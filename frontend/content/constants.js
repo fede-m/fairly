@@ -42,6 +42,7 @@ const STRATEGIES = Object.freeze(
     }
   });
 const DOMAINS = ["unito.it"]
+const TEST_ACCOUNT = "chrome.test.fairly@gmail.com"
 
 const ERROR_MESSAGES = Object.freeze(
  { "INVALID_PAYLOAD": "Si è verificato un errore interno. Riprova!",
