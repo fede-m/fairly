@@ -286,4 +286,4 @@ def lookup_span(doc, start_char: int, end_char: int) -> LookupResults:
                 flag=LookupFlag.INFLECTABLE_MISS
             )
             
-    return LookupResults(results=results, is_empty=False)
+    return LookupResults(results=results, is_empty=not results)
