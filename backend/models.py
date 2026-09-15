@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
-from enum import Enum
+from enum import Enum, IntEnum
 from datetime import datetime, timezone
+from typing import Literal
 
 
 class Span(BaseModel):
@@ -151,3 +152,26 @@ class User(BaseModel):
     user_id: str
     inserted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     strategy_order: list[str]
+
+class FormVariant(BaseModel):
+    form: str
+    weight: float
+
+class MorphoVariants(BaseModel):
+    feminine: list[FormVariant] = []
+    neutral: list[FormVariant] = []
+
+class LookupFlag(IntEnum):
+    OK = 0
+    NON_INFLECTABLE_POS = 1
+    INFLECTABLE_MISS = 2
+
+class LookupResult(BaseModel):
+    lemma: str
+    pos: Literal["adj", "adv", "intj", "noun", "propn", "verb", "adp", "aux", "cconj", "det", "num", "part", "pron", "sconj", "punct", "sym", "x"]
+    variants: MorphoVariants
+    flag: LookupFlag
+
+class LookupResults(BaseModel):
+    results: dict[str, LookupResult]  # word -> LookupResult
+    is_empty: bool = False

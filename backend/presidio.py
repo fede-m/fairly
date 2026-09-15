@@ -231,3 +231,7 @@ def fix_person_entities(results, text):
 def process_text(text: str) -> tuple[str, dict]:
     anon, mapping = anonymize(text)
     return anon, mapping
+
+def get_spacy_model():
+    """Expose the spaCy Language object Presidio already loaded."""
+    return analyzer.nlp_engine.nlp["it"]

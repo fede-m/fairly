@@ -96,7 +96,7 @@ def detection(text: str) -> list[Span]:
          logger.exception(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
-async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
+async def generation(text: str, spans:list[Span], strategy: str, lookup_results: tuple[dict, bool]) -> list[Span]:
     if not spans:
         return []
     # Get the span id and the text

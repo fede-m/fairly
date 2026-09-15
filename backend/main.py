@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
+import json
 import os
 import hmac
 import hashlib
@@ -16,10 +17,14 @@ from models import (
     SpanEvent,
     User,
     InfoEventRequest,
-    FrontendErrorRequest
+    FrontendErrorRequest,
+    LookupResult,
+    LookupResults,
+    MorphoVariants,
+    LookupFlag
 )
 from llm import detection, generation
-from presidio import setup_presidio, process_text, deanonymize
+from presidio import setup_presidio, process_text, deanonymize, get_spacy_model
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
 logging.basicConfig(
@@ -45,7 +50,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# -- initialization of the spacy model for pos tagging --------------------
+nlp = None
 setup_presidio()
+nlp = get_spacy_model()
+try:
+    doc = nlp("Questo è un test.")
+    for token in doc:
+        print(f"{token.text} → {token.pos_} ({token.lemma_})")
+except Exception as e:
+    print(f"Set up of spacy model failed.\nError: {type(e).__name__}: {e}")
+    
+# -- reading of the .json lookup table for morphosyntactic rewrites -------
+with open("dictionary.json", encoding="utf-8") as f:
+    LOOKUP_TABLE: dict = json.load(f)
 
 @app.middleware("http")
 async def log_requests(request: FastAPIRequest, call_next):
@@ -106,9 +124,24 @@ async def analyse(request: Request):
                     "code": "ANALYSIS_FAILED",
                     "details": str(e),
                 }
+                
+            # 1. POS tagging
+            # 2. Look-up in a table with frequent morphosyntactic rewritings in Italian
+            #   i) look-up can be used as an indicator for good/bad detections: if the detected word is not in the table,
+            #      there is a chance it was not a word that needed detection to begin with
+            #   ii) for strategies CB, IV, IO, that are morphosyntactic rewritings, a lookup table could be enough
+            #       and enable some token savings and gain in efficiency
+            
+            lookup_results = {}
+            for span in detected_spans:
+                lookup_results[span.span_id] = lookup_span(doc, span.start_char, span.end_char)
+                print(lookup_results[span.span_id])
+            print("\n- - - - - -\n")
+            print(lookup_results)    
+                
             # Generation
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
+                reformulated_spans = await generation(anonymized_text, detected_spans, strategy, lookup_results)
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -203,5 +236,54 @@ async def log_frontend_error(error: FrontendErrorRequest):
     await insert_frontend_error(error)
     return {"status": 200, "message": "Error logged successfully"}
 
+def lookup(lemma: str, spacy_pos: str) -> dict | None:
+    """Return {'feminine': [...], 'neutral': [...]} for a lemma+POS, or None if absent."""
+    pos_key = spacy_pos.lower()
+    entry = LOOKUP_TABLE.get(lemma.lower())
+    if entry is None:
+        return None
+    return entry.get(pos_key)
+  
+FLECTABLE_POS = {"noun", "adj", "verb", "aux", "det", "num", "pron"}
 
-
+def lookup_span(doc, start_char: int, end_char: int) -> LookupResults:
+    """Return {lemma: {pos: <forms>}} for all tokens in the span that exist in the table.
+    plus a prompt flag: fails in lookup indicate weak detection and cause a change in the
+    generation prompt to a more flexible one that asks the llm to rethink the detection"""
+    span = doc.char_span(start_char, end_char, alignment_mode="expand")
+    if span is None or len(span) == 0:
+        return LookupResults(results={}, is_empty=True)
+    
+    results = {}
+    
+    for token in span:
+      word = token.text
+      lemma = token.lemma_
+      pos = token.pos_.lower()
+      if pos not in FLECTABLE_POS:
+        if pos != "punct":
+          results[word] = LookupResult(
+                  lemma=lemma,
+                  pos=pos,
+                  variants=MorphoVariants(),
+                  flag=LookupFlag.NON_INFLECTABLE_POS
+          )
+        continue
+            
+      entry = lookup(lemma, pos)
+      if entry is not None:
+            results[word] = LookupResult(
+                lemma=lemma,
+                pos=pos,
+                variants=entry,
+                flag=LookupFlag.OK
+            )
+      else:
+            results[word] = LookupResult(
+                lemma=lemma,
+                pos=pos,
+                variants=MorphoVariants(),
+                flag=LookupFlag.INFLECTABLE_MISS
+            )
+            
+    return LookupResults(results=results, is_empty=False)
