@@ -1,17 +1,13 @@
 from transformers import AutoTokenizer, AutoModelForTokenClassification
-from pydantic import parse_obj_as
 import torch
 import nltk
 import os
-import json
 from dotenv import load_dotenv
 from models import Span, LLMOutput
 from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
 from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
-from groq import Groq
 import instructor
-import requests
-from openai import OpenAI
+from openai import AsyncOpenAI
 import uuid
 
 load_dotenv()
@@ -24,7 +20,7 @@ model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token =
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
 
 # Setup client
-client = OpenAI(
+client = AsyncOpenAI(
     base_url = os.getenv("HPC4AI_URL", ""),
     api_key = os.getenv("OPENWEB_API", ""),
     timeout= 35.0
@@ -99,7 +95,7 @@ def detection(text: str) -> list[Span]:
          print(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
-def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
+async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     if not spans:
         return []
     # Get the span id and the text
@@ -118,7 +114,7 @@ def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     
     if prompt != "":
         try:
-            response = client.chat.completions.create(
+            response = await client.chat.completions.create(
                 model = GENERATION_MODEL,
                 messages=[
                     {"role":"user", "content": prompt}

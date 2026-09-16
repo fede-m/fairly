@@ -10,6 +10,7 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "groq==0.26.0",
     "instructor[groq]>=1.11.3",
+    "motor>=3.7.1",
     "nltk>=3.9.1",
     "openai>=1.107.0",
     "pip>=26.1.2",

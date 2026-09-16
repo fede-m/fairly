@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.concurrency import run_in_threadpool
 import os
 import hmac
 import hashlib
@@ -57,7 +58,7 @@ async def analyse(request: Request):
             anonymized_text, mapping = process_text(text)
             try:
                 # Detection
-                detected_spans = detection(anonymized_text)
+                detected_spans = await run_in_threadpool(detection, anonymized_text)
             except Exception as e:
                 # Return error response if generation fails
                 return {
@@ -68,9 +69,13 @@ async def analyse(request: Request):
                 }
             # Generation
             try:
+<<<<<<< HEAD
                 reformulated_spans = generation(
                     anonymized_text, detected_spans, strategy
                 )
+=======
+                reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
+>>>>>>> 1620d238e2cb6dbd116e26ac79f89dd2dd2485c9
             except Exception as e:
                 # Return error response if generation fails
                 return {
@@ -110,7 +115,7 @@ async def analyse(request: Request):
 
             analysis_events.append(analysis_request)
 
-        insert_event(analysis_events)
+        await insert_event(analysis_events)
 
         return Response(results=results)
     except Exception as e:
@@ -141,7 +146,11 @@ async def store_event(requests: list[StoreEventRequest]):
                     span.current_used, _ = process_text(span.current_used)
                 if span.user_form:
                     span.user_form, _ = process_text(span.user_form)
+<<<<<<< HEAD
     insert_event(requests)
+=======
+    await insert_event(requests)
+>>>>>>> 1620d238e2cb6dbd116e26ac79f89dd2dd2485c9
     return {"status": 200, "message": "Event was stored successfully"}
 
 
@@ -150,7 +159,7 @@ async def store_info_event(request: InfoEventRequest):
     # Hash email address
     email = request.user_id.strip().lower()
     request.user_id = _hash_email(email)
-    insert_info_event(request)
+    await insert_info_event(request)
     return {"status": 200, "message": "Info event was stored successfully"}
 
 
@@ -160,5 +169,5 @@ async def store_user(user: User):
         # Hash email address
         email = user.user_id.strip().lower()
         user.user_id = _hash_email(email)
-        insert_user(user)
+        await insert_user(user)
         return {"status": 200, "message": "User was added successfully"}
