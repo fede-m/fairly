@@ -10,9 +10,6 @@ logging.getLogger("presidio-anonymizer").disabled = True
 from main import lookup_span
 from llm import detection
 from models import (
-    LookupResult,
-    LookupResults,
-    MorphoVariants,
     LookupFlag
 )
 
@@ -55,8 +52,7 @@ def test_detection_and_lookup():
 
             # Evaluate the global flag status for the span.
             # It activates if ANY token triggered NON_INFLECTABLE_POS or INFLECTABLE_MISS.
-            has_flag = any(res.flag != LookupFlag.OK for res in lookup_data.results.values())
-            status = "ATTIVA" if has_flag else "NO"
+            status = "ATTIVA" if lookup_data.has_flag else "NO"
             
             print(f"    Prompt Flag: {status}")
             

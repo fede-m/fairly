@@ -49,6 +49,32 @@ NOTES:
 - Make sure that the span_id corresponds precisely with the corresponding input span_id
 """
 
+PROMPT_UNCERTAIN = """You are an Italian language assistant specializing in inclusive language.  
+
+INPUT:
+- Text: {text}
+- Spans: {spans}  
+
+The spans contain a list of dictionaries that have:
+- as key: a unique id composed of the startChar_endChar indexes of the span in the text
+- as value: the corresponding text segment from the text
+
+TASK:
+For each span, perform the following two steps:
+1. Evaluation: Assess whether the span is genuinely non-inclusive within the context of the provided text.
+2. Action:
+   - If the span IS non-inclusive: rewrite it using the following reformulation strategy:
+     {reformulation_strategy}
+   - If the span IS NOT non-inclusive (already inclusive or neutral): return the original span text exactly as provided, without any changes.
+
+NOTES:
+- Process every span individually.
+- Return an entry for every input span_id.
+- Make sure that each span_id in the output matches its corresponding input span_id precisely.
+- For spans judged inclusive, preserve identical casing, punctuation, and wording.
+- Return only the resulting key-value pairs without adding commentary or justification.
+"""
+
 
 # {{
 #   "spans": [
