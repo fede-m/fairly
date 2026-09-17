@@ -19,6 +19,19 @@ class Span(BaseModel):
         ..., description="Reformulation for the span using the current strategy"
     )
 
+class SpanDict(BaseModel):
+    spans: dict[str, Span]  # span_id -> Span
+    
+    @classmethod
+    def from_list(cls, span_list: list[Span]) -> "SpanDict":
+        return cls(spans={span.span_id: span for span in span_list})
+    
+    def __getitem__(self, span_id: str) -> Span:
+        return self.spans[span_id]
+        
+    @property
+    def key_list(self) -> list[str]:
+        return list(self.spans.keys())
 
 class Reformulation(BaseModel):
     """Represents a reformulated fair version of a text span."""
@@ -172,6 +185,29 @@ class LookupResult(BaseModel):
     variants: MorphoVariants
     flag: LookupFlag
 
-class LookupResults(BaseModel):
+# all tokens of a span
+class SpanLookupResults(BaseModel):
     results: dict[str, LookupResult]  # word -> LookupResult
     is_empty: bool = False
+    
+    def __getitem__(self, span_id: str) -> LookupResult:
+        return self.results[span_id]
+    
+    # possible to insert custom evaluation logic (eg. require at least 10% flag incidence)
+    def has_flag(self) -> bool:
+        return any(result.flag != LookupFlag.OK for result in self.results.values())
+
+# multiple spans
+class MultipleSpanLookupResults(BaseModel):
+    results: dict[str, SpanLookupResults]  # span_id -> LookupResults
+    
+    @property
+    def key_list(self) -> list[str]:
+        return list(self.results.keys())
+    
+    def __getitem__(self, span_id: str) -> SpanLookupResults:
+        return self.results[span_id]
+    
+    # possible to insert custom evaluation logic (eg. require at least 10% flag incidence)
+    def has_flag(self) -> bool:
+        return any(result.has_flag() for result in self.results.values())
