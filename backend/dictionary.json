@@ -1,19 +1,58 @@
-{"questo": {
-    "adj": {
-        "feminine": [{"form": "questa", "weight": 1.0}],
-        "neutral": [{"form": "quest<NEOM>", "weight": 1.0}]
-        } 
-},
-"studente": {
-    "noun": {
-        "feminine": [{"form": "studentessa", "weight": 0.5}, {"form": "studente", "weight": 0.5}],
-        "neutral": [{"form": "student<NEOM>", "weight": 1.0}]
-        } 
-},
-"professore": {
-    "noun": {
-        "feminine": [{"form": "professoressa", "weight": 1.0}],
-        "neutral": [{"form": "professor<NEOM>", "weight": 0.5}, {"form": "professoress<NEOM>", "weight": 0.5} ]
-    	} 
-}
+{
+    "questo": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "questa",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quest<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "studente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "studentessa",
+                    "weight": 0.5
+                },
+                {
+                    "form": "studente",
+                    "weight": 0.5
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "student<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "professore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "professoressa",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "professor<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "professoress<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    }
 }

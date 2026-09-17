@@ -3,6 +3,7 @@ from presidio_anonymizer import AnonymizerEngine
 from presidio_anonymizer.entities import OperatorConfig
 from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_analyzer import Pattern, PatternRecognizer
+from models import Span
 import re
 import logging
 
@@ -85,19 +86,10 @@ def remove_overlaps(results):
     return sorted(kept, key=lambda r: r.start)
 
 
-def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list]:
-    """Deanonymize text and adjust span indices accordingly.
-
-    Args:
-        text: The anonymized text
-        mapping: Dict mapping placeholders to original values
-        spans: Optional list of Span objects with start_char and end_char indices
-
-    Returns:
-        A tuple of (deanonymized_text, adjusted_spans)
-    """
-    # Sort placeholders by position in text (reverse) to avoid index shifting issues
-    # Find all placeholder positions
+def deanonymize(
+    text: str, mapping: dict, spans: list[Span] = None
+) -> tuple[str, list[Span]]:
+    """Deanonymize text and adjust span indices accordingly."""
     positions = []
     for placeholder in mapping.keys():
         start = 0
@@ -108,18 +100,16 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
             positions.append((pos, placeholder))
             start = pos + 1
 
-    # Sort by position in reverse order so we replace from end to start
     positions.sort(reverse=True)
 
-    shifts = {}  # Maps original placeholder positions to character shifts
+    shifts = {}
 
-    # Apply replacements (from end to start to preserve indices)
     for pos, placeholder in positions:
         original = mapping[placeholder]
-        shifts[pos] = len(original) - len(placeholder)
+        shift = len(original) - len(placeholder)
+        shifts[pos] = shift
         text = text[:pos] + original + text[pos + len(placeholder) :]
 
-    # Adjust span indices if provided
     adjusted_spans = []
     if spans:
         sorted_positions = sorted(shifts.keys())
@@ -128,7 +118,9 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
             start_shift = sum(
                 shifts[p] for p in sorted_positions if p < span.start_char
             )
-            end_shift = sum(shifts[p] for p in sorted_positions if p < span.end_char)
+            end_shift = sum(
+                shifts[p] for p in sorted_positions if p < span.end_char
+            )
             adjusted_span.start_char = span.start_char + start_shift
             adjusted_span.end_char = span.end_char + end_shift
             adjusted_spans.append(adjusted_span)

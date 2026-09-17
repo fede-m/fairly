@@ -178,6 +178,9 @@ class LookupFlag(IntEnum):
     OK = 0
     NON_INFLECTABLE_POS = 1
     INFLECTABLE_MISS = 2
+    
+    def __str__(self) -> str:
+        return self.name
 
 class LookupResult(BaseModel):
     lemma: str
