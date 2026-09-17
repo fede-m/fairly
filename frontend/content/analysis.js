@@ -61,7 +61,7 @@ function startAnalysis() {
         element.dataset.fairlyUsed = true;
         const data = {};
         const key = element.id;
-        const text = element.innerText;
+        const text = element.innerText.replace(/\r?\n/g, " ");
         data["id"] = key;
         data["text"] = text;
         data["char_length"] = text.length;
