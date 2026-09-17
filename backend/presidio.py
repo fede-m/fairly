@@ -85,49 +85,6 @@ def remove_overlaps(results):
             kept.append(r)
     return sorted(kept, key=lambda r: r.start)
 
-
-def deanonymize(
-    text: str, mapping: dict, spans: list[Span] = None
-) -> tuple[str, list[Span]]:
-    """Deanonymize text and adjust span indices accordingly."""
-    positions = []
-    for placeholder in mapping.keys():
-        start = 0
-        while True:
-            pos = text.find(placeholder, start)
-            if pos == -1:
-                break
-            positions.append((pos, placeholder))
-            start = pos + 1
-
-    positions.sort(reverse=True)
-
-    shifts = {}
-
-    for pos, placeholder in positions:
-        original = mapping[placeholder]
-        shift = len(original) - len(placeholder)
-        shifts[pos] = shift
-        text = text[:pos] + original + text[pos + len(placeholder) :]
-
-    adjusted_spans = []
-    if spans:
-        sorted_positions = sorted(shifts.keys())
-        for span in spans:
-            adjusted_span = span.model_copy(deep=True)
-            start_shift = sum(
-                shifts[p] for p in sorted_positions if p < span.start_char
-            )
-            end_shift = sum(
-                shifts[p] for p in sorted_positions if p < span.end_char
-            )
-            adjusted_span.start_char = span.start_char + start_shift
-            adjusted_span.end_char = span.end_char + end_shift
-            adjusted_spans.append(adjusted_span)
-
-    return text, adjusted_spans
-
-
 # Global instances - initialized by setup_presidio()
 analyzer = None
 anonymizer = None
