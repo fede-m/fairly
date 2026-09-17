@@ -173,6 +173,8 @@ function highlightSpans(div, spans) {
     return false;
   }
 
+  const logicalText = div.innerText.replace(/\r?\n/g, " ");
+
   // Remove already present spans 
   const highlightedSpans = div.querySelectorAll("span.highlight");
   // Get all span elements 
@@ -197,6 +199,14 @@ function highlightSpans(div, spans) {
   let spanId = 0;
 
   try {
+      const walkerText = nodes.map(node => node.nodeValue).join("");
+
+      console.log("[Fairly] text comparison", {
+        innerText: div.innerText,
+        walkerText,
+        innerTextLength: div.innerText.length,
+        walkerTextLength: walkerText.length,
+      });
     nodes.forEach((node) => {
       // Get text and start and end char of node 
       const nodeText = node.nodeValue;
@@ -217,6 +227,17 @@ function highlightSpans(div, spans) {
           // Calculate start and end index of the part to highlight in the current node text (considering that it goes from 0 to node.length) 
           const spanStart = Math.max(span.start_char - nodeStart, 0);
           const spanEnd = Math.min(span.end_char - nodeStart, nodeText.length);
+
+          console.log("[Fairly] span mapping", JSON.stringify({
+            indicatedRange: [span.start_char, span.end_char],
+            nodeRange: [nodeStart, nodeEnd],
+            assignedRange: [nodeStart + spanStart, nodeStart + spanEnd],
+            nodeText,
+            originalText: nodeText.slice(spanStart, spanEnd),
+            reformulation: span.reformulation,
+            spanId: span.span_id,
+          }, null, 2));
+
           if (spanStart > lastIdx) {
             // Add the "before" text 
             parts.push({
