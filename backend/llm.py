@@ -4,9 +4,9 @@ import nltk
 import os
 from dotenv import load_dotenv
 import logging
-from models import Span, LLMOutput
+from models import Span, LLMOutput, MultipleSpanLookupResults, SpanDict
 from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
-from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
+from prompt import PROMPT, PROMPT_UNCERTAIN, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
 import instructor
 from openai import AsyncOpenAI
 import uuid
@@ -96,44 +96,98 @@ def detection(text: str) -> list[Span]:
          logger.exception(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
-async def generation(text: str, spans:list[Span], strategy: str, lookup_results: tuple[dict, bool]) -> list[Span]:
+async def generation(text: str, spans:list[Span], strategy: str, lookup_results: MultipleSpanLookupResults) -> list[Span]:
     if not spans:
         return []
-    # Get the span id and the text
-    spans_text = [{span.span_id: text[span.start_char:span.end_char]} for span in spans]
     prompt = ""
     strat_type, ref_option = strategy.split("-")
     ref_option = int(ref_option)
-    if strat_type in ["IO"]:
-        if 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES):
-            symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
-            example = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][1]
-            strategy_example = STRATEGIES[strat_type].format(symbol= symbol, example=example)
-            prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
-    else:
-        prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
+    # initialize the span dict to easily handle keys comparisons
+    spans_dict = SpanDict.from_list(spans)
+    spans_ids = spans_dict.key_list
+    assert set(spans_ids) == set(lookup_results.key_list)
     
-    if prompt != "":
-        try:
-            response = await client.chat.completions.create(
-                model = GENERATION_MODEL,
-                messages=[
-                    {"role":"user", "content": prompt}
-                ],
-                response_model = LLMOutput,
-            )
+    # all spans are sent once, so one flag is enough to trigger the new prompt
+    # or we could decide additional logic
+    # if strategy in ["CV","IO","IV"]
+    # i) looping through lookup_results, if one detected span has all tokens found in the lookup
+    #    the rewrite is then automatic
+    # ii) flags are used for a change in prompt
+    # if strategy == "CO"
+    # i) flags are used for a change in prompt
+    
+    rulebased_reformulated_spans = {}
+    prompt_flag = False
+    for id in spans_ids:
+      if not lookup_results[id].has_flag():
+        if strat_type in ["CV", "IO", "IV"]:
+          # all tokens in the span are a lookup hit
+          span = spans_dict[id]
+          span.reformulation = "Easy rewrite for " + ' '.join(spans_dict[id].tokens)
+          rulebased_reformulated_spans[id] = span
+          # later it will be merged with the llm reformulations
+      else:
+        # prompt will reflect the uncertainty
+        prompt_flag = True
+              
+    # TODO add log for percentage of rule based rewrites
+    
+    # Get id and content of spans that were not reformulated with rules
+    spans_text = [{span.span_id: span.tokens} for span in spans if span.span_id not in rulebased_reformulated_spans]
+    
+    machine_reformulated_spans = []
+    if spans_text:
+      if strat_type in ["IO"]:
+          if 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES):
+              symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
+              example = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][1]
+              strategy_example = STRATEGIES[strat_type].format(symbol= symbol, example=example)
+              if not prompt_flag:
+                prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
+              else:
+                prompt = PROMPT_UNCERTAIN.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
+      else:
+        if not prompt_flag:
+          prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
+        else:
+          prompt = PROMPT_UNCERTAIN.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
+      
+      if prompt != "":
+          try:
+              response = await client.chat.completions.create(
+                  model = GENERATION_MODEL,
+                  messages=[
+                      {"role":"user", "content": prompt}
+                  ],
+                  response_model = LLMOutput,
+              )
 
-            id2span = {span.span_id: span for span in spans}
-            reformulated_spans = []
-            for r in response.result:
-                if r.span_id in id2span:
-                    span = id2span[r.span_id]
-                    span.reformulation = r.reformulation
-                    reformulated_spans.append(span)
-
-            return reformulated_spans
-        except Exception as e:
-            logger.exception(f"Generation failed with error: {e}")
-            raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
+              for r in response.result:
+                  if r.span_id in spans_ids:
+                      span = spans_dict[r.span_id]
+                      span.reformulation = r.reformulation
+                      machine_reformulated_spans.append(span)
+                      
+          except Exception as e:
+              logger.exception(f"Generation failed with error: {e}")
+              raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
+      else:
+        # IO instructions were missing the symbol specifications
+        # spans are sent back without reformulation
+        for span.id in spans_text:
+          span = spans_dict[r.span_id]
+          machine_reformulated_spans.append(span)
+    
+    merged_reformulated_spans = machine_reformulated_spans + list(rulebased_reformulated_spans.values())
+    # DEBUG
+    #print("\n-- machine ref "+"-"*30)
+    #print(machine_reformulated_spans)
+    #print("-- rule ref "+"-"*30)
+    #print(list(rulebased_reformulated_spans.values()))
+    #print("-- merge ref "+"-"*30)
+    #print(merged_reformulated_spans)
+    
+    if merged_reformulated_spans:
+      return merged_reformulated_spans
     else:
-        return spans
+      return spans

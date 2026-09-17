@@ -19,12 +19,13 @@ from models import (
     InfoEventRequest,
     FrontendErrorRequest,
     LookupResult,
-    LookupResults,
+    SpanLookupResults,
     MorphoVariants,
-    LookupFlag
+    LookupFlag,
+    MultipleSpanLookupResults
 )
 from llm import detection, generation
-from presidio import setup_presidio, process_text, deanonymize, get_spacy_model
+from presidio import setup_presidio, process_text, get_spacy_model
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
 logging.basicConfig(
@@ -109,8 +110,10 @@ async def analyse(request: Request):
     try:
         for doc in request.data:
             # Remove "\n" from text
-            text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
-            anonymized_text, mapping = process_text(text)
+            text = doc.text
+            print("--Text " + "-"*32)
+            print(doc.text)
+            anonymized_text, _ = process_text(text)
             try:
                 # Detection (on full text)
                 detected_spans = await run_in_threadpool(detection, text)
@@ -125,23 +128,34 @@ async def analyse(request: Request):
                     "details": str(e),
                 }
                 
+            #debug
+            print("-- Detected Spans"+ "-"*30)
+            for s in detected_spans:
+                print(f"  [{s.start_char}:{s.end_char}] {text[s.start_char:s.end_char]!r}")
+             
             # 1. POS tagging
             # 2. Look-up in a table with frequent morphosyntactic rewritings in Italian
             #   i) look-up can be used as an indicator for good/bad detections: if the detected word is not in the table,
             #      there is a chance it was not a word that needed detection to begin with
             #   ii) for strategies CB, IV, IO, that are morphosyntactic rewritings, a lookup table could be enough
             #       and enable some token savings and gain in efficiency
-            
-            lookup_results = {}
+            span_lookup_results = {}
             for span in detected_spans:
-                lookup_results[span.span_id] = lookup_span(doc, span.start_char, span.end_char)
-                print(lookup_results[span.span_id])
-            print("\n- - - - - -\n")
-            print(lookup_results)    
-                
+                span_lookup_results[span.span_id] = lookup_span(nlp(text), span.start_char, span.end_char)
+            multiple_span_lookup_results = MultipleSpanLookupResults(results=span_lookup_results)
+            
+            # debug
+            print("\n-- span_lookup_results"+ "-"*20)
+            for s_id, s in span_lookup_results.items():
+                for t, r in s.results.items():
+                    print(f"  [{s_id}] {t} -> {r.lemma} ({r.pos})")
+                    print(f"  MorphoTable: {r.flag}]")
+            
+            # TODO add log for hit and misses
+            
             # Generation
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy, lookup_results)
+                reformulated_spans = await generation(anonymized_text, detected_spans, strategy, multiple_span_lookup_results)
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -152,13 +166,16 @@ async def analyse(request: Request):
                     "code": "ANALYSIS_FAILED",
                     "details": str(e),
                 }
-
-            # user sees deanonimized text + shifted spans
-            deanonymized_text, unfair_spans = deanonymize(
-                anonymized_text, mapping, reformulated_spans
-            )
+            
+            #DEBUG
+            print("\n-- text " + "-"*30)
+            print(text)
+            print("-- unfair spans "+"-"*30)
+            for s in reformulated_spans:
+                print(f"  [{s.start_char}:{s.end_char}] {text[s.start_char:s.end_char]!r}")
+            
             results[doc.id] = OutputData(
-                text=deanonymized_text, unfair_spans=unfair_spans
+                text=text, unfair_spans=reformulated_spans
             )
             analysis_request = StoreEventRequest(
                 event=EventType.ANALYSIS,
@@ -236,23 +253,23 @@ async def log_frontend_error(error: FrontendErrorRequest):
     await insert_frontend_error(error)
     return {"status": 200, "message": "Error logged successfully"}
 
-def lookup(lemma: str, spacy_pos: str) -> dict | None:
+def lookup(lemma: str, pos_key: str) -> dict | None:
     """Return {'feminine': [...], 'neutral': [...]} for a lemma+POS, or None if absent."""
-    pos_key = spacy_pos.lower()
     entry = LOOKUP_TABLE.get(lemma.lower())
     if entry is None:
         return None
     return entry.get(pos_key)
   
 FLECTABLE_POS = {"noun", "adj", "verb", "aux", "det", "num", "pron"}
+# UNFLECTABLE_POS = {"adv", "cconj", "sconj", "intj", "adp", "punct", "sym"}
 
-def lookup_span(doc, start_char: int, end_char: int) -> LookupResults:
+def lookup_span(doc, start_char: int, end_char: int) -> SpanLookupResults:
     """Return {lemma: {pos: <forms>}} for all tokens in the span that exist in the table.
     plus a prompt flag: fails in lookup indicate weak detection and cause a change in the
     generation prompt to a more flexible one that asks the llm to rethink the detection"""
     span = doc.char_span(start_char, end_char, alignment_mode="expand")
     if span is None or len(span) == 0:
-        return LookupResults(results={}, is_empty=True)
+        return SpanLookupResults(results={}, is_empty=True)
     
     results = {}
     
@@ -260,7 +277,10 @@ def lookup_span(doc, start_char: int, end_char: int) -> LookupResults:
       word = token.text
       lemma = token.lemma_
       pos = token.pos_.lower()
+      
       if pos not in FLECTABLE_POS:
+        # punct is a particular case because it feels like it could easily be caught in a span
+        # and i do not think it is enough to flag it
         if pos != "punct":
           results[word] = LookupResult(
                   lemma=lemma,
@@ -286,4 +306,4 @@ def lookup_span(doc, start_char: int, end_char: int) -> LookupResults:
                 flag=LookupFlag.INFLECTABLE_MISS
             )
             
-    return LookupResults(results=results, is_empty=not results)
+    return SpanLookupResults(results=results, is_empty=not results)
