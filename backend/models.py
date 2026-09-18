@@ -15,6 +15,9 @@ class Span(BaseModel):
         ..., description="End character index of the span in the original text"
     )
     tokens: list[str] = Field(..., description="List of tokens belonging to the span")
+    original_text: str = Field(
+        ..., description="Original text of the span"
+    )
     reformulation: str = Field(
         ..., description="Reformulation for the span using the current strategy"
     )

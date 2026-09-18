@@ -35,6 +35,7 @@ def generate_new_span(text:str,start:int, end:int) -> Span:
         start_char = int(start),
         end_char = int(end),
         tokens = [],
+        original_text = "",
         reformulation = ""
     )
     span.tokens.append(text[start:end])
@@ -91,6 +92,10 @@ def detection(text: str) -> list[Span]:
                         building_span = True
                 else:
                     building_span = False 
+                    
+        # update the original text field
+        for span in spans:
+            span.original_text = text[span.start_char:span.end_char]
         return spans
     except Exception as e:
          logger.exception(f"Detection failed with error: {e}")
@@ -123,7 +128,7 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
         if strat_type in ["CV", "IO", "IV"]:
           # all tokens in the span are a lookup hit
           span = spans_dict[id]
-          span.reformulation = "Easy rewrite for " + ' '.join(spans_dict[id].tokens)
+          span.reformulation = "Easy rewrite for " + span.original_text
           rulebased_reformulated_spans[id] = span
           # later it will be merged with the llm reformulations
       else:
@@ -133,7 +138,7 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
     # TODO add log for percentage of rule based rewrites
     
     # Get id and content of spans that were not reformulated with rules
-    spans_text = [{span.span_id: span.tokens} for span in spans if span.span_id not in rulebased_reformulated_spans]
+    spans_text = [{span.span_id: span.original_text} for span in spans if span.span_id not in rulebased_reformulated_spans]
     
     machine_reformulated_spans = []
     if spans_text:
