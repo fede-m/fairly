@@ -14,7 +14,11 @@ function resetButtons() {
 
 function discard({ span = undefined, ref_reason = "user_refuse", isAll = false } = {}) {
 
-  const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
+  const highlightedSpans = span
+  ? [...document.querySelectorAll(
+      `[data-span-id="${CSS.escape(span.dataset.spanId)}"]`
+    )]
+  : [...document.querySelectorAll("span.highlight")];
   // No spans to modify
   if (highlightedSpans.length === 0) return;
 
@@ -50,7 +54,7 @@ function discard({ span = undefined, ref_reason = "user_refuse", isAll = false }
       const reformulation = s.dataset.reformulation;
       const userForm = s.dataset.userContent;
       const spanObj = {
-        span_id: s.id,
+        span_id: s.dataset.spanId,
         original: original,
         reformulation: reformulation,
         current_used: original,
@@ -64,7 +68,7 @@ function discard({ span = undefined, ref_reason = "user_refuse", isAll = false }
       refuseEvent.spans.push(spanObj);
 
       // Remove associated spanDiv
-      const spanDiv = document.getElementById(`div-${s.id}`);
+      const spanDiv = document.getElementById(`div-${s.dataset.spanId}`);
       if (spanDiv) spanDiv.remove();
       s.replaceWith(document.createTextNode(original));
     });
@@ -82,7 +86,10 @@ function discard({ span = undefined, ref_reason = "user_refuse", isAll = false }
     setResultButtons(false);
   }
 
-  if (span === undefined) resetButtons();
+  if (document.querySelectorAll("span.highlight").length === 0) {
+  setResultButtons(false);
+  resetButtons();
+}
   try {
     chrome.runtime.sendMessage({
       action: "storeEvent",
@@ -96,7 +103,11 @@ function discard({ span = undefined, ref_reason = "user_refuse", isAll = false }
 
 
 function accept({ span = undefined, input = false, isAll = false } = {}) {
-  const highlightedSpans = span ? [span] : Array.from(document.querySelectorAll("span.highlight"));
+  const highlightedSpans = span
+  ? [...document.querySelectorAll(
+      `[data-span-id="${CSS.escape(span.dataset.spanId)}"]`
+    )]
+  : [...document.querySelectorAll("span.highlight")];
   // No spans to modify
   if (highlightedSpans.length === 0) return;
 
@@ -131,7 +142,7 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
       const currentUsed = input ? s.dataset.currentUsed : s.dataset.reformulation;
       const userForm = s.dataset.userContent;
       const spanObj = {
-        span_id: s.id,
+        span_id: s.dataset.spanId,
         original: original,
         reformulation: reformulation,
         current_used: currentUsed,
@@ -143,7 +154,7 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
       // Add span event
       acceptEvent.spans.push(spanObj);
       // Remove associated spanDiv
-      const spanDiv = document.getElementById(`div-${s.id}`);
+      const spanDiv = document.getElementById(`div-${s.dataset.spanId}`);
       if (spanDiv) spanDiv.remove();
       s.replaceWith(document.createTextNode(currentUsed));
     });
@@ -158,7 +169,10 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
     if (document.querySelectorAll("span.highlight").length === 0) {
       setResultButtons(false);
     }
-    if (span === undefined) resetButtons();
+    if (document.querySelectorAll("span.highlight").length === 0) {
+      setResultButtons(false);
+      resetButtons();
+    }
     try {
       chrome.runtime.sendMessage({
         action: "storeEvent",
