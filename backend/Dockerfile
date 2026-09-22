@@ -20,6 +20,7 @@ EXPOSE 8000
 
 # Store cached models in a tmp file (does not end up in the image layer)
 ENV HF_HOME=/tmp/hf_cache
+ENV UV_CACHE_DIR=/tmp/uv-cache
 RUN useradd -m app
 USER app
 

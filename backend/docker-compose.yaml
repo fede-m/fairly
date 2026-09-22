@@ -20,7 +20,7 @@ services:
         container_name: fairly-backend
         restart: unless-stopped
         ports:
-            - 8000:8000
+            - 127.0.0.1:8000:8000
         env_file:
             - .env
         logging:
@@ -28,6 +28,8 @@ services:
             options:
                 max-size: "10m"
                 max-file: "3"
+        environment:
+            UV_CACHE_DIR: /tmp/uv-cache
         depends_on:
             mongodb:
                 condition: service_healthy
