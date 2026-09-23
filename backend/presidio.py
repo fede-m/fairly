@@ -85,16 +85,15 @@ def remove_overlaps(results):
     return sorted(kept, key=lambda r: r.start)
 
 
-def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list]:
-    """Deanonymize text and adjust span indices accordingly.
+def deanonymize(text: str, mapping: dict) -> str:
+    """Deanonymize text by replacing placeholders with their original values.
 
     Args:
         text: The anonymized text
         mapping: Dict mapping placeholders to original values
-        spans: Optional list of Span objects with start_char and end_char indices
 
     Returns:
-        A tuple of (deanonymized_text, adjusted_spans)
+        The deanonymized text
     """
     # Sort placeholders by position in text (reverse) to avoid index shifting issues
     # Find all placeholder positions
@@ -111,29 +110,12 @@ def deanonymize(text: str, mapping: dict, spans: list = None) -> tuple[str, list
     # Sort by position in reverse order so we replace from end to start
     positions.sort(reverse=True)
 
-    shifts = {}  # Maps original placeholder positions to character shifts
-
     # Apply replacements (from end to start to preserve indices)
     for pos, placeholder in positions:
         original = mapping[placeholder]
-        shifts[pos] = len(original) - len(placeholder)
         text = text[:pos] + original + text[pos + len(placeholder) :]
 
-    # Adjust span indices if provided
-    adjusted_spans = []
-    if spans:
-        sorted_positions = sorted(shifts.keys())
-        for span in spans:
-            adjusted_span = span.model_copy(deep=True)
-            start_shift = sum(
-                shifts[p] for p in sorted_positions if p < span.start_char
-            )
-            end_shift = sum(shifts[p] for p in sorted_positions if p < span.end_char)
-            adjusted_span.start_char = span.start_char + start_shift
-            adjusted_span.end_char = span.end_char + end_shift
-            adjusted_spans.append(adjusted_span)
-
-    return text, adjusted_spans
+    return text
 
 
 # Global instances - initialized by setup_presidio()

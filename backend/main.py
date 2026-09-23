@@ -19,7 +19,7 @@ from models import (
     FrontendErrorRequest
 )
 from llm import detection, generation
-from presidio import setup_presidio, process_text, deanonymize
+from presidio import setup_presidio, process_text
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
 logging.basicConfig(
@@ -94,7 +94,7 @@ async def analyse(request: Request):
         for doc in request.data:
             # Remove "\n" from text
             text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
-            anonymized_text, mapping = process_text(text)
+            anonymized_text, _ = process_text(text)
             try:
                 # Detection (on full text)
                 detected_spans = await run_in_threadpool(detection, text)
@@ -122,12 +122,9 @@ async def analyse(request: Request):
                     "details": str(e),
                 }
 
-            # user sees deanonimized text + shifted spans
-            deanonymized_text, unfair_spans = deanonymize(
-                anonymized_text, mapping, reformulated_spans
-            )
+            # Detection ran on the original text, so span indices already match it
             results[doc.id] = OutputData(
-                text=deanonymized_text, unfair_spans=unfair_spans
+                text=text, unfair_spans=reformulated_spans
             )
             analysis_request = StoreEventRequest(
                 event=EventType.ANALYSIS,
@@ -136,7 +133,7 @@ async def analyse(request: Request):
                         span_id=s.span_id,
                         # start_char = s.start_char,
                         # end_char = s.end_char,
-                        original=anonymized_text[s.start_char : s.end_char],
+                        original=process_text(s.original_text)[0],
                         reformulation=s.reformulation,
                         current_used="",
                     )

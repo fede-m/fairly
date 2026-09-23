@@ -103,8 +103,9 @@ def detection(text: str) -> list[Span]:
 async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     if not spans:
         return []
-    # Get the span id and the text
-    spans_text = [{span.span_id: text[span.start_char:span.end_char]} for span in spans]
+    # Get the span id and the text. Span indices refer to the original text, not to the
+    # anonymized text passed here, so use the span's stored original text instead of slicing
+    spans_text = [{span.span_id: span.original_text} for span in spans]
     prompt = ""
     strat_type, ref_option = strategy.split("-")
     ref_option = int(ref_option)
