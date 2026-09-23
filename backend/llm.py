@@ -35,6 +35,7 @@ def generate_new_span(text:str,start:int, end:int) -> Span:
         start_char = int(start),
         end_char = int(end),
         tokens = [],
+        original_text = "",
         reformulation = ""
     )
     span.tokens.append(text[start:end])
@@ -91,6 +92,9 @@ def detection(text: str) -> list[Span]:
                         building_span = True
                 else:
                     building_span = False 
+         # update the original text field
+        for span in spans:
+            span.original_text = text[span.start_char:span.end_char]
         return spans
     except Exception as e:
          logger.exception(f"Detection failed with error: {e}")
