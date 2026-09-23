@@ -205,6 +205,8 @@ function highlightSpans(div, spans) {
     // Replace the span with its text content (removes highlight) 
     span.replaceWith(document.createTextNode(original));
   });
+  // Merge adjacent text nodes left over by previous highlights
+  div.normalize();
 
   // Collect all the nodes in the walker
   const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
@@ -225,8 +227,9 @@ function highlightSpans(div, spans) {
     searchFrom = nodeStart + node.nodeValue.length;
   }
 
-  // Sort spans by start_char 
-  spans = spans.slice().sort((a, b) => a.start_char - b.start_char);
+  // Sort spans by start_char, last first: splitting a text node keeps its first part in the
+  // original node, so the precomputed offsets stay valid for the spans processed afterwards
+  spans = spans.slice().sort((a, b) => b.start_char - a.start_char);
   console.log("[Fairly] spans",{
             spans: spans
           }, null, 2);

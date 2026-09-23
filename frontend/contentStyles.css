@@ -263,7 +263,8 @@
   position: relative;
   background-color: var(--color-highlight);
   border-radius: 3px;
-  padding: 0 2px;
+  /* No horizontal padding: it would show as extra spaces between words and between fragments of the same span */
+  padding: 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   /* subtle shadow */
   transition: background-color 0.3s ease, box-shadow 0.3s ease;

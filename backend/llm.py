@@ -71,7 +71,13 @@ def detection(text: str) -> list[Span]:
             for i,label in enumerate(predicted_labels):
                 start = span_sent[0] + offsets[0][i][0]
                 end = span_sent[0] + offsets[0][i][1]
-                if label == "B-UNFAIR":
+                if label == "B-UNFAIR" and building_span and text[spans[-1].end_char:start].strip() == "":
+                    # The model often tags each word of a phrase as B-UNFAIR: extend the adjacent span instead of splitting it
+                    curr_span = spans[-1]
+                    curr_span.end_char = int(end)
+                    curr_span.tokens.append(text[start:end])
+
+                elif label == "B-UNFAIR":
                     # Create new span
                     new_span = generate_new_span(text, start, end)
                     spans.append(new_span)

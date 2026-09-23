@@ -77,6 +77,8 @@ function discard({ span = undefined, ref_reason = "user_refuse", isAll = false }
     // Trigger input event on the contenteditable div to notify Gmail of changes
     const contentDiv = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(eId)}`);
     if (contentDiv) {
+      // Merge the text nodes left by the removed highlights so later analyses see a clean DOM
+      contentDiv.normalize();
       contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
@@ -164,6 +166,8 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
     // Trigger input event on the contenteditable div to notify Gmail of changes
     const contentDiv = document.querySelector(`div[role="textbox"][contenteditable="true"]#${CSS.escape(eId)}`);
     if (contentDiv) {
+      // Merge the text nodes left by the removed highlights so later analyses see a clean DOM
+      contentDiv.normalize();
       contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
     }
     if (document.querySelectorAll("span.highlight").length === 0) {
