@@ -45,7 +45,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-setup_presidio()
+@app.on_event("startup")
+def startup_event():
+    setup_presidio()
 
 @app.middleware("http")
 async def log_requests(request: FastAPIRequest, call_next):
