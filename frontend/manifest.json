@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fairly",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Fairly ti aiuta a controllare le tue email per renderle più inclusive. Funziona su Gmail per utenti dell’Università di Torino.",
   "permissions": [
     "storage"
