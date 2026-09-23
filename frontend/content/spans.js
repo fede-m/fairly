@@ -230,9 +230,6 @@ function highlightSpans(div, spans) {
   // Sort spans by start_char, last first: splitting a text node keeps its first part in the
   // original node, so the precomputed offsets stay valid for the spans processed afterwards
   spans = spans.slice().sort((a, b) => b.start_char - a.start_char);
-  console.log("[Fairly] spans",{
-            spans: spans
-          }, null, 2);
   try {
 
     spans.forEach((span) => {
