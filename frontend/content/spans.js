@@ -12,7 +12,7 @@
 
 function createSpanPopupDiv(spanEl) {
   // Validate span element 
-  if (!spanEl || !spanEl.dataset.original || !spanEl.dataset.reformulation) {
+  if (!spanEl || !spanEl.dataset.original || !spanEl.dataset.reformulation || !spanEl.dataset.fullOriginal) {
     logger.error("Invalid span element - missing required data attributes");
     return null;
   }
@@ -22,11 +22,12 @@ function createSpanPopupDiv(spanEl) {
 
   // Create the div element
   const spanDiv = document.createElement("div");
+  const fullOriginal = spanEl.dataset.fullOriginal ?? spanEl.dataset.original;
   spanDiv.id = `div-${spanEl.id}`;
   spanDiv.className = "span-div";
   spanDiv.style.display = "none";
   spanDiv.setAttribute("role", "dialog");
-  spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.original}`);
+  spanDiv.setAttribute("aria-label", `Opzioni per: ${spanEl.dataset.fullOriginal }`);
   spanDiv.setAttribute("tabindex", "-1");
 
   // close on esc
@@ -47,7 +48,7 @@ function createSpanPopupDiv(spanEl) {
   // Show the old text crossed out and the new suggested solution
   const strong = document.createElement("strong")
   const del = document.createElement("del");
-  del.textContent = spanEl.dataset.original;
+  del.textContent = fullOriginal ;
   strong.appendChild(del);
   const arrowSpan = document.createElement("span");
   arrowSpan.appendChild(svgToNode(ICONS.arrowRight)); // Constant, cannot be injected
@@ -98,6 +99,17 @@ function createSpanPopupDiv(spanEl) {
       setSpanText(spanEl, input);
     }
 
+    // handle highlights on more than one node
+    const related = document.querySelectorAll(
+      `[data-span-id="${CSS.escape(spanEl.dataset.spanId)}"]`
+    );
+
+    related.forEach((fragment) => {
+      if (fragment !== spanEl) {
+        fragment.replaceWith(document.createTextNode(""));
+      }
+    });
+
     // move focus to the next span
     const all = [...document.querySelectorAll("span.highlight")];
     const next = all[all.indexOf(spanEl) + 1];
@@ -114,6 +126,18 @@ function createSpanPopupDiv(spanEl) {
   discardBtn.setAttribute("aria-label", "Rifiuta e ripristina testo originale");
   discardBtn.addEventListener("click", e => {
     e.stopPropagation();
+
+    const related = document.querySelectorAll(
+        `[data-span-id="${CSS.escape(spanEl.dataset.spanId)}"]`
+    );
+
+    related.forEach((fragment) => {
+        if (fragment !== spanEl) {
+          fragment.replaceWith(
+            document.createTextNode(fragment.dataset.original)
+          );
+        }
+    });
 
     // move focus to the next span
     const all = [...document.querySelectorAll("span.highlight")];
@@ -172,7 +196,6 @@ function highlightSpans(div, spans) {
   if (!spans || spans.length === 0) {
     return false;
   }
-
   // Remove already present spans 
   const highlightedSpans = div.querySelectorAll("span.highlight");
   // Get all span elements 
@@ -182,153 +205,143 @@ function highlightSpans(div, spans) {
     // Replace the span with its text content (removes highlight) 
     span.replaceWith(document.createTextNode(original));
   });
-  // Create a walker to pass through all the text nodes of the current content window 
-  const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT, null, false);
-  // Collect all the nodes in the walker 
+
+  // Collect all the nodes in the walker
+  const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+  const logicalText = div.innerText.replace(/\r?\n/g, " "); 
   const nodes = [];
+  let searchFrom = 0;
   let node;
   while ((node = walker.nextNode())) {
-    nodes.push(node);
+    const nodeStart = logicalText.indexOf(node.nodeValue, searchFrom);
+    if (nodeStart === -1) continue;
+
+    nodes.push({
+      node,
+      start: nodeStart,
+      end: nodeStart + node.nodeValue.length
+    });
+
+    searchFrom = nodeStart + node.nodeValue.length;
   }
+
   // Sort spans by start_char 
   spans = spans.slice().sort((a, b) => a.start_char - b.start_char);
-  // Keep track of the index of the text in the node 
-  let charIndex = 0;
-  let spanId = 0;
-
+  console.log("[Fairly] spans",{
+            spans: spans
+          }, null, 2);
   try {
-    nodes.forEach((node) => {
-      // Get text and start and end char of node 
-      const nodeText = node.nodeValue;
-      const nodeStart = charIndex;
-      const nodeEnd = charIndex + nodeText.length;
 
-        // Find all spans that overlap with this node 
-        const nodeSpans = spans.filter((span) => span.start_char < nodeEnd && span.end_char > nodeStart);
-        // If no span is found, simply update the index 
-        if (nodeSpans.length === 0) {
-          charIndex += nodeText.length;
-          return;
-        }
-        // Build an array of {text, isHighlight} -> each will be a new node later and the highlight true/false will define if you need to wrap it into a span or not 
-        let parts = [];
-        let lastIdx = 0;
-        nodeSpans.forEach((span) => {
-          // Calculate start and end index of the part to highlight in the current node text (considering that it goes from 0 to node.length) 
-          const spanStart = Math.max(span.start_char - nodeStart, 0);
-          const spanEnd = Math.min(span.end_char - nodeStart, nodeText.length);
-          if (spanStart > lastIdx) {
-            // Add the "before" text 
-            parts.push({
-              text: nodeText.slice(lastIdx, spanStart),
-              isHighlight: false,
-              reformulation: null,
-              id: null,
-            });
-          }
-          // Add the text of the span 
-          const part = {
-            text: nodeText.slice(spanStart, spanEnd),
-            isHighlight: true,
-            reformulation: span.reformulation,
-            id: span.span_id,
-          };
-          parts.push(part);
-          lastIdx = spanEnd;
-         });
-        // Add the after text (after having processed all the spans in the current node) 
-        if (lastIdx < nodeText.length) {
-          parts.push({
-            text: nodeText.slice(lastIdx),
-            isHighlight: false,
-            reformulation: null,
-            id: null
-          });
-        }
+    spans.forEach((span) => {
+        const affected = nodes.filter(
+          item => span.start_char < item.end && span.end_char > item.start
+        );
+
+        if (affected.length === 0) return;
+
+        const first = affected[0];
+        const last = affected.at(-1);
+
+        const range = document.createRange();
+
+        range.setStart(
+          first.node,
+          Math.max(span.start_char - first.start, 0)
+        );
+
+        range.setEnd(
+          last.node,
+          Math.min(span.end_char - last.start, last.node.nodeValue.length)
+        );
        
-        // Create temporary fragment to substitute the node with 
-        const frag = document.createDocumentFragment();
-        parts.forEach((part, idx) => {
+        affected.forEach((item, index) => {
+            const range = document.createRange();
 
-          if (part.isHighlight) {
-
-            const spanEl = document.createElement("span");
-            spanEl.id = part.id;
-            spanEl.className = "highlight";
-            // Keep original text
-            spanEl.innerText = part.text;
-            spanEl.setAttribute("contenteditable", "false");
-            // button-like behaviour
-            spanEl.setAttribute("role", "button");
-            // reachable by tab key
-            spanEl.tabIndex = 0
-            // aria label optimist
-            spanEl.setAttribute("aria-label",
-              `Suggerimento Fairly: sostituire ${part.text} con ${part.reformulation}. Premi Invio per le opzioni.`
+            range.setStart(item.node, Math.max(span.start_char - item.start, 0));
+            range.setEnd(
+              item.node,
+              Math.min(span.end_char - item.start, item.node.nodeValue.length)
             );
-            // Store original text and reformulation in the object 
-            spanEl.dataset.original = part.text;
-            spanEl.dataset.reformulation = part.reformulation;
-            spanEl.dataset.currentUsed = part.text;
-            spanEl.dataset.emailId = div.id;
 
-            // space and enter open the spandiv
-            spanEl.addEventListener("keydown", (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                spanEl.click();
-              }
-            });
+            const highlight = document.createElement("span");
+            highlight.appendChild(range.extractContents());
 
-            const spanDiv = createSpanPopupDiv(spanEl);
-
-            if (!spanDiv) {
-              logger.error(`Failed to create popup for span: ${part.text}`);
-                // Option 1: Skip this span and continue
-                frag.appendChild(spanEl); // Add span without popup
-                return;
-            }
-            
-            frag.appendChild(spanEl);
-            // Add click event 
-            spanEl.addEventListener("click", (e) => {
-              e.stopPropagation();
-              // close popups
-              clearAllPopups();
-              // Hide all other spanDivs
-              document.querySelectorAll(".span-div").forEach(s => {
-                if (s.id !== spanDiv.id) { s.style.display = "none"; }
-              });
-              // Toggle visibility
-              const isVisible = spanDiv.style.display === "block";
-
-              if (isVisible) {
-                spanDiv.style.display = "none";
-                spanDiv.style.visibility = "hidden";
-              } else {
-                // Append to body if not already present
-                if (!document.body.contains(spanDiv)) {
-                  document.body.appendChild(spanDiv);
-                }
-
-                positionPopup(spanDiv, spanEl)
-                spanDiv.focus();
-              }
-            })
-          } else if (part.text) {
-            frag.appendChild(document.createTextNode(part.text));
-          }
+            configureHighlight(highlight, span, index === 0, div);
+            range.insertNode(highlight);
         });
-        node.replaceWith(frag);
-        charIndex += nodeText.length;
-      });
-      
+    })
     return true;
-
   } catch (error) {
     logger.error("Error highlighting spans:", error);
     return false;
   }
+}
+
+function configureHighlight(spanEl, span, isFirst, div) {
+  spanEl.className = "highlight";
+  spanEl.setAttribute("contenteditable", "false");
+  spanEl.setAttribute("role", "button");
+  spanEl.tabIndex = 0;
+
+  spanEl.dataset.original = spanEl.textContent;
+  spanEl.dataset.fullOriginal = span.original_text;
+  spanEl.dataset.reformulation = span.reformulation;
+  spanEl.dataset.spanId = span.span_id;
+  spanEl.dataset.emailId = div.id;
+  spanEl.dataset.currentUsed = spanEl.textContent;
+  spanEl.setAttribute(
+  "aria-label",
+  `Suggerimento Fairly: sostituire ${span.original_text} con ${span.reformulation}. Premi Invio per le opzioni.`
+);
+
+  spanEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      spanEl.click();
+    }
+  });
+
+  if (isFirst) {
+  spanEl.id = span.span_id;
+  const spanDiv = createSpanPopupDiv(spanEl);
+
+  if (!spanDiv) {
+    logger.error(`Failed to create popup for span: ${spanEl.textContent}`);
+    return;
+  }
+
+  spanEl.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearAllPopups();
+
+    document.querySelectorAll(".span-div").forEach((popup) => {
+      if (popup.id !== spanDiv.id) popup.style.display = "none";
+    });
+
+    if (spanDiv.style.display === "block") {
+      spanDiv.style.display = "none";
+      spanDiv.style.visibility = "hidden";
+      return;
+    }
+
+    if (!document.body.contains(spanDiv)) {
+      document.body.appendChild(spanDiv);
+    }
+
+    positionPopup(spanDiv, spanEl);
+    spanDiv.focus();
+  });
+}else {
+  spanEl.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const first = document.querySelector(
+      `[data-span-id="${CSS.escape(span.span_id)}"]`
+    );
+
+    first?.click();
+  });
+}
 }
 
 /* helper function to position */
