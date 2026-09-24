@@ -123,18 +123,19 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
     
     rulebased_reformulated_spans = {}
     prompt_flag = False
-    for id in spans_ids:
-      if not lookup_results[id].has_flag():
-        if strat_type in ["CV", "IO", "IV"]:
-          # all tokens in the span are a lookup hit
-          span = spans_dict[id]
-          span.reformulation = "Easy rewrite for " + span.original_text
-          rulebased_reformulated_spans[id] = span
-          # later it will be merged with the llm reformulations
-      else:
-        # prompt will reflect the uncertainty
-        prompt_flag = True
-              
+    ### commented out for notte dei ricercatori
+    #for id in spans_ids:
+    #  if not lookup_results[id].has_flag():
+    #    if strat_type in ["CV", "IO", "IV"]:
+    #      # all tokens in the span are a lookup hit
+    #      span = spans_dict[id]
+    #      span.reformulation = "Easy rewrite for " + span.original_text
+    #      rulebased_reformulated_spans[id] = span
+    #      # later it will be merged with the llm reformulations
+    #  else:
+    #    # prompt will reflect the uncertainty
+    #    prompt_flag = True
+    #          
     # TODO add log for percentage of rule based rewrites
     
     # Get id and content of spans that were not reformulated with rules
