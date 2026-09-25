@@ -137,14 +137,26 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
       is_all: isAll
     };
 
-    // Restore original text
+    // Group spans by spanId to handle fragments (same span split across multiple nodes due to newlines)
+    const spansById = new Map();
+    
     spanList.forEach((s) => {
-      const original = s.dataset.original;
-      const reformulation = s.dataset.reformulation;
-      const currentUsed = input ? s.dataset.currentUsed : s.dataset.reformulation;
-      const userForm = s.dataset.userContent;
+      const spanId = s.dataset.spanId;
+      if (!spansById.has(spanId)) {
+        spansById.set(spanId, [])
+      };
+      spansById.get(spanId).push(s);
+    });
+
+    // Process each unique spans (by spanId) only once
+    spansById.forEach((fragments, spanId) => {
+      const firstFragment = fragments[0];
+      const original = firstFragment.dataset.original;
+      const reformulation = firstFragment.dataset.reformulation;
+      const currentUsed = input ? firstFragment.dataset.currentUsed : firstFragment.dataset.reformulation;
+      const userForm = firstFragment.dataset.userContent;
       const spanObj = {
-        span_id: s.dataset.spanId,
+        span_id: spanId,
         original: original,
         reformulation: reformulation,
         current_used: currentUsed,
@@ -153,12 +165,16 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
       if (userForm) {
         spanObj.user_form = userForm
       }
-      // Add span event
+      // Add span event only once per unique span
       acceptEvent.spans.push(spanObj);
       // Remove associated spanDiv
-      const spanDiv = document.getElementById(`div-${s.dataset.spanId}`);
+      const spanDiv = document.getElementById(`div-${spanId}`);
       if (spanDiv) spanDiv.remove();
-      s.replaceWith(document.createTextNode(currentUsed));
+      // Replace the first fragment with the original text, remove other fragments
+      firstFragment.replaceWith(document.createTextNode(currentUsed));
+      fragments.slice(1).forEach(fragment => {
+        fragment.replaceWith(document.createTextNode(""));
+      });
     });
 
     acceptEvents.push(acceptEvent);
