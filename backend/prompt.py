@@ -4,17 +4,42 @@
 # - explicit relative pronous (i quali, le quali etc.)
 STRATEGIES = {
     "CV": ["""Conservative Visibility (CV): Provide both masculine and feminine forms of the expression. 
-              - Example: i professori → i professori e le professoresse"""
+              - Examples: 
+                    1) i professori → i professori e le professoresse
+                    2) i docenti → i docenti e le docenti
+                    3) gli studenti → gli studenti e le studentesse
+                    4) i rappresentanti degli studenti → i rappresentanti e le rappresentanti degli e delle studenti
+                    5) tutti → tutti e tutte
+              """
             , 
           """Conservative Visibility (CV): Provide both masculine and feminine forms of the expression. 
-              - Example: i professori → i/le professori/esse"""
+              - Examples: 
+                    1) i professori → i/le professori/esse
+                    2) i docenti → i/le docenti
+                    3) gli studenti → gli/le studenti
+                    4) i rappresentanti degli studenti → i/le rappresentanti degli/delle studenti
+                    5) tutti → tutti/e
+          """
           ],
 
     "CO": ["""Conservative Obscuration (CO):  Reformulate the span to avoid indicating gender.
-              - Example: "i professori" → "il corpo docente" or "coloro che insegnano" """],
+              - Examples: 
+                1) "i professori" → "il corpo docente" or "coloro che insegnano" 
+                2) i docenti → il corpo docente
+                3) gli studenti → la comunità studentesca
+                4) i rappresentanti degli studenti → il personale di rappresentanza studentesca
+                5) tutti → tutte le persone               
+            """],
               
     "IO":"""Innovative Obscuration (IO): Use novel, gender-neutral markers. In this case, use symbol {symbol}.
-              - Example: i professori → {example}
+              - Examples: 
+                1) i professori → l{symbol} professor{symbol}
+                2) i docenti → l{symbol} docenti
+                3) gli studenti → l{symbol} studenti
+                4) i rappresentanti degli studenti → l{symbol} rappresentant{symbol} de{symbol} student{symbol}
+                5) tutti → tutt{symbol}
+                6) invitati → invitat{symbol}
+                7) numerosi → numeros{symbol}
          """,
     
     "IV": ["""Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol *.
@@ -28,8 +53,7 @@ STRATEGIES = {
 }
 
 
-INNOVATIVE_SYMBOLS_EXAMPLES = [("*", "l* professor*"), ("@","l@ professor@"), ("x", "lx professorx"), "lu professoru", "lə professorə"]
-
+INNOVATIVE_SYMBOLS_EXAMPLES = ["*", "@", "x", "u", "ə"]
 PROMPT = """You are an Italian language assistant specializing in rewriting non-inclusive spans.  
 
 INPUT:

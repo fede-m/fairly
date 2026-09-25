@@ -117,9 +117,8 @@ async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
     ref_option = int(ref_option)
     if strat_type in ["IO"]:
         if 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES):
-            symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
-            example = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][1]
-            strategy_example = STRATEGIES[strat_type].format(symbol= symbol, example=example)
+            symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option]
+            strategy_example = STRATEGIES[strat_type].format(symbol= symbol)
             prompt = PROMPT.format(text = text, spans=spans_text, reformulation_strategy= strategy_example)
     else:
         prompt = PROMPT.format(text=text, spans=spans_text, reformulation_strategy= STRATEGIES[strat_type][ref_option])
