@@ -186,7 +186,10 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
       contentDiv.normalize();
       contentDiv.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    if (document.querySelectorAll("span.highlight").length === 0) {
+    
+  }
+  );
+  if (document.querySelectorAll("span.highlight").length === 0) {
       setResultButtons(false);
     }
     if (document.querySelectorAll("span.highlight").length === 0) {
@@ -201,6 +204,4 @@ function accept({ span = undefined, input = false, isAll = false } = {}) {
     } catch (error) {
       logger.error("Failed to store event: ", error);
     }
-  }
-  );
 }
