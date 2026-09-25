@@ -30,6 +30,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
+CHROME_EXTENSION_ID_1 = os.getenv("CHROME_EXTENSION_ID_1")
+CHROME_EXTENSION_ID_2 = os.getenv("CHROME_EXTENSION_ID_2")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 app = FastAPI()
 
@@ -38,6 +40,8 @@ app.add_middleware(
     # Specify the id of the Chrome extension to allow it to call the backend
     allow_origins=[
         f"chrome-extension://{CHROME_EXTENSION_ID}",
+        f"chrome-extension://{CHROME_EXTENSION_ID_1}",
+        f"chrome-extension://{CHROME_EXTENSION_ID_2}",
         "http://localhost:3000",
         "http://localhost:8000",
     ],
