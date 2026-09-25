@@ -8,7 +8,7 @@ STRATEGIES = {
                     1) i professori → i professori e le professoresse
                     2) i docenti → i docenti e le docenti
                     3) gli studenti → gli studenti e le studentesse
-                    4) i rappresentanti → i rappresentanti e le rappresentanti
+                    4) i rappresentanti degli studenti → i rappresentanti e le rappresentanti degli e delle studenti
                     5) tutti → tutti e tutte
               """
             , 
@@ -17,7 +17,7 @@ STRATEGIES = {
                     1) i professori → i/le professori/esse
                     2) i docenti → i/le docenti
                     3) gli studenti → gli/le studenti
-                    4) tutti i rappresentanti → tutti/e i/le rappresentanti
+                    4) i rappresentanti degli studenti → i/le rappresentanti degli/delle studenti
                     5) tutti → tutti/e
           """
           ],
@@ -27,7 +27,8 @@ STRATEGIES = {
                 1) "i professori" → "il corpo docente" or "coloro che insegnano" 
                 2) i docenti → il corpo docente
                 3) gli studenti → la comunità studentesca
-                4) i rappresentanti degli studenti → il personale di rappresentanza studentesca              
+                4) i rappresentanti degli studenti → il personale di rappresentanza studentesca
+                5) tutti → tutte le persone               
             """],
               
     "IO":"""Innovative Obscuration (IO): Use novel, gender-neutral markers. In this case, use symbol {symbol}.
@@ -35,7 +36,7 @@ STRATEGIES = {
                 1) i professori → l{symbol} professor{symbol}
                 2) i docenti → l{symbol} docenti
                 3) gli studenti → l{symbol} studenti
-                4) tutti i rappresentanti → tutt{symbol} l{symbol} rappresentant{symbol}
+                4) i rappresentanti degli studenti → l{symbol} rappresentant{symbol} de{symbol} student{symbol}
                 5) tutti → tutt{symbol}
                 6) invitati → invitat{symbol}
                 7) numerosi → numeros{symbol}
