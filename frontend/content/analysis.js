@@ -82,7 +82,7 @@ function startAnalysis() {
           setLoadingState(false);
           const btnWrapper = document.getElementById("info-btn-wrapper");
           showPopup("error", ERROR_MESSAGES["TIMEOUT"] || "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.", "error-msg", btnWrapper);
-        }, 45000);
+        }, 60000);
       } catch (error) {
         logger.error("Failed to send message to background: ", error);
         setLoadingState(false);
