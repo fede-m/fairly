@@ -187,7 +187,7 @@ class LookupFlag(IntEnum):
 
 class LookupResult(BaseModel):
     lemma: str
-    pos: Literal["adj", "adv", "intj", "noun", "propn", "verb", "adp", "aux", "cconj", "det", "num", "part", "pron", "sconj", "punct", "sym", "x"]
+    pos: Literal["adj", "adv", "intj", "noun", "propn", "verb", "adp", "aux", "cconj", "det", "num", "part", "pron", "sconj", "punct", "sym", "x", "space"]
     variants: MorphoVariants
     flag: LookupFlag
 
