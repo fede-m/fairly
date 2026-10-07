@@ -1,1 +1,1 @@
-const CONFIG = { BASE_URL: "https://api.fairly.di.unito.it" };
+const CONFIG = { BASE_URL: "http://localhost:8000" };

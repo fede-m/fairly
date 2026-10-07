@@ -7,6 +7,7 @@
     "storage"
   ],
   "host_permissions": [
+    "http://localhost:8000/*",
     "https://mail.google.com/*",
     "https://api.fairly.di.unito.it/*"
   ],
@@ -57,7 +58,7 @@
     "32": "icons/icon-32.png",
     "48": "icons/icon-48.png",
     "128": "icons/icon-128.png"
-  }, 
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
