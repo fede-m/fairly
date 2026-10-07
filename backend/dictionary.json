@@ -15,6 +15,102 @@
             ]
         }
     },
+    "il": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "la",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "lo": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "la",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "i": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "le",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "gli": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "le",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "un": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "una",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "un<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "uno": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "una",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "un<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
     "studente": {
         "noun": {
             "feminine": [
@@ -50,6 +146,242 @@
                 },
                 {
                     "form": "professoress<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "docente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "docente",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "docent<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "ricercatore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "ricercatrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ricercator<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "ricercatric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "rettore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "rettrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "rettor<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "rettric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "dottorando": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "dottoranda",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "dottorand<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "dottore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "dottoressa",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "dottor<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "dottoress<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "laureando": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "laureanda",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "laureand<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "laureato": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "laureata",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "laureat<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "relatore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "relatrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "relator<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "relatric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "correlatore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "correlatrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "correlator<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "correlatric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "assistente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "assistente",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "assistent<NEOM>",
+                    "weight": 1.0
+                }
+            ]
+        }
+    },
+    "coordinatore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "coordinatrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coordinator<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "coordinatric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "amministratore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "amministratrice",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "amministrator<NEOM>",
+                    "weight": 0.5
+                },
+                {
+                    "form": "amministratric<NEOM>",
+                    "weight": 0.5
+                }
+            ]
+        }
+    },
+    "uomo": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "donna",
+                    "weight": 1.0
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "uom<NEOM>",
                     "weight": 0.5
                 }
             ]
