@@ -113,6 +113,7 @@ async def analyse(request: Request):
             text = doc.text
             print("--Text " + "-"*32)
             print(doc.text)
+            doc_nlp = nlp(text)
             anonymized_text, _ = process_text(text)
             try:
                 # Detection (on full text)
@@ -141,7 +142,7 @@ async def analyse(request: Request):
             #       and enable some token savings and gain in efficiency
             span_lookup_results = {}
             for span in detected_spans:
-                span_lookup_results[span.span_id] = lookup_span(nlp(text), span.start_char, span.end_char)
+                span_lookup_results[span.span_id] = lookup_span(doc_nlp, span.start_char, span.end_char)
             multiple_span_lookup_results = MultipleSpanLookupResults(results=span_lookup_results)
             
             # debug
@@ -261,6 +262,7 @@ def lookup(lemma: str, pos_key: str) -> dict | None:
     return entry.get(pos_key)
   
 FLECTABLE_POS = {"noun", "adj", "verb", "aux", "det", "num", "pron"}
+IGNORED_POS = {"punct", "space", "sym"}
 # UNFLECTABLE_POS = {"adv", "cconj", "sconj", "intj", "adp", "punct", "sym"}
 
 def lookup_span(doc, start_char: int, end_char: int) -> SpanLookupResults:
@@ -281,7 +283,7 @@ def lookup_span(doc, start_char: int, end_char: int) -> SpanLookupResults:
       if pos not in FLECTABLE_POS:
         # punct is a particular case because it feels like it could easily be caught in a span
         # and i do not think it is enough to flag it
-        if pos != "punct":
+        if pos not in IGNORED_POS:
           results[word] = LookupResult(
                   lemma=lemma,
                   pos=pos,
