@@ -116,11 +116,7 @@
             "feminine": [
                 {
                     "form": "studentessa",
-                    "weight": 0.5
-                },
-                {
-                    "form": "studente",
-                    "weight": 0.5
+                    "weight": 1.0
                 }
             ],
             "neutral": [
