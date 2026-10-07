@@ -28,7 +28,7 @@ STRATEGIES = {
 }
 
 
-INNOVATIVE_SYMBOLS_EXAMPLES = [("*", "l* professor*"), ("@","l@ professor@"), ("x", "lx professorx"), "lu professoru", "lə professorə"]
+INNOVATIVE_SYMBOLS_EXAMPLES = [("*", "l* professor*"), ("@","l@ professor@"), ("x", "lx professorx"), ("u","lu professoru"), ("ə","lə professorə")]
 
 PROMPT = """You are an Italian language assistant specializing in rewriting non-inclusive spans.  
 
