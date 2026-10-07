@@ -97,11 +97,11 @@
   flex-direction: column;
   gap: 12px;
   margin-top: 14px;
-  max-height: 200px;
+  max-height: min(60vh, 340px);
   padding-bottom: 8px;
   /* padding necessario per shadow dell'ultima option */
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
   /* prevents container from expanding */
 }
 
