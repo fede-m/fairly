@@ -106,6 +106,7 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
     prompt = ""
     strat_type, ref_option = strategy.split("-")
     ref_option = int(ref_option)
+    simbolo = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0] if strat_type == "IO" and 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES) else "*"
     # initialize the span dict to easily handle keys comparisons
     spans_dict = SpanDict.from_list(spans)
     spans_ids = spans_dict.key_list
@@ -135,7 +136,7 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
                 span_lookup_result,
                 strat_type,
                 ref_option,
-                INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
+                simbolo
             )
 
           print(f"\nRewritten as {span.reformulation}\n")
@@ -190,11 +191,15 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
       else:
         # IO instructions were missing the symbol specifications
         # spans are sent back without reformulation
-        for span.id in spans_text:
-          span = spans_dict[r.span_id]
-          machine_reformulated_spans.append(span)
+        logger.exception(f"Generation failed with error: {e}")
+        raise Exception(f"IO instructions were missing the symbol specifications: {str(e)}")
+        
     
     merged_reformulated_spans = machine_reformulated_spans + list(rulebased_reformulated_spans.values())
+    # precaution if llm misses a span, it gets return equal
+    done = {s.span_id for s in merged_reformulated_spans}
+    merged_reformulated_spans += [s for s in spans if s.span_id not in done]
+    
     # DEBUG
     #print("\n-- machine ref "+"-"*30)
     #print(machine_reformulated_spans)
