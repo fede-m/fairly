@@ -112,7 +112,7 @@
 }
 
 .checklist::-webkit-scrollbar-thumb {
-  background: solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 50%, transparent);
   border-radius: 8px;
   border: 1px solid var(--color-white);
 }
@@ -140,24 +140,24 @@
 }
 
 .thickbox {
-  width: 8px;
-  height: 8px;
-  accent-color: var(--color-primary);
-  margin-right: 10px;
-  border-radius: 50%;
-  vertical-align: middle;
-  appearance: none;
-  border: 1.5px solid var(--color-primary);
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  margin: 0;                      /* gap comes from the label's flex gap */
+  border: 2px solid var(--color-primary);
+  border-radius: 3px;
   background: var(--color-white);
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
   flex-shrink: 0;
-  /* Prevent shrinking */
   flex-grow: 0;
-  /* Prevent growing */
+  vertical-align: middle;
 }
 
 .thickbox:checked {
   background: var(--color-primary);
+  box-shadow: inset 0 0 0 3px var(--color-white);  /* filled square with a white ring */
 }
 
 .nested-checklist {
@@ -172,15 +172,29 @@
   display: flex;
 }
 
-.checklist-item label,
-.nested-checklist label {
-  font-size: 16px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  text-align: left;
-  gap: 8px;
+.nested-checklist label,
+.checklist-item > label {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.nested-checklist label:hover,
+.checklist-item > label:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+.nested-checklist label:has(.thickbox:checked),
+.checklist-item > label:has(.thickbox:checked) {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  font-weight: 600;
+}
+
+.checklist-item:has(.thickbox:checked) {
+  border-color: var(--color-primary);
+  border-width: 1.5px;
+}
+.checklist-item:has(.nested-checklist .thickbox:checked) .options-container span {
+  font-weight: 600;
 }
 
 .options-container {
