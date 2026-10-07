@@ -201,7 +201,7 @@ class SpanLookupResults(BaseModel):
     
     # possible to insert custom evaluation logic (eg. require at least 10% flag incidence)
     def has_flag(self) -> bool:
-        return is_empty or any(result.flag != LookupFlag.OK for result in self.results.values())
+        return self.is_empty or any(result.flag != LookupFlag.OK for result in self.results.values())
 
 # multiple spans
 class MultipleSpanLookupResults(BaseModel):
