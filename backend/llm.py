@@ -7,6 +7,7 @@ import logging
 from models import Span, LLMOutput, MultipleSpanLookupResults, SpanDict
 from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
 from prompt import PROMPT, PROMPT_UNCERTAIN, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
+from rule_based_rewrite import rule_based_rewrite
 import instructor
 from openai import AsyncOpenAI
 import uuid
@@ -43,14 +44,12 @@ def generate_new_span(text:str,start:int, end:int) -> Span:
 
 def detection(text: str) -> list[Span]:
     try:
-        # Sentence Tokenize text
         sentences_spans = list(sentence_tokenizer.span_tokenize(text))
         sentences = [text[start: end] for (start, end) in sentences_spans]
 
         spans = []
 
         for span_sent, sent in zip(sentences_spans,sentences):
-            # Tokenize and get input for model
             inputs = tokenizer(sent, return_tensors="pt", return_offsets_mapping= True, truncation = True, is_split_into_words = False)
             
             # Contain tuples (start_char, end_char for each token in the original sentence)
@@ -124,11 +123,23 @@ async def generation(text: str, spans:list[Span], strategy: str, lookup_results:
     rulebased_reformulated_spans = {}
     prompt_flag = False
     for id in spans_ids:
-      if not lookup_results[id].has_flag():
+      print(f"--- span id {id} "+ "-"*20)
+      span_lookup_result = lookup_results[id]
+      print(f"{span_lookup_result}")
+      if not span_lookup_result.has_flag():
         if strat_type in ["CV", "IO", "IV"]:
           # all tokens in the span are a lookup hit
           span = spans_dict[id]
-          span.reformulation = "Easy rewrite for " + span.original_text
+          span.reformulation = rule_based_rewrite(
+                span.original_text,
+                span_lookup_result,
+                strat_type,
+                ref_option,
+                INNOVATIVE_SYMBOLS_EXAMPLES[ref_option][0]
+            )
+
+          print(f"\nRewritten as {span.reformulation}\n")
+
           rulebased_reformulated_spans[id] = span
           # later it will be merged with the llm reformulations
       else:
