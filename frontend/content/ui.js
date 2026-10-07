@@ -100,7 +100,7 @@ function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, n
 
       // saved strategy selection
       // const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
-      const shouldExpand = false
+      const shouldExpand = nestedOption.length <= 2;
 
       nestedDiv.className = "nested-checklist";
       nestedDiv.style.display = shouldExpand ? "flex" : "none";
