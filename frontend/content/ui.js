@@ -43,11 +43,11 @@ function createRadio(id, ariaLabel, defaultChecked = false) {
 function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, nestedOption = [], defaultSelected = false) {
     /**
      * Helper function to create a checklist item for each strategy.
-     * Supports both simple checkboxes and expandable nested options with accordion behavior.
+     * Supports both simple radio items and items with nested options (always visible).
      * Only one option can be selected at a time across all checklist items.
      * @param {string} labelText - Display label for the checklist item (e.g., "Doppia forma (M/F)")
      * @param {string} strategyName - Strategy identifier from STRATEGIES constant (CV, CO, IO, IV)
-     * @param {boolean} hasNested - Whether this item has expandable nested options
+     * @param {boolean} hasNested - Whether this item has nested options
      * @param {string[]} [nestedOption=[]] - Array of nested option labels to display
      * @param {boolean} [defaultSelected=false] - Whether the first nested option should be pre-selected
      * @returns {HTMLDivElement} The checklist item element
@@ -67,54 +67,26 @@ function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, n
     );
 
     if (hasNested && (nestedOption.length > 0)) {
-      // Create the item to contain arrow and label on the same line
+      // Static header: strategy name (no toggle)
       const container = document.createElement("div");
       container.className = "options-container";
-      // Create arrows to toggle the nested options
-      const arrowDownSVG = ICONS.arrowDown;
-      const arrowUpSVG = ICONS.arrowUp;
-
-      const arrowBtn = document.createElement("button");
-      arrowBtn.className = "arrow-btn";
-      arrowBtn.appendChild(svgToNode(arrowDownSVG));
-      arrowBtn.setAttribute(
-        "aria-label",
-        `Espandi opzioni per la strategia: ${labelText}`
-      );
-      arrowBtn.setAttribute("aria-expanded", "false")
-      arrowBtn.style.cursor = "pointer";
-      arrowBtn.style.marginRight = "8px";
 
       // Create the label for the options (e.g. "Doppia forma")
       const label = document.createElement("span");
       label.textContent = labelText;
-      label.style.cursor = "pointer";
 
-      // Append all the elements to the container and current item
-      container.appendChild(arrowBtn);
       container.appendChild(label);
       item.appendChild(container);
 
-      // Create the div for the nested options (e.g. "lo studente e la studente")
+      // Create the div for the nested options (e.g. "lo studente e la studente"), always visible
       const nestedDiv = document.createElement("div");
 
-      // saved strategy selection
-      // const shouldExpand = savedStrategy ? savedStrategy.startsWith(strategyName + "-") : false;
-      const shouldExpand = nestedOption.length <= 2;
-
       nestedDiv.className = "nested-checklist";
-      nestedDiv.style.display = shouldExpand ? "flex" : "none";
       nestedDiv.setAttribute("role", "radiogroup");
-      nestedDiv.setAttribute("aria-hidden", shouldExpand ? "false" : "true");
       nestedDiv.setAttribute(
         "aria-label",
         `Opzioni per la strategia ${labelText}`
       );
-
-      if (shouldExpand) {
-        arrowBtn.replaceChildren(svgToNode(arrowUpSVG));
-        arrowBtn.setAttribute("aria-expanded", "true");
-      }
 
       // Loop through the possible options for the current strategy
       nestedOption.forEach((optText, idx) => {
@@ -129,42 +101,12 @@ function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, n
           `Opzione della strategia ${labelText}: ${optText}`,
           false
         );
-        nestedCheckbox.tabIndex = shouldExpand ? 0 : -1;
 
         nestedLabel.appendChild(nestedCheckbox);
         nestedLabel.appendChild(document.createTextNode(" " + optText));
         nestedDiv.appendChild(nestedLabel);
       });
       item.appendChild(nestedDiv);
-      // Show/hide nested options on parent 
-      // Remove cursor from arrowBtn, let container handle it
-      arrowBtn.style.pointerEvents = "none";
-      container.style.cursor = "pointer";
-      container.addEventListener("click", () => {
-        const isExpanding = nestedDiv.style.display === "none";
-        nestedDiv.style.display = isExpanding ? "flex" : "none";
-        nestedDiv.setAttribute("aria-hidden", !isExpanding ? "true" : "false");
-
-        // Toggle keyboard accessibility
-        nestedDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
-          radio.tabIndex = isExpanding ? 0 : -1;
-        });
-
-        arrowBtn.replaceChildren(svgToNode(isExpanding ? arrowUpSVG : arrowDownSVG));
-        arrowBtn.setAttribute("aria-expanded", isExpanding ? "true" : "false");
-        arrowBtn.setAttribute(
-          "aria-label",
-          `${isExpanding ? "Comprimi" : "Espandi"} opzioni per la strategia: ${labelText}`
-        );
-
-        if (isExpanding) {
-          // Close other nested divs
-          collapseAllNested(nestedDiv, arrowBtn);
-          const firstRadio = nestedDiv.querySelector('input[type="radio"]');
-          firstRadio?.focus();
-          //firstRadio?.click();
-        }
-      });
     } else {
       const radioId = strategyName;
       //const isChecked = savedStrategy ? (savedStrategy === radioId) : defaultSelected;
@@ -319,20 +261,6 @@ function createChecklistItem(labelText, strategyName, hasNested, strategyInfo, n
     return item;
 }
 
-function collapseAllNested(exceptDiv, exceptBtn) {
-  document.querySelectorAll(".nested-checklist").forEach(div => {
-    if (div === exceptDiv) return;
-    div.style.display = "none";
-    div.setAttribute("aria-hidden", "true");
-    div.querySelectorAll('input[type="radio"]').forEach(r => { r.tabIndex = -1; });
-  });
-  document.querySelectorAll(".arrow-btn").forEach(btn => {
-    if (btn === exceptBtn) return;
-    btn.replaceChildren(svgToNode(ICONS.arrowDown));
-    btn.setAttribute("aria-expanded", "false");
-  });
-}
-
 const closeAllInfoPopovers = (focusTriggerId = null) => {
   document.querySelectorAll(".info-popover").forEach((p) => {
     p.hidden = true;
@@ -388,7 +316,7 @@ function createInfoDiv() {
   // Check-list container 
   const checklist = document.createElement("div");
   checklist.className = "checklist";
-  checklist.setAttribute("role", "radiogroup");
+  checklist.setAttribute("role", "group");
   checklist.setAttribute("aria-label", "Seleziona una strategia inclusiva");
 
   // Create the strategies options 
@@ -497,4 +425,3 @@ function createInfoDiv() {
 
   return infoDiv;
 }
-

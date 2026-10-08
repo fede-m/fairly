@@ -125,9 +125,9 @@
 .checklist-item {
   background: var(--color-surface);
   border-radius: 8px;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 2px solid color-mix(in srgb, var(--color-primary) 15%, transparent);
   padding: 10px;
-  box-shadow: 0 1px 3px rgba(32, 33, 85, 0.07);
+  box-shadow: 0 2px 7px rgba(96, 33, 163, 0.13);
   transition: box-shadow 0.2s;
   position: relative;
   font-size: 16px;
@@ -163,25 +163,25 @@
 .nested-checklist {
   margin-left: 28px;
   margin-top: 8px;
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.checklist-item.selected .nested-checklist {
-  display: flex;
-}
-
 .nested-checklist label,
 .checklist-item > label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 10px;
   border-radius: 6px;
   cursor: pointer;
   box-sizing: border-box;
+  transition: background 0.15s;
 }
 .nested-checklist label:hover,
 .checklist-item > label:hover {
-  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 .nested-checklist label:has(.thickbox:checked),
 .checklist-item > label:has(.thickbox:checked) {
@@ -191,7 +191,7 @@
 
 .checklist-item:has(.thickbox:checked) {
   border-color: var(--color-primary);
-  border-width: 1.5px;
+  border-width: 2.5px;
 }
 .checklist-item:has(.nested-checklist .thickbox:checked) .options-container span {
   font-weight: 600;
@@ -721,6 +721,3 @@
   margin-top: 16px;
   justify-content: flex-end;
 }
-
-
-
