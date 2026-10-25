@@ -138,7 +138,7 @@ async def analyse(request: Request):
             # 2. Look-up in a table with frequent morphosyntactic rewritings in Italian
             #   i) look-up can be used as an indicator for good/bad detections: if the detected word is not in the table,
             #      there is a chance it was not a word that needed detection to begin with
-            #   ii) for strategies CB, IV, IO, that are morphosyntactic rewritings, a lookup table could be enough
+            #   ii) for strategies CV, IV, IO, that are morphosyntactic rewritings, a lookup table could be enough
             #       and enable some token savings and gain in efficiency
             span_lookup_results = {}
             for span in detected_spans:
