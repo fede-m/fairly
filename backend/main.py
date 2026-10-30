@@ -26,6 +26,7 @@ from models import (
 )
 from llm import detection, generation
 from presidio import setup_presidio, process_text, get_spacy_model
+from pathlib import Path
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
 logging.basicConfig(
@@ -63,7 +64,9 @@ except Exception as e:
     print(f"Set up of spacy model failed.\nError: {type(e).__name__}: {e}")
     
 # -- reading of the .json lookup table for morphosyntactic rewrites -------
-with open("dictionary.json", encoding="utf-8") as f:
+dictionary_path = Path(__file__).resolve().parent / "dictionary.json"
+
+with dictionary_path.open(encoding="utf-8") as f:
     LOOKUP_TABLE: dict = json.load(f)
 
 @app.middleware("http")
@@ -269,7 +272,10 @@ def lookup_span(doc, start_char: int, end_char: int) -> SpanLookupResults:
     """Return {lemma: {pos: <forms>}} for all tokens in the span that exist in the table.
     plus a prompt flag: fails in lookup indicate weak detection and cause a change in the
     generation prompt to a more flexible one that asks the llm to rethink the detection"""
+    print("-------------- lookup_span --------------")
+    print(f"Doc: {doc}")
     span = doc.char_span(start_char, end_char, alignment_mode="expand")
+    print(f"Span: {span}")
     if span is None or len(span) == 0:
         return SpanLookupResults(results={}, is_empty=True)
     
@@ -279,6 +285,7 @@ def lookup_span(doc, start_char: int, end_char: int) -> SpanLookupResults:
       word = token.text
       lemma = token.lemma_
       pos = token.pos_.lower()
+      print(pos)
       
       if pos not in FLECTABLE_POS:
         # punct is a particular case because it feels like it could easily be caught in a span

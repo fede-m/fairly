@@ -51,7 +51,6 @@ def detection(text: str) -> list[Span]:
 
         for span_sent, sent in zip(sentences_spans,sentences):
             inputs = tokenizer(sent, return_tensors="pt", return_offsets_mapping= True, truncation = True, is_split_into_words = False)
-            
             # Contain tuples (start_char, end_char for each token in the original sentence)
             offsets = inputs.pop("offset_mapping")[:,1:-1,:]
 
@@ -64,10 +63,9 @@ def detection(text: str) -> list[Span]:
 
             # Map IDs to class labels
             predicted_labels = [model.config.id2label[i.item()] for i in predictions[0][1:-1]]
-
             # Keep track on whether a span is being constructed. This prevents having spans which do not start with a B-UNFAIR but just have I-UNFAIR
             building_span = False
-            for i,label in enumerate(predicted_labels):
+            for i, label in enumerate(predicted_labels):
                 start = span_sent[0] + offsets[0][i][0]
                 end = span_sent[0] + offsets[0][i][1]
                 if label == "B-UNFAIR":
