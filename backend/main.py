@@ -1,12 +1,21 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from openai import AsyncOpenAI
 from starlette.concurrency import run_in_threadpool
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+import instructor
+import random
+
 import os
 import hmac
 import hashlib
 import logging
+import nltk
+import spacy
 import time
+from config import DETECTION_MODEL, TOKENIZER_MODEL
 from models import (
     Request,
     StoreEventRequest,
@@ -29,11 +38,33 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logging.getLogger("presidio-analyzer").setLevel(logging.WARNING)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 CHROME_EXTENSION_ID_1 = os.getenv("CHROME_EXTENSION_ID_1")
 CHROME_EXTENSION_ID_2 = os.getenv("CHROME_EXTENSION_ID_2")
+HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 SECRET_KEY = os.environ.get("SECRET_KEY")
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.nlp = spacy.load("it_core_news_lg")
+
+    # Load models for detection
+    app.state.sent_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
+    app.state.detection_model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+    app.state.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
+    # Setup client
+    client = AsyncOpenAI(
+        base_url = os.getenv("HPC4AI_URL", ""),
+        api_key = os.getenv("OPENWEB_API", ""),
+        timeout= 35.0
+    )
+
+    app.state.client = instructor.patch(client, mode = instructor.Mode.JSON)
+    setup_presidio()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -84,12 +115,13 @@ async def store_user(user: User):
         return {"status": 200, "message": "User was added successfully"}
 
 @app.post("/analyse")
-async def analyse(request: Request):
+async def analyse(request: Request, http_request: FastAPIRequest):
     logger.info("Analysis request: session=%s, strategy=%s, docs=%d", request.session_id, request.strategy, len(request.data))
     results = {}
     strategy = request.strategy
     email = request.user_id.strip().lower()
     request.user_id = _hash_email(email)
+    nlp = http_request.app.state.nlp
 
     # Store request
     analysis_events = []
@@ -101,7 +133,14 @@ async def analyse(request: Request):
             anonymized_text, _ = process_text(text)
             try:
                 # Detection (on full text)
-                detected_spans = await run_in_threadpool(detection, text)
+                detected_spans = await run_in_threadpool(
+                    detection, 
+                    text, 
+                    http_request.app.state.sent_tokenizer, 
+                    http_request.app.state.tokenizer, 
+                    http_request.app.state.detection_model
+                )
+
             except Exception as e:
                 logger.exception("Detection failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("detection_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -114,7 +153,7 @@ async def analyse(request: Request):
                 }
             # Generation
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
+                reformulated_spans = await generation(anonymized_text, detected_spans, strategy, http_request.app.state.client)
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
