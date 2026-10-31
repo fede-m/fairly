@@ -12,3 +12,10 @@ wheels/
 
 # Logging
 app.log
+
+# Tests
+test/*.json
+test/*.ipynb
+test/*.txt
+test/*.csv
+test/*.md

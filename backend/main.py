@@ -28,6 +28,7 @@ from models import (
     FrontendErrorRequest
 )
 from llm import detection, generation
+from dictionary_rewriting import dictionary_based_rewrite
 from presidio import setup_presidio, process_text
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
@@ -79,10 +80,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def startup_event():
-    setup_presidio()
 
 @app.middleware("http")
 async def log_requests(request: FastAPIRequest, call_next):
@@ -151,9 +148,29 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     "code": "ANALYSIS_FAILED",
                     "details": str(e),
                 }
-            # Generation
+
+            # ------------------ Rewriting ------------------
+
+            # Dictionary based
+            # If not all spans could be rewritten using an algorithm, call the generation branch only for that spans
+            reformulated = [] 
+            need_generation = []
+            gender_precedence = None
+            if strategy.split("-")[0] == "CO":
+                need_generation = detected_spans
+            else:
+                if strategy.split("-")[0] in ["CV", "IV"]:
+                    gender_precedence = random.sample(["masculine", "feminine"], 1)[0]
+                for span in detected_spans:
+                    reformulated_span = dictionary_based_rewrite(nlp, text, span, strategy, gender_precedence)
+                    if not reformulated_span:
+                        need_generation.append(span)
+                    else:
+                        reformulated.append(reformulated_span)
+                
+            # Generation based
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy, http_request.app.state.client)
+                reformulated.extend(await generation(anonymized_text, need_generation, strategy, http_request.app.state.client))
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -165,9 +182,13 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     "details": str(e),
                 }
 
+            # Put results together and order
+            reformulated = sorted(
+                reformulated, key = lambda span: span.start_char
+            )
             # Detection ran on the original text, so span indices already match it
             results[doc.id] = OutputData(
-                text=text, unfair_spans=reformulated_spans
+                text=text, unfair_spans=reformulated
             )
             analysis_request = StoreEventRequest(
                 event=EventType.ANALYSIS,
@@ -180,7 +201,7 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                         reformulation=s.reformulation,
                         current_used="",
                     )
-                    for s in reformulated_spans
+                    for s in reformulated
                 ],
                 session_id=request.session_id,
                 user_id=request.user_id,
@@ -244,6 +265,5 @@ async def log_frontend_error(error: FrontendErrorRequest):
     logger.warning("Frontend error from %s: %s", error.source, error.message)
     await insert_frontend_error(error)
     return {"status": 200, "message": "Error logged successfully"}
-
 
 
