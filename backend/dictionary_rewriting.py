@@ -16,6 +16,7 @@ GENDERED_POS_MAPPING = {
     "noun": "noun", 
     "adj": "adj", 
     "verb": "verb", 
+    "aux": "verb", 
     "det": "det", 
     "adp": "det", 
     "pron": "pron"
@@ -225,7 +226,7 @@ def lookup_span_forms(nlp_span: tokens.Span, strategy: str) -> SpanLookupResult 
         if pos in GENDERED_POS_MAPPING:
             morph = token.morph.to_dict()
             is_non_participial_verb = (
-                pos == "verb"
+                pos in ["verb", "aux"]
                 and str(morph.get("VerbForm", "")).lower()
                 != "part"
             )
