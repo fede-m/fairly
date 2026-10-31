@@ -2657,6 +2657,22 @@
             ]
         }
     },
+    "signor": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "signora",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "signor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "signori": {
         "noun": {
             "feminine": [],
@@ -4099,11 +4115,40 @@
             ],
             "neutral": [
                 {
-                    "form": "ch<ENDP>",
+                    "form": "chi",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "chi",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "chi",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "chi",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "chi",
                     "weight": 1
                 }
             ]
         }
+
     },
     "ciclista": {
         "noun": {
@@ -4213,10 +4258,6 @@
         "noun": {
             "feminine": [
                 {
-                    "form": "qualcuno",
-                    "weight": 1
-                },
-                {
                     "form": "qualcuna",
                     "weight": 1
                 }
@@ -4238,36 +4279,6 @@
             "neutral": [
                 {
                     "form": "qualcun<ENDS>",
-                    "weight": 1
-                }
-            ]
-        }
-    },
-    "....": {
-        "noun": {
-            "feminine": [
-                {
-                    "form": "...",
-                    "weight": 1
-                }
-            ],
-            "neutral": [
-                {
-                    "form": "....",
-                    "weight": 1
-                }
-            ]
-        },
-        "adj": {
-            "feminine": [
-                {
-                    "form": "...",
-                    "weight": 1
-                }
-            ],
-            "neutral": [
-                {
-                    "form": "....",
                     "weight": 1
                 }
             ]
@@ -5228,6 +5239,22 @@
             ]
         }
     },
+    "leaders": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "leaders",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "leaders",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "buyer": {
         "noun": {
             "feminine": [
@@ -5239,6 +5266,126 @@
             "neutral": [
                 {
                     "form": "buyer",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "europarlamentare": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "europarlamentare",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "europarlamentar<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "europarlamentare",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "europarlamentar<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "europarlamentari": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "europarlamentari",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "europarlamentar<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "europarlamentari",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "europarlamentar<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "distributore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "distributrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "distributor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "distributrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "distributor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "distributori": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "distributrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "distributor<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "distributrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "distributor<ENDP>",
                     "weight": 1
                 }
             ]
@@ -15229,10 +15376,6 @@
         "noun": {
             "feminine": [
                 {
-                    "form": "dea",
-                    "weight": 1
-                },
-                {
                     "form": "dee",
                     "weight": 1
                 }
@@ -25029,10 +25172,6 @@
             "feminine": [
                 {
                     "form": "analista",
-                    "weight": 1
-                },
-                {
-                    "form": "analist",
                     "weight": 1
                 }
             ],
@@ -45452,10 +45591,6 @@
                 {
                     "form": "genitrici",
                     "weight": 1
-                },
-                {
-                    "form": "genitrici",
-                    "weight": 1
                 }
             ],
             "neutral": [
@@ -54666,10 +54801,6 @@
     "imprenditori": {
         "noun": {
             "feminine": [
-                {
-                    "form": "imprenditrice",
-                    "weight": 1
-                },
                 {
                     "form": "imprenditrici",
                     "weight": 1
@@ -84124,7 +84255,7 @@
         "noun": {
             "feminine": [
                 {
-                    "form": "parlamentari",
+                    "form": "parlamentare",
                     "weight": 1
                 }
             ],
@@ -185064,6 +185195,22 @@
             ]
         }
     },
+    "maghi": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "maghe",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mag<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "napoletano": {
         "noun": {
             "feminine": [
@@ -192516,6 +192663,20 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "una",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "un<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "uni": {
@@ -198872,7 +199033,35 @@
             ],
             "neutral": [
                 {
-                    "form": "ambedu<ENDS>",
+                    "form": "ambedue",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ambedue",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ambedue",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "ambedue",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ambedue",
                     "weight": 1
                 }
             ]
@@ -287883,6 +288072,22 @@
             ]
         }
     },
+    "nessun": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "nessuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "nessuni": {
         "adj": {
             "feminine": [
@@ -349259,6 +349464,86 @@
             ]
         }
     },
+    "padre": {
+        "verb": {
+            "feminine": [
+                {
+                    "form": "madre",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "genitor<ENDS>",
+                    "weight": 1
+                },
+                {
+                    "form": "care-giver",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "padri": {
+        "verb": {
+            "feminine": [
+                {
+                    "form": "madri",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "genitor<ENDP>",
+                    "weight": 1
+                },
+                {
+                    "form": "care-giver",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "patrigno": {
+        "verb": {
+            "feminine": [
+                {
+                    "form": "matrigna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "genitor<ENDS>",
+                    "weight": 1
+                },
+                {
+                    "form": "care-giver",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "patrigni": {
+        "verb": {
+            "feminine": [
+                {
+                    "form": "matrigne",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "genitor<ENDP>",
+                    "weight": 1
+                },
+                {
+                    "form": "care-giver",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "patriarcale": {
         "adj": {
             "feminine": [
@@ -373047,6 +373332,22 @@
             ]
         }
     },
+    "ciascun": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "ciascuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "ciascuni": {
         "adj": {
             "feminine": [
@@ -373058,6 +373359,124 @@
             "neutral": [
                 {
                     "form": "ciascun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "chiunque": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ]
+        },
+        "adp": {
+            "feminine": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "chiunque",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "coloro": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ]
+        },
+        "adp": {
+            "feminine": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "ex": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "ex",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ex",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "ex",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ex",
                     "weight": 1
                 }
             ]
@@ -616907,6 +617326,22 @@
             ]
         }
     },
+    "felicissimi": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "felicissime",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "felicissim<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "rifatto": {
         "adj": {
             "feminine": [
@@ -851435,6 +851870,362 @@
             ]
         }
     },
+    "giudice": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "giudice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "giudic<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "giudici": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "giudici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "giudic<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vittima": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "vittima",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vittima",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
+            "feminine": [
+                {
+                    "form": "vittima",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vittima",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vittime": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "vittime",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vittime",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
+            "feminine": [
+                {
+                    "form": "vittime",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vittime",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "membro": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "membra",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "membr<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "membri": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "membre",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "membr<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "scrutinatore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "scrutinatrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "scrutinator<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "scrutinatori": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "scrutinatrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "scrutinator<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "sottufficiale": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "sottufficiale",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "sottufficial<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "sottufficiali": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "sottufficiali",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "sottufficial<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "decisore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "decisore",
+                    "weight": 1
+                },
+                {
+                    "form": "deciditrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "decisor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "decisore",
+                    "weight": 1
+                },
+                {
+                    "form": "deciditrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "decisor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vacanziero": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "vacanziera",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vacanzier<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vacanzieri": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "vacanziere",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vacanzier<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vecchietto": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "vecchietta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vecchiett<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+         "noun": {
+            "feminine": [
+                {
+                    "form": "vecchietta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vecchiett<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "vecchietti": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "vecchiette",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vecchiett<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+         "noun": {
+            "feminine": [
+                {
+                    "form": "vecchiette",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vecchiett<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "decisori": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "decisore",
+                    "weight": 1
+                },
+                {
+                    "form": "deciditrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "decisor<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "decisore",
+                    "weight": 1
+                },
+                {
+                    "form": "deciditrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "decisor<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "inattivante": {
         "verb": {
             "feminine": [
@@ -934507,6 +935298,7 @@
             ]
         }
     },
+
     "padreggiante": {
         "verb": {
             "feminine": [
@@ -1092790,6 +1093582,22 @@
             "neutral": [
                 {
                     "form": "permischiant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "persone": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "persone",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "persone",
                     "weight": 1
                 }
             ]
@@ -1307551,7 +1308359,7 @@
         "det": {
             "feminine": [
                 {
-                    "form": "un'",
+                    "form": "una",
                     "weight": 1
                 }
             ],

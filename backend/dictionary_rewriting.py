@@ -84,8 +84,8 @@ def lookup(word: str, pos: str, genders: list[str]) -> GenderFormVariants | None
         neutral=selected_forms.get("neutral"),
     )
 
-def combine_forms(nlp, masc, fem, preference, det=True):
-    conjunction = "e" if det else "o"
+def combine_forms(nlp, masc, fem, preference, sing=True):
+    conjunction = "o" if sing else "e"
 
     masc_text = "".join(t.text + t.whitespace_ for t in masc).rstrip()
     fem_text = "".join(fem).rstrip()
@@ -107,6 +107,7 @@ def handle_cv_long(nlp: language.Language, nlp_span: tokens.Span, forms: SpanLoo
     curr_fem = []
     for token_m in nlp_span:
         word = token_m.text
+        morph = token_m.morph.to_dict()
         feminine = forms.results[word].form.feminine
         # Preserve the original token's whitespace in the feminine version.
         token_f = feminine + (token_m.whitespace_ if not feminine.endswith("'") else "")
@@ -115,21 +116,27 @@ def handle_cv_long(nlp: language.Language, nlp_span: tokens.Span, forms: SpanLoo
             curr_fem.append(token_f)
         else:
             if curr_masc and curr_fem:
-                det = False if (curr_masc and curr_masc[0].text == "un") else True
-                output.extend(combine_forms(nlp, curr_masc, curr_fem, gender_precedence, det))
+                sing = any(
+                    token.morph.get("Number") == ["Sing"]
+                    for token in curr_masc
+                )
+                output.extend(combine_forms(nlp, curr_masc, curr_fem, gender_precedence, sing))
                 curr_masc = []
                 curr_fem = []
             output.append(token_m)
     # Flush any remaining changed tokens after the loop.
     if curr_masc and curr_fem:
-        det = False if curr_masc and curr_masc[0].text == "un" else True
+        sing = any(
+            token.morph.get("Number") == ["Sing"]
+            for token in curr_masc
+        )
         output.extend(
             combine_forms(
                 nlp,
                 curr_masc,
                 curr_fem,
                 gender_precedence,
-                det
+                sing
             )
         )
     return "".join(t.text + t.whitespace_ for t in output).strip()
@@ -159,7 +166,8 @@ def handle_io(nlp_span: tokens.Span, forms: SpanLookupResult, rew_type: int) -> 
         word = token_m.text
         neut = forms.results[word].form.neutral
         if neut != word:
-            token = neut + token_m.whitespace_
+            whitespace = " " if neut.endswith(("<ENDS>", "<ENDP>")) else token_m.whitespace_
+            token = neut + whitespace
             output.append(token)
         else:
             token = word + token_m.whitespace_
@@ -215,12 +223,19 @@ def lookup_span_forms(nlp_span: tokens.Span, strategy: str) -> SpanLookupResult 
         )
 
         if pos in GENDERED_POS_MAPPING:
+            morph = token.morph.to_dict()
             is_non_participial_verb = (
                 pos == "verb"
-                and str(token.morph.to_dict().get("VerbForm", "")).lower()
+                and str(morph.get("VerbForm", "")).lower()
                 != "part"
             )
-            if not is_non_participial_verb:
+            is_not_masculine = (
+                pos == "noun"
+                and str(morph.get("Gender", "")).lower()
+                != "masc"
+            )
+
+            if not is_non_participial_verb and not is_not_masculine:
                 form = lookup(word, pos, genders)
                 if form is None:
                     return None
