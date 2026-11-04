@@ -4282,6 +4282,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "qualcuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "qualcun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "qualcuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "qualcun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "vecchio": {
@@ -5002,7 +5030,10 @@
     },
     "controllori": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "controllore",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "controllor<ENDP>",
@@ -12832,6 +12863,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "numerosa",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "numeros<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "numerosa",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "numeros<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "numerosi": {
@@ -12850,6 +12909,20 @@
             ]
         },
         "adj": {
+            "feminine": [
+                {
+                    "form": "numerose",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "numeros<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
             "feminine": [
                 {
                     "form": "numerose",
@@ -17037,6 +17110,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "molta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "molt<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "molta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "molt<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "molti": {
@@ -17055,6 +17156,34 @@
             ]
         },
         "adj": {
+            "feminine": [
+                {
+                    "form": "molte",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "molt<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "molte",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "molt<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "molte",
@@ -31464,6 +31593,20 @@
                 }
             ]
         },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "invitata",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "invitat<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -43422,6 +43565,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "tanta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tant<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "tanta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tant<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "tanti": {
@@ -43440,6 +43611,34 @@
             ]
         },
         "adj": {
+            "feminine": [
+                {
+                    "form": "tante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "tante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "tante",
@@ -45149,6 +45348,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "diversa",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "divers<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "diversa",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "divers<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "diversi": {
@@ -45167,6 +45394,34 @@
             ]
         },
         "adj": {
+            "feminine": [
+                {
+                    "form": "diverse",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "divers<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "diverse",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "divers<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
             "feminine": [
                 {
                     "form": "diverse",
@@ -69872,7 +70127,10 @@
     },
     "rappresentanti": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "rappresentanti",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "rappresentant<ENDP>",
@@ -99329,6 +99587,20 @@
                     "weight": 1
                 }
             ]
+        },
+        "verb": {
+            "feminine": [
+                {
+                    "form": "sollecite",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "sollecit<ENDP>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "pitto": {
@@ -101979,6 +102251,38 @@
             "neutral": [
                 {
                     "form": "urbanist<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "paese": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "paese",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "paese",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "paesi": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "paesi",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "paesi",
                     "weight": 1
                 }
             ]
@@ -109599,10 +109903,6 @@
                 {
                     "form": "escursioniste",
                     "weight": 1
-                },
-                {
-                    "form": "escursioniste",
-                    "weight": 1
                 }
             ],
             "neutral": [
@@ -111111,7 +111411,10 @@
     },
     "puzzoni": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "puzzone",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "puzzon<ENDP>",
@@ -111984,7 +112287,10 @@
     },
     "oncogeni": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "oncogene",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "oncogen<ENDP>",
@@ -120307,6 +120613,20 @@
             ]
         },
         "adj": {
+            "feminine": [
+                {
+                    "form": "realiste",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "realist<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
             "feminine": [
                 {
                     "form": "realiste",
@@ -135055,7 +135375,10 @@
     },
     "agenti": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "agenti",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "agent<ENDP>",
@@ -155538,7 +155861,10 @@
     },
     "escursioniste": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "escursioniste",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "escursionist<ENDS>",
@@ -156297,7 +156623,10 @@
     },
     "cucinieri": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "cuciniere",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "cucinier<ENDP>",
@@ -156960,7 +157289,10 @@
     },
     "fascistoidi": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "fascistoidi",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "fascistoid<ENDP>",
@@ -157265,7 +157597,10 @@
     },
     "inerti": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "inerti",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "inert<ENDP>",
@@ -157696,7 +158031,10 @@
     },
     "zoticoni": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "zoticone",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "zoticon<ENDP>",
@@ -157977,7 +158315,10 @@
     },
     "ficoni": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "ficone",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "ficon<ENDP>",
@@ -158984,7 +159325,10 @@
     },
     "solventi": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "solventi",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "solvent<ENDP>",
@@ -161901,7 +162245,10 @@
     },
     "martellista": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "martellista",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "martellist<ENDS>",
@@ -162200,7 +162547,10 @@
     },
     "quadrupedi": {
         "noun": {
-            "feminine": [],
+            "feminine": [{
+                    "form": "quadrupedi",
+                    "weight": 1
+                }],
             "neutral": [
                 {
                     "form": "quadruped<ENDP>",
@@ -165375,6 +165725,94 @@
             "neutral": [
                 {
                     "form": "vedent<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "udente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "udente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "udente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
+            "feminine": [
+                {
+                    "form": "udente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDS>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "udenti": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "udenti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "udenti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
+            "feminine": [
+                {
+                    "form": "udenti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "udent<ENDP>",
                     "weight": 1
                 }
             ]
@@ -190247,6 +190685,20 @@
                     "weight": 1
                 }
             ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "francese",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "frances<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "mancese": {
@@ -192773,6 +193225,80 @@
                     "weight": 1
                 }
             ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "animali",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "animali",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+        "mammifero": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "mammifero",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mammifero",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "mammifero",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mammifero",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "mammiferi": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "mammiferi",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mammiferi",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "mammiferi",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mammiferi",
+                    "weight": 1
+                }
+            ]
         }
     },
     "quadrato": {
@@ -194700,6 +195226,20 @@
         }
     },
     "assicuratori": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "assicuratrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "assicurator<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -194710,6 +195250,22 @@
             "neutral": [
                 {
                     "form": "assicurator<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "gruppo": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "gruppo",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "gruppo",
                     "weight": 1
                 }
             ]
@@ -195197,6 +195753,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "altra",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "altr<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "altra",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "altr<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "altri": {
@@ -195210,6 +195794,114 @@
             "neutral": [
                 {
                     "form": "altr<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "altre",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "altr<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "altre",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "altr<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "si": {
+        "pron": {
+            "feminine": [
+                {
+                    "form": "si",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "si",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "asilo": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "asilo",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "asilo",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "come": {
+        "pron": {
+            "feminine": [
+                {
+                    "form": "come",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "come",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "che": {
+        "pron": {
+            "feminine": [
+                {
+                    "form": "che",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "che",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+    "cui": {
+        "pron": {
+            "feminine": [
+                {
+                    "form": "cui",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "cui",
                     "weight": 1
                 }
             ]
@@ -196133,6 +196825,34 @@
     },
     "tutto": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "tutta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tutt<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "tutta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "tutt<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "tutta",
@@ -200224,6 +200944,20 @@
         }
     },
     "clandestino": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "clandestina",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "clandestin<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -200240,6 +200974,20 @@
         }
     },
     "clandestini": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "clandestine",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "clandestin<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -203620,6 +204368,20 @@
         }
     },
     "corrente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "corrente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "corrente",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -205339,6 +206101,20 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "quella",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quell<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "quelli": {
@@ -205357,6 +206133,20 @@
             ]
         },
         "det": {
+            "feminine": [
+                {
+                    "form": "quelle",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quell<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "quelle",
@@ -205545,10 +206335,66 @@
                     "weight": 1
                 }
             ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "alcuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alcun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "alcuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alcun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "alcuni": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "alcune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alcun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "alcune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alcun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "alcune",
@@ -210004,6 +210850,20 @@
         }
     },
     "diritto": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "diritto",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "diritto",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -210020,6 +210880,20 @@
         }
     },
     "diritti": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "diritti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "diritti",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -211491,6 +212365,20 @@
         }
     },
     "partito": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "partito",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "partito",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -212378,10 +213266,94 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ognuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "ognuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "ognuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "ognuni": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "ognune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ognune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "ognune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ognun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
             "feminine": [
                 {
                     "form": "ognune",
@@ -213410,6 +214382,20 @@
     },
     "malato": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "malata",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "malat<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
             "feminine": [
                 {
                     "form": "malata",
@@ -224323,6 +225309,20 @@
         }
     },
     "ideale": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "ideale",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ideale",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -224339,6 +225339,20 @@
         }
     },
     "ideali": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "ideali",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ideali",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -225787,6 +226801,20 @@
         }
     },
     "intervistati": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "intervistate",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "intervistat<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -227450,6 +228478,34 @@
     },
     "alquanti": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "alquante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alquant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "alquante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "alquant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
             "feminine": [
                 {
                     "form": "alquante",
@@ -235425,6 +236481,20 @@
         }
     },
     "mondo": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "mondo",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "mondo",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -237786,10 +238856,38 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "propria",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "propri<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "propri": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "proprie",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "propr<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "proprie",
@@ -238582,10 +239680,66 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "quanta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quant<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "quanta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quant<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "quanti": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "quante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "quante",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "quant<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
             "feminine": [
                 {
                     "form": "quante",
@@ -263698,10 +264852,66 @@
                     "weight": 1
                 }
             ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "parecchia",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "parecchi<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "parecchia",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "parecchi<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "parecchi": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "parecchie",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "parecch<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "parecchie",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "parecch<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "parecchie",
@@ -272061,6 +273271,20 @@
         }
     },
     "trattato": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "trattato",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "trattato",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -272091,6 +273315,20 @@
         }
     },
     "trattati": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "trattati",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "trattati",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -288070,6 +289308,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "nessuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "nessuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "nessun": {
@@ -288086,10 +289352,52 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "nessuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "nessuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "nessuni": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "nessune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "nessun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "nessune",
@@ -318323,6 +319631,20 @@
         }
     },
     "vincitore": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "vincitrice",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vincitor<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -318339,6 +319661,20 @@
         }
     },
     "vincitori": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "vincitrici",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vincitor<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -371605,6 +372941,20 @@
                 }
             ]
         },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "delegata",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "delegat<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -373330,6 +374680,34 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ciascuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "ciascuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "ciascun": {
@@ -373346,10 +374724,66 @@
                     "weight": 1
                 }
             ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ciascuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
+            "feminine": [
+                {
+                    "form": "ciascuna",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDS>",
+                    "weight": 1
+                }
+            ]
         }
     },
     "ciascuni": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "ciascune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "ciascune",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "ciascun<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "det": {
             "feminine": [
                 {
                     "form": "ciascune",
@@ -373438,6 +374872,20 @@
             ]
         },
         "adp": {
+            "feminine": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coloro",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
             "feminine": [
                 {
                     "form": "coloro",
@@ -379725,6 +381173,20 @@
         }
     },
     "marocchino": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "marocchina",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "marocchin<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -379741,6 +381203,20 @@
         }
     },
     "marocchini": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "marocchine",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "marocchin<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -401991,6 +403467,20 @@
         }
     },
     "controllato": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "controllata",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "controllat<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -402021,6 +403511,20 @@
         }
     },
     "controllati": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "controllate",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "controllat<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -468843,6 +470347,20 @@
         }
     },
     "rappresentativo": {
+        "verb": {
+            "feminine": [
+                {
+                    "form": "rappresentativa",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "rappresentativ<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -468860,6 +470378,20 @@
     },
     "rappresentativi": {
         "adj": {
+            "feminine": [
+                {
+                    "form": "rappresentative",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "rappresentativ<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "verb": {
             "feminine": [
                 {
                     "form": "rappresentative",
@@ -593611,6 +595143,20 @@
         }
     },
     "attivista": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "attivista",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "attivist<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -593627,6 +595173,20 @@
         }
     },
     "attivisti": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "attiviste",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "attivist<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -678969,6 +680529,20 @@
             "neutral": [
                 {
                     "form": "stat<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "noun": {
+            "feminine": [
+                {
+                    "form": "stato",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "stato",
                     "weight": 1
                 }
             ]
@@ -852113,6 +853687,20 @@
         }
     },
     "vacanzieri": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "vacanziere",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "vacanzier<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "adj": {
             "feminine": [
                 {
@@ -999876,6 +1001464,34 @@
         }
     },
     "esponente": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "esponente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "esponent<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "esponente",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "esponent<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -999892,6 +1001508,34 @@
         }
     },
     "esponenti": {
+        "noun": {
+            "feminine": [
+                {
+                    "form": "esponenti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "esponent<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "adj": {
+            "feminine": [
+                {
+                    "form": "esponenti",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "esponent<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -1010436,6 +1012080,20 @@
         }
     },
     "coinvolto": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "coinvolta",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coinvolt<ENDS>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -1010452,6 +1012110,20 @@
         }
     },
     "coinvolti": {
+        "adj": {
+            "feminine": [
+                {
+                    "form": "coinvolte",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "coinvolt<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
         "verb": {
             "feminine": [
                 {
@@ -1308355,6 +1310027,36 @@
             ]
         }
     },
+    "li": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "le",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<ENDP>",
+                    "weight": 1
+                }
+            ]
+        },
+        "pron": {
+            "feminine": [
+                {
+                    "form": "le",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "l<ENDP>",
+                    "weight": 1
+                }
+            ]
+        }
+    },
     "un": {
         "det": {
             "feminine": [
@@ -1309098,6 +1310800,36 @@
             "neutral": [
                 {
                     "form": "di",
+                    "weight": 1
+                }
+            ]
+        }
+    },
+        "d'": {
+        "det": {
+            "feminine": [
+                {
+                    "form": "d'",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "d'",
+                    "weight": 1
+                }
+            ]
+        },
+        "adp": {
+            "feminine": [
+                {
+                    "form": "d'",
+                    "weight": 1
+                }
+            ],
+            "neutral": [
+                {
+                    "form": "d'",
                     "weight": 1
                 }
             ]

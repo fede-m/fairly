@@ -231,7 +231,7 @@ def lookup_span_forms(nlp_span: tokens.Span, strategy: str) -> SpanLookupResult 
                 != "part"
             )
             is_not_masculine = (
-                pos == "noun"
+                pos in ["noun", "det", "pron", "adp", "adj"]
                 and str(morph.get("Gender", "")).lower()
                 != "masc"
             )
@@ -268,7 +268,6 @@ def dictionary_based_rewrite(nlp: language.Language, text: str, span: Span, stra
     if nlp_span is None or len(nlp_span) == 0:
         return None
     span_forms = lookup_span_forms(nlp_span, strategy)
-    logger.info(span_forms)
     if span_forms is None:
         return None
     # Step 2: apply rewriting
