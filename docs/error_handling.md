@@ -12,7 +12,7 @@
 - Description: the whole request takes longer than 40 seconds
 - Where it Happens:  `background.js` (adding the `controller.signal`) to the payload. NOTE: there is also a timeout in the OpenAI client in `llm.py` that ensures the call to the LLM closes after 40 seconds, so that it does not block other requests.
 - Error propagation: 
-    1. `background.js` --> `fetch` raises an error as the request took longer than 40 seconds. 
+    1. `background.js` --> `fetch` raises an error as the request took longer than 25 seconds. 
     2. `background.js` returns "TIMEOUT" error to `contentScript.js` using `processedData` message
     4. `contentScript.js` receives the `processedData` message, checks for errors and shows the popup for the error message "TIMEOUT"
 
@@ -55,9 +55,11 @@
 
 # Timeouts
 - To avoid requests hang forever, we have defined 3 timeouts:
-    - 35 seconds OpenAI timeout: if the request to the LLM lasts longer than 35 seconds, the connection is interrupted and an error is returned and handled in the background
-    - 40 seconds background timeout: if the entire request to the backend (detection + generation) lasts longer than 40 seconds, the request to the backend is interrupted and the background sends a timeout error
-    - 45 seconds contentScript timeout: if the background does not send a response back to the contentScript within 45 seconds, possibly due to a background problem (e.g. server has crashed), contentScript interrupts the request, sets the loading state to false and returns a span error.
+    - 10 seconds OpenAI timeout: if the request to the LLM lasts longer than 10 seconds, the connection is interrupted and an error is returned and handled in the background
+    - 25 seconds background timeout: if the entire request to the backend (detection + generation) lasts longer than 25 seconds, the request to the backend is interrupted and the background sends a timeout error
+    - 30 seconds contentScript timeout: if the background does not send a response back to the contentScript within 30 seconds, possibly due to a background problem (e.g. server has crashed), contentScript interrupts the request, sets the loading state to false and returns a span error.
+
+- These timeouts are based on performance testing showing that the average request takes less than 10 seconds to be completed.
 
 ## Errors Observability
 Errors from frontend and backend are stored in the respective MongoDB Collections ("backend_errors" and "frontend_errors"). 

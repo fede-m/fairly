@@ -375,6 +375,7 @@ function createInfoDiv() {
   // Start analysis when clicking on analyze button
   analyzeButton.addEventListener("click", (e) => {
     e.stopPropagation(); // Prevents document click listener from clearing the popup
+    warmingRetryDone = false;
     setLoadingState(true);
     startAnalysis();
   });

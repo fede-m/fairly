@@ -82,7 +82,7 @@ function startAnalysis() {
           setLoadingState(false);
           const btnWrapper = document.getElementById("info-btn-wrapper");
           showPopup("error", ERROR_MESSAGES["TIMEOUT"] || "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.", "error-msg", btnWrapper);
-        }, 45000);
+        }, 30000);
       } catch (error) {
         logger.error("Failed to send message to background: ", error);
         setLoadingState(false);
@@ -128,8 +128,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
     }
 
-    setLoadingState(false);
     const response = msg.payload;
+    // Model is cold-starting: retry once after a short delay, keeping the spinner on
+    if (response.error && response.code == "LLM_WARMING_UP" && !warmingRetryDone) {
+      warmingRetryDone = true;
+      logger.warn("LLM warming up, retrying analysis is 5s");
+      setTimeout(() => startAnalysis(), 5000);
+      return;
+    }
+    setLoadingState(false);
 
     // Check if error contains response
     if (response.error) {

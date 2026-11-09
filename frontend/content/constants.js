@@ -48,7 +48,8 @@ const ERROR_MESSAGES = Object.freeze(
  { "INVALID_PAYLOAD": "Si è verificato un errore interno. Riprova!",
    "ANALYSIS_FAILED": "Si è verificato un errore durante l'analisi. Riprova!",
    "NETWORK_ERROR": "Si è verificato un errore di connessione. Riprova più tardi!",
-   "TIMEOUT": "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile."
+   "TIMEOUT": "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.",
+   "LLM_WARMING_UP": "Il modello si sta avviando, riprova tra qualche secondo!"
  }
 
 )

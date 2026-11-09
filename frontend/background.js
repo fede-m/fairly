@@ -6,6 +6,7 @@ logger.log("Background service worker loaded");
 const API = {
   baseUrl: CONFIG.BASE_URL,
 
+  get warmup() {return `${this.baseUrl}/warmup`;},
   get analyse() {return `${this.baseUrl}/analyse`;},
   get storeEvent() {return `${this.baseUrl}/store-event`;},
   get addUser() {return `${this.baseUrl}/add-user`;},
@@ -38,7 +39,7 @@ function stopKeepAlive() {
   }
 }
 
-async function makeRequest(url, payload, errorContext = "request", timeoutMs = 30000) {
+async function makeRequest(url, payload, errorContext = "request", timeoutMs = 25000) {
   // Check payload is valid
   if (payload == null) {
     logger.error("Not a valid payload!");
@@ -104,7 +105,7 @@ async function makeRequest(url, payload, errorContext = "request", timeoutMs = 3
 async function analyseData(payload) {
   startKeepAlive();
   try{
-    return await makeRequest(API.analyse, payload, "analysis", 40000);
+    return await makeRequest(API.analyse, payload, "analysis");
   } finally {
     stopKeepAlive();
   }
@@ -150,6 +151,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     logger.log("Sending initial processing_started response back to tab.");
     sendResponse({ status: "processing_started" });
     return true;
+  }
+  else if (msg.action == "warmup") {
+    // Fire-and-forget: response and errors are deliberately ignored
+    fetch(API.warmup, { method: "POST"}).catch(() => {});
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;
