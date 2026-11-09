@@ -5,29 +5,11 @@ import os
 from dotenv import load_dotenv
 import logging
 from models import Span, LLMOutput
-from config import DETECTION_MODEL, TOKENIZER_MODEL, GENERATION_MODEL
+from config import GENERATION_MODEL
 from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
-import instructor
 from openai import AsyncOpenAI
 import uuid
 logger = logging.getLogger(__name__)
-load_dotenv()
-
-HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
-
-# Load models for detection
-sentence_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
-model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
-
-# Setup client
-client = AsyncOpenAI(
-    base_url = os.getenv("HPC4AI_URL", ""),
-    api_key = os.getenv("OPENWEB_API", ""),
-    timeout= 35.0
-)
-
-client = instructor.patch(client, mode = instructor.Mode.JSON)
 
 def generate_new_span(text:str,start:int, end:int) -> Span:
     span = Span(
@@ -41,10 +23,10 @@ def generate_new_span(text:str,start:int, end:int) -> Span:
     span.tokens.append(text[start:end])
     return span
 
-def detection(text: str) -> list[Span]:
+def detection(text: str, sent_tokenizer, tokenizer, detection_model) -> list[Span]:
     try:
         # Sentence Tokenize text
-        sentences_spans = list(sentence_tokenizer.span_tokenize(text))
+        sentences_spans = list(sent_tokenizer.span_tokenize(text))
         sentences = [text[start: end] for (start, end) in sentences_spans]
 
         spans = []
@@ -58,13 +40,13 @@ def detection(text: str) -> list[Span]:
 
             # Disable gradient descent calculation
             with torch.no_grad():
-                outputs = model(**inputs)
+                outputs = detection_model(**inputs)
             
             # Convert logits to predicted labels
             predictions = torch.argmax(outputs.logits, dim=-1)
 
             # Map IDs to class labels
-            predicted_labels = [model.config.id2label[i.item()] for i in predictions[0][1:-1]]
+            predicted_labels = [detection_model.config.id2label[i.item()] for i in predictions[0][1:-1]]
 
             # Keep track on whether a span is being constructed. This prevents having spans which do not start with a B-UNFAIR but just have I-UNFAIR
             building_span = False
@@ -106,7 +88,7 @@ def detection(text: str) -> list[Span]:
          logger.exception(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
-async def generation(text: str, spans:list[Span], strategy: str) -> list[Span]:
+async def generation(text: str, spans:list[Span], strategy: str, client: AsyncOpenAI) -> list[Span]:
     if not spans:
         return []
     # Get the span id and the text. Span indices refer to the original text, not to the

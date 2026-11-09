@@ -69,6 +69,7 @@ class Response(BaseModel):
     results: dict[str, OutputData] = Field(
         ..., description="The results of the analysis to send to the frontend"
     )
+    profiling_results: dict | None
 
 
 class EventType(str, Enum):

@@ -24,13 +24,28 @@ MONGO_URL = f"mongodb://{user}:{password}@mongodb:27017/fairly?authSource=admin"
 
 ## Comment all of the following to test locally
 # Connect to the MongoDB Cluster
-client = AsyncIOMotorClient(MONGO_URL)
+client = None
+db = None
+collection = None
+user_collection = None
+be_error_collection = None
+fe_error_collection = None
 
-db = client["fairly_db"]
-collection = db["user_events"]
-user_collection = db["user_data"]
-be_error_collection = db["backend_errors"]
-fe_error_collection = db["frontend_errors"]
+async def connect_database():
+    global client, db, collection, user_collection
+    global be_error_collection, fe_error_collection
+    client = AsyncIOMotorClient(MONGO_URL)
+    await client.admin.command("ping") # Verify connection
+
+    db = client["fairly_db"]
+    collection = db["user_events"]
+    user_collection = db["user_data"]
+    be_error_collection = db["backend_errors"]
+    fe_error_collection = db["frontend_errors"]
+
+def close_database():
+    if client is not None:
+        client.close()
 
 def _as_dict(model):
     if hasattr(model, "model_dump"):

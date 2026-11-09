@@ -1,12 +1,20 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from openai import AsyncOpenAI
 from starlette.concurrency import run_in_threadpool
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+import instructor
+import random
 import os
 import hmac
 import hashlib
 import logging
+import nltk
+import spacy
 import time
+from config import DETECTION_MODEL, TOKENIZER_MODEL
 from models import (
     Request,
     StoreEventRequest,
@@ -20,7 +28,17 @@ from models import (
 )
 from llm import detection, generation
 from presidio import setup_presidio, process_text
-from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
+from database import (
+    connect_database,
+    close_database,
+    insert_event, 
+    insert_user, 
+    insert_info_event, 
+    insert_backend_errors, 
+    insert_frontend_error
+)
+
+from time import perf_counter
 
 logging.basicConfig(
     level=logging.INFO, 
@@ -29,11 +47,52 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logging.getLogger("presidio-analyzer").setLevel(logging.ERROR)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 CHROME_EXTENSION_ID_1 = os.getenv("CHROME_EXTENSION_ID_1")
 CHROME_EXTENSION_ID_2 = os.getenv("CHROME_EXTENSION_ID_2")
+HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 SECRET_KEY = os.environ.get("SECRET_KEY")
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    startup_start = perf_counter()
+
+    # Connect to MongoDB
+    await connect_database()
+    # Load spacy vocabulary
+    app.state.nlp = spacy.load("it_core_news_lg")
+
+    # Load models for detection
+    app.state.sent_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
+    app.state.detection_model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+    app.state.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
+    # Setup client
+    client = AsyncOpenAI(
+        base_url = os.getenv("HPC4AI_URL", ""),
+        api_key = os.getenv("OPENWEB_API", ""),
+        timeout= 10.0,
+        max_retries=3,
+    )
+
+    app.state.client = instructor.patch(
+        client, 
+        mode = instructor.Mode.JSON
+    )
+
+    setup_presidio()
+
+    logger.info(
+        "Application startup completed in %.3f seconds",
+        perf_counter() - startup_start,
+    )
+
+    try:
+        yield
+    finally:
+        close_database()
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,10 +107,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def startup_event():
-    setup_presidio()
 
 @app.middleware("http")
 async def log_requests(request: FastAPIRequest, call_next):
@@ -74,6 +129,27 @@ async def unhandled_exception_handler(request: FastAPIRequest, exc: Exception):
 def _hash_email(email):
     return hmac.new(SECRET_KEY.encode(), email.encode(), hashlib.sha256).hexdigest()
 
+def _analysis_error_response(
+    profiling_results: dict,
+    analysis_start: float,
+    stage: str,
+    message: str,
+    code: str,
+    details: str,
+) -> JSONResponse:
+    profiling_results["total"] = time.perf_counter() - analysis_start
+    profiling_results["error_stage"] = stage
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": True,
+            "message": message,
+            "code": code,
+            "details": details,
+            "profiling_results": profiling_results,
+        },
+    )
+
 @app.post("/add-user")
 async def store_user(user: User):
     if user:
@@ -84,47 +160,79 @@ async def store_user(user: User):
         return {"status": 200, "message": "User was added successfully"}
 
 @app.post("/analyse")
-async def analyse(request: Request):
+async def analyse(request: Request, http_request: FastAPIRequest):
+    analysis_start = time.perf_counter()
     logger.info("Analysis request: session=%s, strategy=%s, docs=%d", request.session_id, request.strategy, len(request.data))
     results = {}
     strategy = request.strategy
     email = request.user_id.strip().lower()
     request.user_id = _hash_email(email)
-
+    nlp = http_request.app.state.nlp
     # Store request
     analysis_events = []
+
+    profiling_results = {}
+    profiling_results["session_id"] = request.session_id
 
     try:
         for doc in request.data:
             # Remove "\n" from text
             text = "".join([chunk for chunk in doc.text.split("\n") if chunk])
+            profiling_results["char_len"] = len(text)
+
+            start = time.perf_counter()
             anonymized_text, _ = process_text(text)
+            end = time.perf_counter()
+            profiling_results["presidio"] = end - start
             try:
+                start = time.perf_counter()
                 # Detection (on full text)
-                detected_spans = await run_in_threadpool(detection, text)
+                detected_spans = await run_in_threadpool(
+                    detection, 
+                    text,
+                    http_request.app.state.sent_tokenizer, 
+                    http_request.app.state.tokenizer, 
+                    http_request.app.state.detection_model
+                    )
+                end = time.perf_counter()
+                profiling_results["detection"] = end - start
+                profiling_results["num_spans"] = len(detected_spans)
             except Exception as e:
                 logger.exception("Detection failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("detection_failed", str(e), session_id=request.session_id, user_id=request.user_id)
                 # Return error response if generation fails
-                return {
-                    "error": True,
-                    "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
-                    "code": "ANALYSIS_FAILED",
-                    "details": str(e),
-                }
+                return _analysis_error_response(
+                    profiling_results,
+                    analysis_start,
+                    "detection",
+                    "Si è verificato un errore durante la generazione delle riformulazioni.",
+                    "ANALYSIS_FAILED",
+                    str(e),
+                )
             # Generation
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
+                start = time.perf_counter()
+                reformulated_spans = await generation(
+                    anonymized_text, 
+                    detected_spans, 
+                    strategy,
+                    http_request.app.state.client                   
+                )
+                end = time.perf_counter()
+                profiling_results["generation"] = end - start
+
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
                 # Return error response if generation fails
-                return {
-                    "error": True,
-                    "message": "Si è verificato un errore durante la generazione delle riformulazioni.",
-                    "code": "ANALYSIS_FAILED",
-                    "details": str(e),
-                }
+                return _analysis_error_response(
+                    profiling_results,
+                    analysis_start,
+                    "generation",
+                    "Si è verificato un errore durante la generazione delle riformulazioni.",
+                    "ANALYSIS_FAILED",
+                    str(e),
+                )
 
             # Detection ran on the original text, so span indices already match it
             results[doc.id] = OutputData(
@@ -152,18 +260,42 @@ async def analyse(request: Request):
             )
 
             analysis_events.append(analysis_request)
+        start = time.perf_counter()
         await insert_event(analysis_events)
-        return Response(results=results)
+        end = time.perf_counter()
+        profiling_results["mongo_db"] = end - start
+        analysis_end = time.perf_counter()
+        profiling_results["total"] = analysis_end - analysis_start
+
+        logger.info(
+            f"""
+            --------- Request information ---------
+            request_id={profiling_results["session_id"]}
+            text_length={profiling_results["char_len"]}
+            num_detected_spans={profiling_results['num_spans']}
+            --------- Performance breakdown -------
+            presidio={profiling_results["presidio"]}
+            detection={profiling_results["detection"]}
+            generation={profiling_results["generation"]}
+            database={profiling_results['mongo_db']}
+
+            total={analysis_end - analysis_start}
+            """
+        )
+
+        return Response(results=results, profiling_results=profiling_results)
     
     except Exception as e:
         logger.exception("Analysis failed for session=%s", request.session_id)
         await insert_backend_errors("analysis_failed", str(e), session_id=request.session_id, user_id=request.user_id)
-        return {
-            "error": True,
-            "message": "Si è verificato un errore durante l'analisi.",
-            "code": "ANALYSIS_FAILED",
-            "details": str(e),
-        }
+        return _analysis_error_response(
+            profiling_results,
+            analysis_start,
+            "analysis",
+            "Si è verificato un errore durante l'analisi.",
+            "ANALYSIS_FAILED",
+            str(e),
+        )
 
 
 @app.post("/store-event")
@@ -205,6 +337,4 @@ async def log_frontend_error(error: FrontendErrorRequest):
     logger.warning("Frontend error from %s: %s", error.source, error.message)
     await insert_frontend_error(error)
     return {"status": 200, "message": "Error logged successfully"}
-
-
 
