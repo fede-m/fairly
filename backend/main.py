@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 from openai import AsyncOpenAI
 from starlette.concurrency import run_in_threadpool
 from transformers import AutoTokenizer, AutoModelForTokenClassification
-import instructor
 import random
 import os
 import hmac
@@ -26,7 +25,14 @@ from models import (
     InfoEventRequest,
     FrontendErrorRequest
 )
-from llm import detection, generation
+from llm import (
+    detection, 
+    generation, 
+    make_clients,
+    maybe_warmup,
+    _warmup_task, 
+    LLMWarmingUp
+)
 from presidio import setup_presidio, process_text
 from database import (
     connect_database,
@@ -67,19 +73,8 @@ async def lifespan(app: FastAPI):
     app.state.sent_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
     app.state.detection_model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
     app.state.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
-    # Setup client
-    client = AsyncOpenAI(
-        base_url = os.getenv("HPC4AI_URL", ""),
-        api_key = os.getenv("OPENWEB_API", ""),
-        timeout= 10.0,
-        max_retries=3,
-    )
-
-    app.state.client = instructor.patch(
-        client, 
-        mode = instructor.Mode.JSON
-    )
-
+    # Setup clients
+    app.state.generation_client, app.state.warmup_client = make_clients()
     setup_presidio()
 
     logger.info(
@@ -90,6 +85,11 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        # Shutdown
+        if _warmup_task and not _warmup_task.done():
+            _warmup_task.cancel()
+        await app.state.generation_client.close()
+        await app.state.warmup_client.close()
         close_database()
 
 app = FastAPI(lifespan=lifespan)
@@ -159,6 +159,12 @@ async def store_user(user: User):
         await insert_user(user)
         return {"status": 200, "message": "User was added successfully"}
 
+@app.post("/warmup", status_code=202)
+async def warmup(http_request: FastAPIRequest):
+    # Fire-and-forget: returns immediately, the warm-up runs in the background
+    return{"triggered": maybe_warmup(http_request.app.state.warmup_client)}
+
+
 @app.post("/analyse")
 async def analyse(request: Request, http_request: FastAPIRequest):
     analysis_start = time.perf_counter()
@@ -216,11 +222,18 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     anonymized_text, 
                     detected_spans, 
                     strategy,
-                    http_request.app.state.client                   
+                    http_request.app.state.generation_client                   
                 )
                 end = time.perf_counter()
                 profiling_results["generation"] = end - start
+            except LLMWarmingUp:
+                logger.warning("LLM warming up for session=%s, doc=%s", request.session_id, doc.id)
+                return {
+                    "error": True,
+                    "message": "Il modello si sta avviando, riprova fra qualche secondo!",
+                    "code": "LLM_WARMING_UP"
 
+                }
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
