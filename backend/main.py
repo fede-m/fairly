@@ -27,7 +27,7 @@ from models import (
     InfoEventRequest,
     FrontendErrorRequest
 )
-from llm import detection, generation
+from llm import detection, generation, load_char_table
 from dictionary_rewriting import dictionary_based_rewrite
 from presidio import setup_presidio, process_text
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
@@ -54,6 +54,7 @@ async def lifespan(app: FastAPI):
     app.state.sent_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
     app.state.detection_model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
     app.state.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
+    app.state.char_table = load_char_table(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
     # Setup client
     client = AsyncOpenAI(
         base_url = os.getenv("HPC4AI_URL", ""),
@@ -135,7 +136,8 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     text, 
                     http_request.app.state.sent_tokenizer, 
                     http_request.app.state.tokenizer, 
-                    http_request.app.state.detection_model
+                    http_request.app.state.detection_model,
+                    http_request.app.state.char_table
                 )
 
             except Exception as e:
