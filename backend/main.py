@@ -1,12 +1,21 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from openai import AsyncOpenAI
 from starlette.concurrency import run_in_threadpool
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+import instructor
+import random
+
 import os
 import hmac
 import hashlib
 import logging
+import nltk
+import spacy
 import time
+from config import DETECTION_MODEL, TOKENIZER_MODEL
 from models import (
     Request,
     StoreEventRequest,
@@ -19,6 +28,7 @@ from models import (
     FrontendErrorRequest
 )
 from llm import detection, generation
+from dictionary_rewriting import dictionary_based_rewrite
 from presidio import setup_presidio, process_text
 from database import insert_event, insert_user, insert_info_event, insert_backend_errors, insert_frontend_error
 
@@ -29,11 +39,33 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logging.getLogger("presidio-analyzer").setLevel(logging.WARNING)
 CHROME_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID")
 CHROME_EXTENSION_ID_1 = os.getenv("CHROME_EXTENSION_ID_1")
 CHROME_EXTENSION_ID_2 = os.getenv("CHROME_EXTENSION_ID_2")
+HUGGINFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 SECRET_KEY = os.environ.get("SECRET_KEY")
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.nlp = spacy.load("it_core_news_lg")
+
+    # Load models for detection
+    app.state.sent_tokenizer = nltk.tokenize.punkt.PunktSentenceTokenizer()
+    app.state.detection_model = AutoModelForTokenClassification.from_pretrained(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+    app.state.tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, token = HUGGINFACE_TOKEN)
+    # Setup client
+    client = AsyncOpenAI(
+        base_url = os.getenv("HPC4AI_URL", ""),
+        api_key = os.getenv("OPENWEB_API", ""),
+        timeout= 35.0
+    )
+
+    app.state.client = instructor.patch(client, mode = instructor.Mode.JSON)
+    setup_presidio()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,10 +80,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def startup_event():
-    setup_presidio()
 
 @app.middleware("http")
 async def log_requests(request: FastAPIRequest, call_next):
@@ -84,12 +112,13 @@ async def store_user(user: User):
         return {"status": 200, "message": "User was added successfully"}
 
 @app.post("/analyse")
-async def analyse(request: Request):
+async def analyse(request: Request, http_request: FastAPIRequest):
     logger.info("Analysis request: session=%s, strategy=%s, docs=%d", request.session_id, request.strategy, len(request.data))
     results = {}
     strategy = request.strategy
     email = request.user_id.strip().lower()
     request.user_id = _hash_email(email)
+    nlp = http_request.app.state.nlp
 
     # Store request
     analysis_events = []
@@ -101,7 +130,14 @@ async def analyse(request: Request):
             anonymized_text, _ = process_text(text)
             try:
                 # Detection (on full text)
-                detected_spans = await run_in_threadpool(detection, text)
+                detected_spans = await run_in_threadpool(
+                    detection, 
+                    text, 
+                    http_request.app.state.sent_tokenizer, 
+                    http_request.app.state.tokenizer, 
+                    http_request.app.state.detection_model
+                )
+
             except Exception as e:
                 logger.exception("Detection failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("detection_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -112,9 +148,29 @@ async def analyse(request: Request):
                     "code": "ANALYSIS_FAILED",
                     "details": str(e),
                 }
-            # Generation
+
+            # ------------------ Rewriting ------------------
+
+            # Dictionary based
+            # If not all spans could be rewritten using an algorithm, call the generation branch only for that spans
+            reformulated = [] 
+            need_generation = []
+            gender_precedence = None
+            if strategy.split("-")[0] == "CO":
+                need_generation = detected_spans
+            else:
+                if strategy.split("-")[0] in ["CV", "IV"]:
+                    gender_precedence = random.sample(["masculine", "feminine"], 1)[0]
+                for span in detected_spans:
+                    reformulated_span = dictionary_based_rewrite(nlp, text, span, strategy, gender_precedence)
+                    if not reformulated_span:
+                        need_generation.append(span)
+                    else:
+                        reformulated.append(reformulated_span)
+                
+            # Generation based
             try:
-                reformulated_spans = await generation(anonymized_text, detected_spans, strategy)
+                reformulated.extend(await generation(anonymized_text, need_generation, strategy, http_request.app.state.client))
             except Exception as e:
                 logger.exception("Generation failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("generation_failed", str(e), session_id=request.session_id, user_id=request.user_id)
@@ -126,9 +182,13 @@ async def analyse(request: Request):
                     "details": str(e),
                 }
 
+            # Put results together and order
+            reformulated = sorted(
+                reformulated, key = lambda span: span.start_char
+            )
             # Detection ran on the original text, so span indices already match it
             results[doc.id] = OutputData(
-                text=text, unfair_spans=reformulated_spans
+                text=text, unfair_spans=reformulated
             )
             analysis_request = StoreEventRequest(
                 event=EventType.ANALYSIS,
@@ -141,7 +201,7 @@ async def analyse(request: Request):
                         reformulation=s.reformulation,
                         current_used="",
                     )
-                    for s in reformulated_spans
+                    for s in reformulated
                 ],
                 session_id=request.session_id,
                 user_id=request.user_id,
@@ -205,6 +265,5 @@ async def log_frontend_error(error: FrontendErrorRequest):
     logger.warning("Frontend error from %s: %s", error.source, error.message)
     await insert_frontend_error(error)
     return {"status": 200, "message": "Error logged successfully"}
-
 
 
