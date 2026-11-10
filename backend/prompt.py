@@ -36,7 +36,8 @@ STRATEGIES = {
             # "la clientela sono pregati"
     "CO": ["""Conservative Obscuration (CO): Reformulate the span so that it does not mark gender by using collective nouns, impersonal structures, or gender-neutral phrasing.
               Keep meaning, register and tense.
-              Before reformulating, check the words around the span (verbs, adjectives, participles, articles, pronouns) that refer to the same people. Choose a wording whose number (singular/plural) match them.
+              Before reformulating, check the words around the span (verbs, adjectives, participles, articles, pronouns) that refer to the same people.
+              Choose a wording whose number (singular/plural) matches them. it must not mark gender
 
             - Examples:
               1) i professori → il corpo docente / chi insegna
