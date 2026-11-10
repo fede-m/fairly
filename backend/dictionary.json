@@ -1310183,7 +1310183,7 @@
             ],
             "neutral": [
                 {
-                    "form": "all<ENDS>",
+                    "form": "a<ENDS>",
                     "weight": 1
                 }
             ]
@@ -1310455,7 +1310455,7 @@
             ],
             "neutral": [
                 {
-                    "form": "sull<ENDP>",
+                    "form": "su<ENDP>",
                     "weight": 1
                 }
             ]
