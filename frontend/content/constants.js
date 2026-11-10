@@ -35,7 +35,7 @@ const STRATEGIES = Object.freeze(
       id: "IV",
       name: "Tripla forma (M/F/N)",
       nestedOptions: [
-        "es. gli studenti, le studenti e l* student*",
+        //"es. gli studenti, le studenti e l* student*",
         "es. gli/le/l* student*"
       ],
       info: "Include le tre forme maschile, femminile e neutra per rappresentare tutte le identità di genere."
@@ -48,7 +48,8 @@ const ERROR_MESSAGES = Object.freeze(
  { "INVALID_PAYLOAD": "Si è verificato un errore interno. Riprova!",
    "ANALYSIS_FAILED": "Si è verificato un errore durante l'analisi. Riprova!",
    "NETWORK_ERROR": "Si è verificato un errore di connessione. Riprova più tardi!",
-   "TIMEOUT": "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile."
+   "TIMEOUT": "L'analisi ha impiegato troppo tempo. Il server potrebbe non essere disponibile.",
+   "LLM_WARMING_UP": "Il modello si sta avviando, riprova tra qualche secondo!"
  }
 
 )

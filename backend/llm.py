@@ -1,16 +1,79 @@
+import asyncio
 import json
 import re
 from pathlib import Path
 import torch
+import httpx
+import os
 from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
 import logging
 from models import Span, LLMOutput
 from config import GENERATION_MODEL, DETECTION_CHAR_MAP
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, APITimeoutError
 from prompt import PROMPT, STRATEGIES, INNOVATIVE_SYMBOLS_EXAMPLES
 import uuid
+import instructor
+import time
+
 logger = logging.getLogger(__name__)
+
+# Max concurrent LLM calls: extra requests wait in line instead of overloading the provider
+LLM_SEMAPHORE = asyncio.Semaphore(4)
+# Seconds the model stays warm after a successful answer (5 minutes, count 4 minutes to catch it before it is unloaded from GPU)
+WARM_TTL_S = 240
+# time.monotonic() of the last successful LLM answer (0.0 = never)
+_last_llm_ok = 0.0
+# Handle to the running warmup task, if any
+_warmup_task: asyncio.Task | None = None
+
+def make_clients() -> tuple[AsyncOpenAI, AsyncOpenAI]:
+    base_url = os.getenv("HPC4AI_URL", "")
+    api_key = os.getenv("OPENWEB_API", "")
+
+    # Generation client: fail fast so the user does not need to wait for long
+    generation_client = AsyncOpenAI(
+        base_url = base_url,
+        api_key = api_key,
+        timeout= httpx.Timeout(30.0, connect=5.0),
+        max_retries=1,
+    )
+    generation_client = instructor.patch(
+        generation_client, 
+        mode = instructor.Mode.JSON
+    )
+
+    # Warm-up client: wakes the model on HPC4AI and waits for it to load
+    warmup_client =  AsyncOpenAI(
+        base_url = base_url,
+        api_key = api_key,
+        timeout= 300.0,
+        max_retries=0,
+    )
+    return generation_client, warmup_client
+
+async def _warmup(warmup_client: AsyncOpenAI) -> None:
+    global _last_llm_ok
+    start = time.monotonic()
+    try:
+        await warmup_client.chat.completions.create(
+            model=GENERATION_MODEL,
+            messages=[{"role": "user", "content": "ping"}],
+            max_tokens=1,
+        )
+        _last_llm_ok = time.monotonic()
+        logger.info("LLM warmup succeeded after %.1fs", _last_llm_ok - start)
+    except Exception as e:
+        logger.warning("LLM warmup failed after %.1fs: %s", time.monotonic() - start, e)
+
+def maybe_warmup(warmup_client: AsyncOpenAI) -> bool:
+    global _warmup_task
+    if time.monotonic() - _last_llm_ok < WARM_TTL_S:
+        return False
+    if _warmup_task is not None and not _warmup_task.done():
+        return False
+    _warmup_task = asyncio.create_task(_warmup(warmup_client))
+    return True
 
 # Words as the detection model saw them in training: "dell'università" -> "dell", "'", "università"
 WORD_RE = re.compile(r"\w+|[^\w\s]+")
@@ -118,7 +181,11 @@ def detection(text: str, sent_tokenizer, tokenizer, detection_model, char_table:
          logger.exception(f"Detection failed with error: {e}")
          raise Exception(f"Text analysis failed: {str(e)}")
 
+class LLMWarmingUp(Exception):
+    """Dedicated exception for when the model does not answer on time due to a cold-starting problem."""
+
 async def generation(text: str, spans:list[Span], strategy: str, client: AsyncOpenAI) -> list[Span]:
+    global _last_llm_ok
     if not spans:
         return []
     # Get the span id and the text. Span indices refer to the original text, not to the
@@ -138,13 +205,18 @@ async def generation(text: str, spans:list[Span], strategy: str, client: AsyncOp
     
     if prompt != "":
         try:
-            response = await client.chat.completions.create(
-                model = GENERATION_MODEL,
-                messages=[
-                    {"role":"user", "content": prompt}
-                ],
-                response_model = LLMOutput,
-            )
+            async with LLM_SEMAPHORE:
+                # Start the clock after acquiring the permit: we want the call latency, not the queue wait
+                start = time.monotonic()
+                response = await client.chat.completions.create(
+                    model = GENERATION_MODEL,
+                    messages=[
+                        {"role":"user", "content": prompt}
+                    ],
+                    response_model = LLMOutput,
+                )
+            _last_llm_ok = time.monotonic()
+            logger.info("LLM generation took %.2fs", _last_llm_ok - start)
 
             id2span = {span.span_id: span for span in spans}
             reformulated_spans = []
@@ -155,6 +227,11 @@ async def generation(text: str, spans:list[Span], strategy: str, client: AsyncOp
                     reformulated_spans.append(span)
 
             return reformulated_spans
+        
+        except APITimeoutError as e:
+            logger.warning("LLM timed out, the model is probably cold and need to be loaded on the provider side: %s", e)
+            raise LLMWarmingUp() from e
+        
         except Exception as e:
             logger.exception(f"Generation failed with error: {e}")
             raise Exception(f"LLM provider unavailable or timeout: {str(e)}")
