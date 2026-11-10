@@ -30,20 +30,38 @@ STRATEGIES = {
                 4) i rappresentanti degli studenti → il personale di rappresentanza studentesca
                 5) tutti → tutte le persone               
             """],
+            # la parte before formulating è per casi tipo
+            # "i clienti sono pregati di recarsi in filiale"
+            # span = "i clienti" riformulato "la clientela"
+            # "la clientela sono pregati"
+    "CO": ["""Conservative Obscuration (CO): Reformulate the span so that it does not mark gender by using collective nouns, impersonal structures, or gender-neutral phrasing.
+              Keep meaning, register and tense.
+              Before reformulating, check the words around the span (verbs, adjectives, participles, articles, pronouns) that refer to the same people. Choose a wording whose number (singular/plural) match them.
+
+            - Examples:
+              1) i professori → il corpo docente / chi insegna
+              2) gli studenti → la comunità studentesca
+              3) i rappresentanti degli studenti → la rappresentanza studentesca
+              4) tutti → tutte le persone
+              5) i dipendenti → il personale
+              6) i lavoratori → le persone che lavorano
+              7) degli iscritti → delle persone iscritte
+             """],
               
     "IO":"""Innovative Obscuration (IO): Use novel, gender-neutral markers. In this case, use symbol {symbol}.
+            If punctuation is included, do not add spaces before it.
               - Examples: 
                 1) i professori → l{symbol} professor{symbol}
                 2) i docenti → l{symbol} docenti
                 3) gli studenti → l{symbol} studenti
-                4) i rappresentanti degli studenti → l{symbol} rappresentant{symbol} de{symbol} student{symbol}
+                4) i rappresentanti degli studenti: → l{symbol} rappresentant{symbol} de{symbol} student{symbol}:
                 5) tutti → tutt{symbol}
-                6) invitati → invitat{symbol}
+                6) invitati: → invitat{symbol}:
                 7) numerosi → numeros{symbol}
          """,
     
     "IV": ["""Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol *.
-              - Example: "i professori" → "i professori, le professoresse e l* professor*"
+              - Example: "i professori" → "i professori, le professoresse e l* professor*".
           """,
 
           """Innovative Visibility (IV): Provide masculine and feminine forms **and** the gender-neutral form using symbol *.
