@@ -1,4 +1,4 @@
-DETECTION_MODEL = "fairly-org/fairly_detection_v1"
+DETECTION_MODEL = "fairly-org/fairly-detection-v1"
 # The tokenizer is shipped with the detection model
 TOKENIZER_MODEL = DETECTION_MODEL
 # Same as "char_map" in the model's detection_config.json: applied to each word before tokenization

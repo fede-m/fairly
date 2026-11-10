@@ -19,3 +19,4 @@ test/*.ipynb
 test/*.txt
 test/*.csv
 test/*.md
+test/performance_result/*
