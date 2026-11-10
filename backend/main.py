@@ -30,9 +30,11 @@ from llm import (
     generation, 
     make_clients,
     maybe_warmup,
+    load_char_table,
     _warmup_task, 
     LLMWarmingUp
 )
+from dictionary_rewriting import dictionary_based_rewrite
 from presidio import setup_presidio, process_text
 from database import (
     connect_database,
@@ -79,9 +81,10 @@ async def lifespan(app: FastAPI):
 
     logger.info(
         "Application startup completed in %.3f seconds",
-        perf_counter() - startup_start,
+        perf_counter() - startup_start
     )
-
+    app.state.char_table = load_char_table(DETECTION_MODEL, token = HUGGINFACE_TOKEN)
+    
     try:
         yield
     finally:
@@ -198,11 +201,13 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     text,
                     http_request.app.state.sent_tokenizer, 
                     http_request.app.state.tokenizer, 
-                    http_request.app.state.detection_model
+                    http_request.app.state.detection_model,
+                    http_request.app.state.char_table
                     )
                 end = time.perf_counter()
                 profiling_results["detection"] = end - start
                 profiling_results["num_spans"] = len(detected_spans)
+
             except Exception as e:
                 logger.exception("Detection failed for session=%s, doc=%s", request.session_id, doc.id)
                 await insert_backend_errors("detection_failed", str(e), session_id=request.session_id, user_id=request.user_id)
