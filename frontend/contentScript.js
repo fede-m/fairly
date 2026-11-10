@@ -5,7 +5,7 @@ let USER_EMAIL = null;
 let STRATEGY_ORDER = null;
 let CONSENT_GIVEN = null;
 let analysisTimeoutId = null;
-
+let warmingRetryDone = false;
 
 
 function emailEndsWithAllowedDomain() {
@@ -186,6 +186,8 @@ async function initExtension() {
       if (isOpen) {
         infoDiv.setAttribute("aria-modal", "true");
         infoDiv.focus();
+        // Wake the LLM while the user is reading/selecting models
+        chrome.runtime.sendMessage({action: "warmup"}).catch(() => {});
       } else {
         infoDiv.setAttribute("aria-modal", "false");
         closeAllInfoPopovers();

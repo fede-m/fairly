@@ -130,8 +130,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     setLoadingState(false);
     const response = msg.payload;
-
-    // Check if error contains response
+    // Model is cold-starting: retry once after a short delay, keeping the spinner on
+    if (response.error && response.code == "LLM_WARMING_UP" && !warmingRetryDone) {
+      warmingRetryDone = true;
+      logger.warn("LLM warming up, retrying analysis is 5s");
+      setTimeout(() => startAnalysis(), 5000);
+      return;
+    }
+    setLoadingState(false);
+    // Check if the response contains an error
     if (response.error) {
       const btnWrapper = document.getElementById("info-btn-wrapper");
       showPopup("error", ERROR_MESSAGES[response.code] || "Si è verificato un errore. Riprova più tardi.", 'error-msg', btnWrapper);

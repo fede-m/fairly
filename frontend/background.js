@@ -11,6 +11,7 @@ const API = {
   get addUser() {return `${this.baseUrl}/add-user`;},
   get storeInfo() {return `${this.baseUrl}/store-info-event`;},
   get logError() {return `${this.baseUrl}/log-error`;},
+  get warmup() {return `${this.baseUrl}/warmup`;},
 }
 
 let keepAliveInterval = null;
@@ -150,6 +151,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     logger.log("Sending initial processing_started response back to tab.");
     sendResponse({ status: "processing_started" });
     return true;
+  }
+  else if (msg.action == "warmup") {
+    // Fire-and-forget: response and errors are deliberately ignored
+    fetch(API.warmup, { method: "POST"}).catch(() => {});
   }
   else if (msg.action == "storeEvent") {
     const data = msg.payload;

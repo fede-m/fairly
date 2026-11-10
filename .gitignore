@@ -3,3 +3,4 @@ backend/test_presidio.py
 __pycache__
 /model
 gfl_detect.py
+.vscode
