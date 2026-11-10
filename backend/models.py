@@ -31,7 +31,20 @@ class Reformulation(BaseModel):
         description="Inclusive reformulation of the incorrect span using the current strategy",
     )
 
+class FormDict(BaseModel):
+    form: str
+    weight: float
 
+class GenderFormVariants(BaseModel):
+    feminine: str | None
+    neutral: str | None
+class LookupResult(BaseModel):
+    pos: str
+    form: GenderFormVariants
+    changed: bool
+
+class SpanLookupResult(BaseModel):
+    results: dict[str, LookupResult]
 class LLMOutput(BaseModel):
     """Result from the LLM containing reformulations for spans."""
 

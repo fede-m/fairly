@@ -162,6 +162,7 @@ async def generation(text: str, spans:list[Span], strategy: str, client: AsyncOp
     prompt = ""
     strat_type, ref_option = strategy.split("-")
     ref_option = int(ref_option)
+    # TODO: Adjust to have one prompt for CO and one to check mistakes for CV, IV, and IO
     if strat_type in ["IO"]:
         if 0 <= ref_option < len(INNOVATIVE_SYMBOLS_EXAMPLES):
             symbol = INNOVATIVE_SYMBOLS_EXAMPLES[ref_option]

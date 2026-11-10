@@ -247,9 +247,13 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                     str(e),
                 )
 
+            # Put results together and order
+            reformulated = sorted(
+                reformulated, key = lambda span: span.start_char
+            )
             # Detection ran on the original text, so span indices already match it
             results[doc.id] = OutputData(
-                text=text, unfair_spans=reformulated_spans
+                text=text, unfair_spans=reformulated
             )
             analysis_request = StoreEventRequest(
                 event=EventType.ANALYSIS,
@@ -262,7 +266,7 @@ async def analyse(request: Request, http_request: FastAPIRequest):
                         reformulation=s.reformulation,
                         current_used="",
                     )
-                    for s in reformulated_spans
+                    for s in reformulated
                 ],
                 session_id=request.session_id,
                 user_id=request.user_id,
