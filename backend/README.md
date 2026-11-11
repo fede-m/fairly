@@ -151,3 +151,11 @@ if __name__ == "__main__":
     processed = anon
     restored = deanonymize(processed, mapping)
 ```
+
+## Podman deployment
+- Connect to the VM via SSH
+- Go to data/fairly
+- cd in `backend`
+- run `podman-compose up -d --build`
+- check that the container is running at `podman ps`
+- check logs at `podman logs -f fairly-backend`
