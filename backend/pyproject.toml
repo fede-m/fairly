@@ -10,6 +10,7 @@ dependencies = [
     "fastapi[standard]>=0.116.1",
     "groq==0.26.0",
     "httpx>=0.28.1",
+    "huggingface-hub>=1.1",
     "instructor[groq]>=1.11.3",
     "motor>=3.7.1",
     "nltk>=3.9.1",
@@ -24,5 +25,5 @@ dependencies = [
     "spacy>=3.7.0",
     "spacy-lookups-data>=1.0.5",
     "torch>=2.8.0",
-    "transformers>=4.55.2",
+    "transformers>=4.57.1",
 ]
